@@ -9,6 +9,9 @@
 
   \item{tags}{"complete" set of attribute names.}
 }
+\value{
+  returns all present info matching the tags criteria
+}
 \description{
   This function adds NAs to missing attributes.
 }

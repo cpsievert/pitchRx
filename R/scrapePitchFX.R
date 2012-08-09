@@ -123,7 +123,6 @@ updateUrls <- function(last.date, end) {
     gids <- sapply(split.urls, function(x) { x[10] })
     date <- sapply(str_split(gids, "_"), function(x) { paste(x[2], x[3], x[4], sep = "/") })
     urls <- data.frame(date = date, url_scoreboard = url.scoreboard, url = url, url_player = url.player)
-    cat("finished updating urls", "\n")
     return(urls)
 }
 
@@ -136,6 +135,7 @@ updateUrls <- function(last.date, end) {
 #' 
 
 updatePlayers <- function(new.urls) {
+  cat("updating players", "\n")
   new.players <- urlsToDataFrame(urls = new.urls, tables = list(player = c("id", "first", "last", "position")))
   full_name <- paste(new.players$first, new.players$last, sep = " ")
   new.players <- cbind(new.players[,c("url_player", "id")], full_name)

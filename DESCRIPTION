@@ -1,5 +1,6 @@
 Package: pitchRx
-Title: Carson's package
+Title: Simple Methods for Scraping and Animating Major League Baseball
+    PITCHf/x Data
 Version: 0.1
 Author: Carson Sievert <sievert@iastate.edu>
 Maintainer: Carson Sievert <sievert@iastate.edu>
@@ -23,3 +24,4 @@ Collate:
     'fields.R'
     'urls.R'
     'players.R'
+    'allFields.R'

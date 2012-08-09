@@ -41,7 +41,7 @@ urlsToDataFrame <- function(urls, tables = list(atbat = NULL, pitch = NULL), add
       url.vector <- c(url.vector, i) #Keep urls that have content
     }
   }
-  #Turn the XML 'documents' into a list of data frames
+  if (use.values == TRUE) return(docsToDFs(docs))
   ctr <- 1
   frames <- NULL
   for (j in names(ordered.tables)) {
@@ -51,20 +51,20 @@ urlsToDataFrame <- function(urls, tables = list(atbat = NULL, pitch = NULL), add
       frame <- attachUrls(frame) #Add a date and URL column to games table (note: other nodes can be named "game", but don't have relevant info)
       frames$game <- frame
     }
-    if (any(j == c("player", "coach", "umpire"))) {
+    if (j %in% c("player", "coach", "umpire")) {
       names(frame) <- gsub("url", "url_player", names(frame))
       if (j == "player") frames$player <- frame
       if (j == "coach") frames$coach <- frame
       if (j == "umpire") frame$umpire <- frame
     }
     if (j == "runner") frames$runner <- frame
-    if (j == "pitch" & any(names(tables) == "atbat")) {
+    if (j == "pitch" & ("atbat" %in% names(tables))) {
       frame$num <- frames$pitch #attach 'num' column to 'pitch' df (generated from the atbat node)
+      frame$count <- addPitchCount(frame)
       frames$pitch <- frame
-      #Add balls and strikes!!!!
     }
     if (j == "atbat") {
-      if (any(names(tables) == "pitch")) { #Different handling for frames, since frame is a list of two in this case
+      if ("pitch" %in% names(tables)) { #Different handling for frames, since frame is a list of two in this case
         frames$pitch <- frame$atbat_id #Vector to be added to 'pitch' df to link with 'atbat' df
         frames$atbat <- frame$final #Keep the atbats df
       } else {
@@ -78,6 +78,38 @@ urlsToDataFrame <- function(urls, tables = list(atbat = NULL, pitch = NULL), add
   } else {
     return(frame)
   }
+}
+
+#' Turns a list of XML documents into a single data frame.
+#' 
+#' This function will determine the most complete amount of fields among all 
+#' XML documents and fill NAs where information is missing.
+#'
+#' @param docs XML documents
+#' @return returns a data frame
+
+docsToDFs <- function(docs) {
+  frames <- llply(docs, function(x) { xmlToDataFrame(x) })
+  all.fields <- unique(unlist(llply(frames, names)))
+  missing <- llply(frames, function(x) { all.fields[!(all.fields %in% names(x))] })
+  dfs <- mapply(function(x, y) { 
+    if (length(y) > 0) {
+      #options(stringsAsFactors = FALSE) doesn't work?
+      z <- list(data.frame(x, t(rep(NA, length(y)))))
+      names(z[[1]])[!(names(z[[1]]) %in% names(x))] <- as.character(y)
+      z
+    } else {
+      x
+    }
+  }, frames, missing)
+  data <- NULL
+  for (i in dfs) {
+    while (!is.data.frame(i)) {
+      i <- i[[1]]
+    }
+    data <- rbind(data, i)
+  }
+  return(data)
 }
 
 #' Turn XML documents into a Data Frames
@@ -162,8 +194,8 @@ docsToDataFrame <- function(docs, node, fields, urls, add.children = FALSE, use.
 #'
 #' @param info XML attributes from a particular node.
 #' @param tags "complete" set of attribute names.
+#' @return returns all present info matching the tags criteria
 
-#Adjust function used inside of UrlsToDataFrame
 adjust <- function(info, tags){ #Adds NAs wherever a tag is missing
   x <- names(info)
   y <- tags
@@ -178,6 +210,40 @@ adjust <- function(info, tags){ #Adds NAs wherever a tag is missing
   }
   names(a) <- tags
   return(a)
+}
+
+#' Add columns with relevant "~/miniscoreboard.xml", "~/inning/inning_all.xml" and "~/player.xml" 
+#' file names to games table.
+#'
+#' @param df data frame with all "game" attributes from "~/miniscoreboard.xml" files.
+#' @return returns the original data frame with the proper url columns attached at the end.
+#'
+
+attachUrls <- function(df) {
+  names(df) <- gsub("url", "url_scoreboard", names(df))
+  branch <- gsub("miniscoreboard.xml", "", df$url_scoreboard) #common branch among urls
+  df$url <- paste(branch, paste("gid_", df$gameday_link, sep = ""), "/inning/inning_all.xml", sep = "") #files with pitchf/x info
+  df$url_scores <- gsub("inning_all.xml", "inning_Scores.xml", df$url) #files with scoring details
+  df$url_player <- gsub("/inning/inning_all.xml", "/players.xml", df$url) #files with player information and statistics
+  df$date <- sapply(str_split(df$gameday_link, "_"), function(x) { paste(x[2], x[3], x[4], sep = "/") })
+  return(df)
+}
+
+#' Assign each pitch an atbat ID
+#'
+#' @param nodes XML nodes from a set of URLs. These nodes should be from the "atbat" node.
+#' @return returns a vector contains an atbat ID for each pitch thrown
+
+createAtbatID <- function(nodes) {
+  p.per.ab <- llply(nodes, function(x) { 
+    llply(x, function(y) { 
+      sum(as.numeric(names(xmlChildren(y)) == "pitch")) 
+    })
+  })
+  atbat.records <- llply(p.per.ab, function(x) {
+    if (length(x) > 0) mapply(rep, 1:length(x), x)
+  })
+  return(unlist(atbat.records, use.names=FALSE))
 }
 
 #' Create columns to match an atbat with a inning (and side of that inning)
@@ -211,57 +277,21 @@ createInnings <- function(atbats) {
   top.innings <- as.character(unlist(top.inning))
   return(cbind(atbats, inning = innings, top_inning = top.innings))
 }
-  
-#' Assign each pitch an atbat ID
-#'
-#' @param nodes XML nodes from a set of URLs. These nodes should be from the "atbat" node.
-#' @return returns a vector contains an atbat ID for each pitch thrown
-
-createAtbatID <- function(nodes) {
-  p.per.ab <- llply(nodes, function(x) { 
-    llply(x, function(y) { 
-      sum(as.numeric(names(xmlChildren(y)) == "pitch")) 
-    })
-  })
-  atbat.records <- llply(p.per.ab, function(x) {
-    if (length(x) > 0) mapply(rep, 1:length(x), x)
-  })
-  return(unlist(atbat.records, use.names=FALSE))
-}
-
-#' Add columns with relevant "~/miniscoreboard.xml", "~/inning/inning_all.xml" and "~/player.xml" 
-#' file names to games table.
-#'
-#' @param df data frame with all "game" attributes from "~/miniscoreboard.xml" files.
-#' @return returns the original data frame with the proper url columns attached at the end.
-#'
-
-attachUrls <- function(df) {
-  names(df) <- gsub("url", "url_scoreboard", names(df))
-  branch <- gsub("miniscoreboard.xml", "", df$url_scoreboard) #common branch among urls
-  df$url <- paste(branch, paste("gid_", df$gameday_link, sep = ""), "/inning/inning_all.xml", sep = "") #files with pitchf/x info
-  df$url_scores <- gsub("inning_all.xml", "inning_Scores.xml", df$url) #files with scoring details
-  df$url_player <- gsub("/inning/inning_all.xml", "/players.xml", df$url) #files with player information and statistics
-  df$date <- sapply(str_split(df$gameday_link, "_"), function(x) { paste(x[2], x[3], x[4], sep = "/") })
-  return(df)
-}
 
 #' Add columns with relevant pitch count to the 'pitch' data frame.
 #'
 #' @param df data frame with all "pitch" attributes from "~/inning/inning_all.xml" files.
 #' @return returns the original data frame with the proper pitch count columns attached at the end.
+#' @export
 
-# addPitchCount <- function(df) {
-#   with(df, tapply(type, INDEX = ))
-# }
-
-# #replace pitches with df
-# balls <- as.numeric(pitches$type == "B")
-# strikes <- as.numeric(pitches$type == "S")
-# #contact <- as.numeric(pitches$type == "X")
-# pitches <- cbind(pitches, balls, strikes, contact)
-# stuff <- dlply(idata.frame(pitches[,c("url", "num", "type", "balls", "strikes")]), c("url", "num"), function(x) { 
-#   cbind(cumsum(x$balls), cumsum(x$strikes)) })
-# head(stuff)
-# #NOTE: "S" includes fouls, "X" means it is in play!
-# pitches[pitches$type == "X",c("des")]
+addPitchCount <- function(df) {
+  df$balls <- as.numeric(df$type == "B")
+  df$strikes <- as.numeric(df$type == "S")
+  counts <- dlply(idata.frame(df[,c("url", "num", "type", "balls", "strikes")]), c("url", "num"), function(x) { 
+    n <- nrow(x) 
+    cbind(cumsum(c(0, x$balls[-n])), pmin(cumsum(c(0, x$strikes[-n])), 2)) 
+  })
+  counts <- llply(counts, as.data.frame)
+  counts <- ldply(counts, rbind)
+  return(paste(counts[,2], counts[,3], sep = "-"))
+}
