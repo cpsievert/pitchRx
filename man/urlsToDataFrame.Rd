@@ -1,17 +1,16 @@
 \name{urlsToDataFrame}
 \alias{urlsToDataFrame}
-\title{Function for parsing urls and specified nodes into data frames}
+\title{Parse XML files into data frame(s)}
 \usage{
-  urlsToDataFrame(urls,
-    tables = list(atbat = NULL, pitch = NULL),
+  urlsToDataFrame(urls, tables = list(),
     add.children = FALSE, use.values = FALSE)
 }
 \arguments{
   \item{urls}{set of urls for parsing}
 
-  \item{tables}{list of character vectors containing field
-  names for each table. The list names have to correspond
-  to XML nodes of interest within the XML files.}
+  \item{tables}{list of character vectors with appropriate
+  names. The list names should correspond to XML nodes of
+  interest within the XML files.}
 
   \item{add.children}{logical parameter specifying whether
   to scrape the XML children of the node(s) specified in
@@ -25,28 +24,27 @@
   Otherwise, it returns a list of data frames.
 }
 \description{
-  The primary use for this function is to scrape an
-  "atbats" table and the corresponding "pitch" (ie, Pitch
-  F/X) table for the specified set of URLs. In fact, this
-  function is used as the core functionality behind
-  scrapePitchFX. This function provides added flexibility
-  by allowing one to specify nodes of interest other than
-  "atbat" and "pitch". If the value of the list is NULL,
-  this function will automatically generate the most
-  complete collection of data points. Important: You must
-  have "atbat" AND "pitch" nodes if you want to identify
-  who threw a particular pitch. Also, if you specify field
-  names for the table, you should be confident that those
-  are the most complete set of fields.
+  This function takes on a list of XML file names (ie,
+  urls) and parses them into an appropriate amount of data
+  frames.
+}
+\details{
+  The number of data frames is equal to the length of
+  \code{tables}. The name of each element in \code{tables}
+  should correspond to an XML node of interest to the user.
+  If the value of a particular list element is NULL, this
+  function will automatically determine the most complete
+  set of fields for that data frame.
 }
 \examples{
-#If it isn't currently baseball season, consider changing the dates below:
-#Also, this is a small scaled example. Visit my website if you would like to see how to
-#build a current and complete database.
-#mini.urls <- getScoreboardURLs(first.date = Sys.Date() - 10, last.date = Sys.Date())
-#game.urls <- getPitchFxURLs(mini.urls)
-#data <- urlsToDataFrame(urls = game.urls)
-#atbats <- data$atbat
-#pitches <- data$pitch
+#Find some XML files with twitter data
+branch <- "http://gd2.mlb.com/components/game/mlb/twitter/"
+doc <- htmlParse(branch)
+nodes <- getNodeSet(doc, "//a")
+values <- sapply(nodes, xmlValue)
+extensions <- str_extract_all(values, "([a-z]+)InsiderTweets.xml.([0-9]+)")
+twitter.urls <- paste(branch, extensions[llply(extensions, length) > 0], sep = "")
+#Parse the files into a data frame
+tweets <- urlsToDataFrame(urls = twitter.urls, tables = list(status = NULL), use.values = TRUE)
 }
 

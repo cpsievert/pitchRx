@@ -1,6 +1,7 @@
-#' Scrape Pitch F/X Data
+#' Scrape Major League Baseball's PITCHf/x Data
 #'
-#' This function scrapes data from the MLB website.
+#' This function is a wrapper around \code{urlsToDataFrame} which reduces the time required to obtain PITCHf/x
+#' from the source files.
 #'
 #' Details go here.
 #' 
@@ -15,10 +16,7 @@
 #' @export
 #' @examples
 #' data <- scrapePitchFX(start = "2011-05-01", end = "2011-05-01")
-#' atbats <- data$atbat
-#' pitches <- data$pitch
-#' 
-#' pitchFX <- join(pitches, atbats, by = c("num", "url"))
+#' pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
 
 scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(atbat = fields$atbat, pitch = fields$pitch), 
                           player = NULL, type = NULL, add.children = FALSE, get.values = FALSE) {

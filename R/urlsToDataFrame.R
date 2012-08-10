@@ -1,32 +1,42 @@
-#' Function for parsing urls and specified nodes into data frames
+#' Parse XML files into data frame(s)
 #' 
-#' The primary use for this function is to scrape an "atbats" table and the corresponding "pitch" 
-#' (ie, Pitch F/X) table for the specified set of URLs. In fact, this function is used as the core 
-#' functionality behind scrapePitchFX. This function provides added flexibility by allowing 
-#' one to specify nodes of interest other than "atbat" and "pitch". If the value of the list is NULL,
-#' this function will automatically generate the most complete collection of data points.
-#' Important: You must have "atbat" AND "pitch" nodes if you want to identify who threw a 
-#' particular pitch. Also, if you specify field names for the table, you should be confident that those
-#' are the most complete set of fields.
+#' This function takes on a list of XML file names (ie, urls) and parses them into an appropriate amount of data frames.
+#' 
+#' This function can coerce either XML attributes or XML values into a data frame. The node(s) of interest need to be
+#' specified as the name(s) of \code{tables}. 
+#' 
+#' When \code{use.values = FALSE}, the length of \code{tables} is equal to the number of data frames returned and 
+#' the values of \code{tables} are the fields for each data frame. If a particular value is \code{NULL}, 
+#' the function will automatically determine the most complete set of fields and fill in \code{NA}s where 
+#' information is missing. If \code{add.children = TRUE}, it is recommended that \code{tables} values be 
+#' \code{NULL} since child attributes will also be incorporated as fields (with the relevant node as 
+#' the suffix name). 
+#' 
+#' When \code{use.values = TRUE}, the values of \code{tables} is ignored. The XML children of the specified node
+#' are the fields. If the children are inconsistent, missing values are filled with \code{NA}s.
 #' 
 #' @param urls set of urls for parsing
-#' @param tables list of character vectors containing field names for each table. The list names have to correspond to XML nodes of interest within the XML files.
+#' @param tables list of character vectors with appropriate names. The list names should correspond to XML nodes of interest within the XML files.
 #' @param add.children logical parameter specifying whether to scrape the XML children of the node(s) specified in \code{tables}.
 #' @param use.values logical parameter specifying whether to extract XML attributes or values of the node(s).
 #' @return Returns a data frames if the length of tables is one. Otherwise, it returns a list of data frames.
 #' @export
 #' @examples
-#' #If it isn't currently baseball season, consider changing the dates below:
-#' #Also, this is a small scaled example. Visit my website if you would like to see how to 
-#' #build a current and complete database.
-#' #mini.urls <- getScoreboardURLs(first.date = Sys.Date() - 10, last.date = Sys.Date())
-#' #game.urls <- getPitchFxURLs(mini.urls)
-#' #data <- urlsToDataFrame(urls = game.urls)
-#' #atbats <- data$atbat
-#' #pitches <- data$pitch
+#' #Get Josh Hamilton's stats going into a game played on July 18th, 2009:
+#' url <- "http://gd2.mlb.com/components/game/mlb/year_2009/month_07/day_18/gid_2009_07_18_minmlb_texmlb_1/batters/285078.xml"
+#' urlsToDataFrame(url, tables = list(Player = NULL), add.children = TRUE)
 #' 
+#' #Find XML files with twitter data
+#' branch <- "http://gd2.mlb.com/components/game/mlb/twitter/"
+#' doc <- htmlParse(branch)
+#' nodes <- getNodeSet(doc, "//a")
+#' values <- sapply(nodes, xmlValue)
+#' extensions <- str_extract_all(values, "([a-z]+)InsiderTweets.xml.([0-9]+)")
+#' twitter.urls <- paste(branch, extensions[llply(extensions, length) > 0], sep = "")
+#' #Parse the files into a data frame
+#' tweets <- urlsToDataFrame(urls = twitter.urls, tables = list(status = NULL), use.values = TRUE)
 
-urlsToDataFrame <- function(urls, tables = list(atbat = NULL, pitch = NULL), add.children = FALSE, use.values = FALSE) {
+urlsToDataFrame <- function(urls, tables = list(), add.children = FALSE, use.values = FALSE) {
   #Order tables alphabetically. This is important because the atbat node must be parsed first if you want an atbat ID for the pitch table 
   orders <- order(names(tables))
   ordered.tables <- llply(orders, function(x) { tables[[x]] })
@@ -89,27 +99,19 @@ urlsToDataFrame <- function(urls, tables = list(atbat = NULL, pitch = NULL), add
 #' @return returns a data frame
 
 docsToDFs <- function(docs) {
-  frames <- llply(docs, function(x) { xmlToDataFrame(x) })
+  frames <- llply(docs, function(x) { xmlToDataFrame(x) }) #should I add better functionality to handle children better?
   all.fields <- unique(unlist(llply(frames, names)))
   missing <- llply(frames, function(x) { all.fields[!(all.fields %in% names(x))] })
-  dfs <- mapply(function(x, y) { 
+  assemble <- function(x, y) {
     if (length(y) > 0) {
-      #options(stringsAsFactors = FALSE) doesn't work?
-      z <- list(data.frame(x, t(rep(NA, length(y)))))
-      names(z[[1]])[!(names(z[[1]]) %in% names(x))] <- as.character(y)
-      z
+      x[y] <- NA
+      list(x)
     } else {
-      x
+      list(x)
     }
-  }, frames, missing)
-  data <- NULL
-  for (i in dfs) {
-    while (!is.data.frame(i)) {
-      i <- i[[1]]
-    }
-    data <- rbind(data, i)
   }
-  return(data)
+  dfs <- mapply(assemble, frames, missing)
+  data <- ldply(dfs, identity)
 }
 
 #' Turn XML documents into a Data Frames
@@ -175,13 +177,12 @@ docsToDataFrame <- function(docs, node, fields, urls, add.children = FALSE, use.
       y
       }) 
   })
-  #Create url column to identify where the observation originated.
-  counts <- llply(nodes, function(x) { length(x) })
+  counts <- llply(nodes, function(x) { length(x) }) #Create url column to identify where the observation originated.
   url.column <- rep(urls, counts)
   final$url <- url.column
-  if (node == "atbat") {
+  if (node == "atbat") { 
     final <- createInnings(final) 
-    atbat.id <- createAtbatID(nodes)
+    atbat.id <- createAtbatID(nodes) #Identify which atbat each pitch belongs to (eventually, use to link together as 'num')
     return(list(final = final, atbat_id = atbat.id))
   } else {
     return(final)
@@ -217,7 +218,6 @@ adjust <- function(info, tags){ #Adds NAs wherever a tag is missing
 #'
 #' @param df data frame with all "game" attributes from "~/miniscoreboard.xml" files.
 #' @return returns the original data frame with the proper url columns attached at the end.
-#'
 
 attachUrls <- function(df) {
   names(df) <- gsub("url", "url_scoreboard", names(df))
