@@ -13,15 +13,16 @@ Depends:
     plyr,
     lubridate,
     stringr,
-    animation,
+    animation
 LazyData: true
 Collate:
     'urlsToDataFrame.R'
-    'help.R'
     'scrapePitchFX.R'
     'animateFX.R'
     'ggFX.R'
+    'getSnapshots.R'
     'fields.R'
     'urls.R'
     'players.R'
     'allFields.R'
+    'help.R'

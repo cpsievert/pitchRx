@@ -29,15 +29,33 @@
   frames.
 }
 \details{
-  The number of data frames is equal to the length of
-  \code{tables}. The name of each element in \code{tables}
-  should correspond to an XML node of interest to the user.
-  If the value of a particular list element is NULL, this
-  function will automatically determine the most complete
-  set of fields for that data frame.
+  This function can coerce either XML attributes or XML
+  values into a data frame. The node(s) of interest need to
+  be specified as the name(s) of \code{tables}.
+
+  When \code{use.values = FALSE}, the length of
+  \code{tables} is equal to the number of data frames
+  returned and the values of \code{tables} are the fields
+  for each data frame. If a particular value is
+  \code{NULL}, the function will automatically determine
+  the most complete set of fields and fill in \code{NA}s
+  where information is missing. If \code{add.children =
+  TRUE}, it is recommended that \code{tables} values be
+  \code{NULL} since child attributes will also be
+  incorporated as fields (with the relevant node as the
+  suffix name).
+
+  When \code{use.values = TRUE}, the values of
+  \code{tables} is ignored. The XML children of the
+  specified node are the fields. If the children are
+  inconsistent, missing values are filled with \code{NA}s.
 }
 \examples{
-#Find some XML files with twitter data
+#Get Josh Hamilton's stats going into a game played on July 18th, 2009:
+url <- "http://gd2.mlb.com/components/game/mlb/year_2009/month_07/day_18/gid_2009_07_18_minmlb_texmlb_1/batters/285078.xml"
+urlsToDataFrame(url, tables = list(Player = NULL), add.children = TRUE)
+
+#Find XML files with twitter data
 branch <- "http://gd2.mlb.com/components/game/mlb/twitter/"
 doc <- htmlParse(branch)
 nodes <- getNodeSet(doc, "//a")
