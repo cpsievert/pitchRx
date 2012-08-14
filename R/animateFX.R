@@ -1,27 +1,27 @@
-#' Animate Pitch F/X
+#' Animate PITCHf/x
 #' 
-#' Pitch trajectories animated on a two-dimensional plot.
+#' Pitch trajectories animated on a two-dimensional plot. 
 #' 
-#' Details to go here.
-#' 
-#' @param data pitch F/X data to be visualized.
+#' \code{animateFX} plots a series of "snapshots" with pitch locations from the point of release - 
+#' when the ball leaves the pitcher's hand - until all of them reach home plate. 
+#' The graphic takes on the viewpoint of the umpire; that is, the pitches are getting closer 
+#' to the viewer with time. This is relected with the increase in size of the "balls" as the 
+#' animation progresses. To reduce the time and thinking required to produce plots, \code{animateFX} 
+#' makes several assumptions about the opacity and size associated with each "snapshot" 
+#' of pitch locations.
+#'
+#' @param data PITCHf/x data to be visualized.
 #' @param layer list of ggplot2 modifications to the plot
+#' @param geom type of geometry used for plotting
 #' @param interval time (in seconds - real time) between plotting the pitch locations
 #' @param sleep passed along to Sys.sleep() to flush current plot
 #' @return ggplot2 object
 #' @export
 #' @examples
 #' #Simple scraping example
-#' #data <- scrapePitchFX(start = "2011-10-01", end = "2011-10-02")
-#' #pitches <- data$pitch
-#' #atbats <- data$atbat
-#' #pitchFX <- join(pitches, atbats, by = c("num", "url"))
-#' #Subset data by pitch type
-#' #pitchFX2 <- pitchFX[pitchFX$zone < 4 & pitchFX$pitch_type == c("FF", "CU", "SL"), ]
-#' #animateFX(pitchFX2)
-#' #animateFX(pitchFX2, layer = facet_grid(stand~p_throws))#How do I add titles to the facets (stand vs. p_throws)
+#' 
 
-animateFX <- function(data, layer=NULL, interval = 0.01, sleep = 0.000001){ 
+animateFX <- function(data, layer = NULL, geom = "point", interval = 0.01, sleep = 0.000000000001){ 
   #Add descriptions to pitch_types
   if (!"pitch_type" %in% names(data)) warning("Make sure you have the appropriate 'pitch_type' column. If you don't have 'pitch_type', consider using ggFX()")
   types <- cbind(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -36,18 +36,18 @@ animateFX <- function(data, layer=NULL, interval = 0.01, sleep = 0.000001){
   complete <- pitchFX[complete.cases(pitchFX[,idx]),] #get rid of records with any missing parameters
   parameters <- complete[, names(pitchFX) %in% idx]
   snapshots <- getSnapshots(parameters)
-  #Keep parameters and other reasonable faceting/coloring variables
-  idx2 <- c("type", "event", "zone", "stand", "batter_name", "p_throws", "pitcher_name", "pitch_types")
-  other <- complete[, names(pitchFX) %in% idx2]
-  for (i in 1:dim(snapshots)[3]) {
-    snapshot <- data.frame(snapshots[,,i], other)
+  #Keep 'other' variables for faceting/coloring 
+  other <- complete[, !(names(pitchFX) %in% idx)]
+  for (i in 1:dim(snapshots)[2]) {
+    snapshot <- data.frame(snapshots[,i,], other)
     names(snapshot) <- c("x", "y", "z", names(other))
     Sys.sleep(sleep)
     print(ggplot()
-          + layer(data = snapshot, mapping = aes(x=x, y=z, color=pitch_types, size=10*-y, alpha=0.5), geom = "point") 
+          + layer(data = snapshot, mapping = aes(x=x, y=z, size = -10*y, alpha = 0.5), geom = geom)
           + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") 
           + ylim(0, 10) + ylab("Height from Ground") 
           + scale_size(guide="none") + scale_alpha(guide="none") 
           + scale_color_brewer(palette="Set2") + layer)
   }
+  #return(snapshots)
 }

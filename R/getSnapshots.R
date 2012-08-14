@@ -15,9 +15,12 @@ getSnapshots <- function(data, interval = 0.01) {
     parameters[,i] <- as.numeric(parameters[,i]) #Coerce the pitchFX parameters to numerics
   times <- with(parameters[,c("y0", "vy0", "ay")], (-1*vy0-sqrt(vy0^2 - 2*ay*(y0 - 1.417)))/ay) #Figure out how long it takes each pitch to reach home plate
   nplots <- ceiling(max(times/interval)) #Number of 'snapshots' required
-  t <- seq(from = 0, to = max(times), by = interval)
-  snapshots <- array(rep(c(parameters, recursive = TRUE), nplots), dim = c(dim(parameters), nplots))
-  velocities <- aperm(apply(snapshots[,4:6,], c(1,2), function(x) { x*t }), perm = c(2,3,1))
-  as <- aperm(apply(snapshots[,7:9,], c(1,2), function(x) { 0.5*x*t^2 }), perm = c(2,3,1))
-  locations <- snapshots[,1:3,] + velocities + as
+  npitches <- dim(data)[1] #Number of pitches (within each plot)
+  t.matrix <- matrix(rep(seq(from = 0, to = max(times), by = interval), times = npitches), byrow = TRUE, nrow = npitches) 
+  t <- pmin(t.matrix, times) #Restrict time if ball already crossed home plate
+  snapshots <- array(rep(c(parameters, recursive = TRUE), nplots), dim = c(dim(parameters), nplots)) #Rep the PITCHf/x parameters for the total amount of plots needed
+  x <- snapshots[,1,] + snapshots[,4,] * t + 0.5 * snapshots[,7,] * t^2 #Height from ground at time t
+  y <- snapshots[,2,] + snapshots[,5,] * t + 0.5 * snapshots[,8,] * t^2 #Distance from batter at time t
+  z <- snapshots[,3,] + snapshots[,6,] * t + 0.5 * snapshots[,9,] * t^2 #Horizontal location at time t
+  locations <- array(c(x, y, z), dim = c(npitches, nplots, 3))
 }

@@ -1,12 +1,12 @@
 \name{animateFX}
 \alias{animateFX}
-\title{Animate Pitch F/X}
+\title{Animate PITCHf/x}
 \usage{
   animateFX(data, layer = NULL, interval = 0.01,
-    sleep = 1e-06)
+    sleep = 1e-12)
 }
 \arguments{
-  \item{data}{pitch F/X data to be visualized.}
+  \item{data}{PITCHf/x data to be visualized.}
 
   \item{layer}{list of ggplot2 modifications to the plot}
 
@@ -23,17 +23,19 @@
   Pitch trajectories animated on a two-dimensional plot.
 }
 \details{
-  Details to go here.
+  \code{animateFX} plots a series of "snapshots" with pitch
+  locations from the point of release - when the ball
+  leaves the pitcher's hand - until all of them reach home
+  plate. The graphic takes on the viewpoint of the umpire;
+  that is, the pitches are getting closer to the viewer
+  with time. This is relected with the increase in size of
+  the "balls" as the animation progresses. To reduce the
+  time and thinking required to produce plots,
+  \code{animateFX} makes several assumptions about the
+  geometry, color, opacity and size associated with each
+  "snapshot" of pitch locations.
 }
 \examples{
 #Simple scraping example
-#data <- scrapePitchFX(start = "2011-10-01", end = "2011-10-02")
-#pitches <- data$pitch
-#atbats <- data$atbat
-#pitchFX <- join(pitches, atbats, by = c("num", "url"))
-#Subset data by pitch type
-#pitchFX2 <- pitchFX[pitchFX$zone < 4 & pitchFX$pitch_type == c("FF", "CU", "SL"), ]
-#animateFX(pitchFX2)
-#animateFX(pitchFX2, layer = facet_grid(stand~p_throws))#How do I add titles to the facets (stand vs. p_throws)
 }
 

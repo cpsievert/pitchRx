@@ -33,7 +33,6 @@ scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(
         end <- as.POSIXct(Sys.Date())
     }
     if (any(names(tables) == "player")) warning("Consider scraping for 'Player' instead of 'player'")
-    #data(fields)
     data(urls) 
     last.date <- as.POSIXct(max(urls$date))
     if (last.date < end) { #update data objects if there are new items to scrape. Update: looks good!
@@ -58,6 +57,7 @@ scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(
         player.urls <- c(desired.players$url_player, scoreboards, pfx.urls)
         scraping.urls <- scraping.urls[scraping.urls %in% player.urls] #How do I subset the miniscoreboards?
     }
+    data(fields)
     data <- urlsToDataFrame(urls = scraping.urls, tables, add.children, get.values)
     if (any(names(tables) == "atbat")) {
         if (!is.null(player)) { #Subset 'atbats' by specified player(s) and type'
