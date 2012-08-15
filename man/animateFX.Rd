@@ -2,24 +2,33 @@
 \alias{animateFX}
 \title{Animate PITCHf/x}
 \usage{
-  animateFX(data, geom = "point", layer = NULL,
+  animateFX(data, geom = "point",
+    point.alpha = aes(alpha = 0.5),
+    point.color = aes(color = pitch_types), layer = list(),
     interval = 0.01, sleep = 1e-12)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
 
-  \item{geom}{type of geometry used for plotting}
+  \item{geom}{type of geometry used for plotting.}
 
-  \item{layer}{list of ggplot2 modifications to the plot}
+  \item{point.alpha}{Default alpha when \code{geom =
+  "point"}}
+
+  \item{point.color}{Default color variable when \code{geom
+  = "point"}}
+
+  \item{layer}{list of other ggplot2 (layered)
+  modifications.}
 
   \item{interval}{time (in seconds - real time) between
-  plotting the pitch locations}
+  plotting the pitch locations.}
 
   \item{sleep}{passed along to Sys.sleep() to flush current
-  plot}
+  plot.}
 }
 \value{
-  ggplot2 object
+  Returns a ggplot2 object.
 }
 \description{
   Pitch trajectories animated on a two-dimensional plot.
