@@ -1,12 +1,12 @@
 \name{ggFX}
 \alias{ggFX}
-\title{Animate Pitch F/X}
+\title{Animate PITCHf/x}
 \usage{
   ggFX(data, layer = list(), interval = 0.01,
     sleep = 1e-06)
 }
 \arguments{
-  \item{data}{pitch F/X data to be visualized.}
+  \item{data}{PITCHf/x data to be visualized.}
 
   \item{layer}{list of ggplot2 modifications to the plot}
 
@@ -20,9 +20,9 @@
   ggplot2 object
 }
 \description{
-  Pitch trajectories animated on a two-dimensional plot.
-}
-\details{
-  More flexible animation.
+  More flexible animation than \code{animateFX}. This
+  function requires the user to specify a geometry (or, a
+  statistical transfromation) to be made to the data before
+  plotting. It allows allows for coloring by
 }
 

@@ -2,11 +2,13 @@
 \alias{animateFX}
 \title{Animate PITCHf/x}
 \usage{
-  animateFX(data, layer = NULL, interval = 0.01,
-    sleep = 1e-12)
+  animateFX(data, geom = "point", layer = NULL,
+    interval = 0.01, sleep = 1e-12)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
+
+  \item{geom}{type of geometry used for plotting}
 
   \item{layer}{list of ggplot2 modifications to the plot}
 
@@ -32,8 +34,8 @@
   the "balls" as the animation progresses. To reduce the
   time and thinking required to produce plots,
   \code{animateFX} makes several assumptions about the
-  geometry, color, opacity and size associated with each
-  "snapshot" of pitch locations.
+  opacity and size associated with each "snapshot" of pitch
+  locations.
 }
 \examples{
 #Simple scraping example

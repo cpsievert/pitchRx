@@ -14,9 +14,9 @@ getSnapshots <- function(data, interval = 0.01) {
   for (i in idx)
     parameters[,i] <- as.numeric(parameters[,i]) #Coerce the pitchFX parameters to numerics
   times <- with(parameters[,c("y0", "vy0", "ay")], (-1*vy0-sqrt(vy0^2 - 2*ay*(y0 - 1.417)))/ay) #Figure out how long it takes each pitch to reach home plate
-  nplots <- ceiling(max(times/interval)) #Number of 'snapshots' required
+  nplots <- ceiling(max(times/interval)) + 1 #Number of 'snapshots' required for EVERY pitch to reach home plate
   npitches <- dim(data)[1] #Number of pitches (within each plot)
-  t.matrix <- matrix(rep(seq(from = 0, to = max(times), by = interval), times = npitches), byrow = TRUE, nrow = npitches) 
+  t.matrix <- matrix(rep(0:(nplots - 1)*interval, times = npitches), byrow = TRUE, nrow = npitches) 
   t <- pmin(t.matrix, times) #Restrict time if ball already crossed home plate
   snapshots <- array(rep(c(parameters, recursive = TRUE), nplots), dim = c(dim(parameters), nplots)) #Rep the PITCHf/x parameters for the total amount of plots needed
   x <- snapshots[,1,] + snapshots[,4,] * t + 0.5 * snapshots[,7,] * t^2 #Height from ground at time t
