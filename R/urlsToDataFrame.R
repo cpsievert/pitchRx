@@ -139,20 +139,20 @@ docsToDataFrame <- function(docs, node, fields, urls, add.children = FALSE, use.
   })
   if (add.children == TRUE) { #Scrape XML children
     children <- llply(nodes, function(x) {
-                  llply(x, function(y) {
-                    child <- xmlChildren(y)
-                    if (node == "Player"){ #The children "faced" and "atbats" (of "Player") are obsolete since they can be derived from the Pitch F/X data
-                      child[c(-grep("faced", names(child)),-grep("atbats", names(child)))]
-                    }
-                  })
-                })
+      llply(x, function(y) {
+        child <- xmlChildren(y)
+        if (node == "Player"){ #The children "faced" and "atbats" (of "Player") are obsolete since they can be derived from the Pitch F/X data
+          child[c(-grep("faced", names(child)),-grep("atbats", names(child)))]
+        }
+      })
+    })
     attrs <- llply(children, function(x) {
-                llply(x, function(y) {
-                  llply(y, function(z) {
-                    child.attr <- xmlAttrs(z)
-                  })
-                })
-              })
+      llply(x, function(y) {
+        llply(y, function(z) {
+          child.attr <- xmlAttrs(z)
+        })
+      })
+    })
     attrs <- llply(attrs, function(x) { list(unlist(x)) }) #restructure attrs into a similar form to attributes
     attributes <- mapply(function(x, y) { list(unlist(append(x, y))) }, attributes, attrs) #Combine tags from both
     attributes <- llply(attributes, list) #Return to a identical form that attributes was originally
@@ -175,7 +175,7 @@ docsToDataFrame <- function(docs, node, fields, urls, add.children = FALSE, use.
   final <- ldply(data, function(x) { #Coerce all the data from a list of lists to one big dataframe
     ldply(x, function(y) { 
       y
-      }) 
+    }) 
   })
   counts <- llply(nodes, function(x) { length(x) }) #Create url column to identify where the observation originated.
   url.column <- rep(urls, counts)
@@ -255,24 +255,24 @@ createInnings <- function(atbats) {
   atbats <- atbats[order(atbats[,"url"]),]
   atbats$o <- as.integer(atbats$o)
   inning <- with(atbats, tapply(o, INDEX = url, function(x) { swap <- diff(c(x,-1)) #-1 is added to account for walk-offs/quirky endings
-                                                 logic <- swap < 0 #Return true whenever we switch sides of an inning
-                                                 places <- which(logic) #Which indices are TRUE?
-                                                 b <- c(places[1], diff(places)) #Atbats for each side of an inning
-                                                 if(length(b)/2 != floor(length(b)/2)) b <- c(b, 0) #Add zero if the bottom inning was not played
-                                                 atbatsPerSide <- matrix(b, ncol = 2, byrow = T) #Column1 = "Top", Column2 = "Bottom"
-                                                 innings <- dim(atbatsPerSide)[1] #num of innings in the game
-                                                 counts <- apply(atbatsPerSide, 1, sum) #num of atbats per inning
-                                                 return(rep(1:innings, counts)) #inning ID
+                                                              logic <- swap < 0 #Return true whenever we switch sides of an inning
+                                                              places <- which(logic) #Which indices are TRUE?
+                                                              b <- c(places[1], diff(places)) #Atbats for each side of an inning
+                                                              if(length(b)/2 != floor(length(b)/2)) b <- c(b, 0) #Add zero if the bottom inning was not played
+                                                              atbatsPerSide <- matrix(b, ncol = 2, byrow = T) #Column1 = "Top", Column2 = "Bottom"
+                                                              innings <- dim(atbatsPerSide)[1] #num of innings in the game
+                                                              counts <- apply(atbatsPerSide, 1, sum) #num of atbats per inning
+                                                              return(rep(1:innings, counts)) #inning ID
   }))
   innings <- as.numeric(unlist(inning))
   top.inning <- with(atbats, tapply(o, INDEX = url, function(x) { swap <- diff(c(x,-1)) #-1 is added to account for walk-offs/quirky endings
-                                                      logic <- swap < 0 #Return true whenever we switch sides of an inning
-                                                      places <- which(logic) #Which indices are TRUE?
-                                                      b <- c(places[1], diff(places)) #Atbats for each side of an inning
-                                                      if(length(b)/2 != floor(length(b)/2)) b <- c(b, 0) #Add zero if the bottom inning was not played
-                                                      atbatsPerSide <- matrix(b, ncol = 2, byrow = T) #Column1 = "Top", Column2 = "Bottom"
-                                                      z <- apply(atbatsPerSide, 1, function(x) { rep(c("Y", "N"), x)} )
-                                                      return(unlist(z))
+                                                                  logic <- swap < 0 #Return true whenever we switch sides of an inning
+                                                                  places <- which(logic) #Which indices are TRUE?
+                                                                  b <- c(places[1], diff(places)) #Atbats for each side of an inning
+                                                                  if(length(b)/2 != floor(length(b)/2)) b <- c(b, 0) #Add zero if the bottom inning was not played
+                                                                  atbatsPerSide <- matrix(b, ncol = 2, byrow = T) #Column1 = "Top", Column2 = "Bottom"
+                                                                  z <- apply(atbatsPerSide, 1, function(x) { rep(c("Y", "N"), x)} )
+                                                                  return(unlist(z))
   }))
   top.innings <- as.character(unlist(top.inning))
   return(cbind(atbats, inning = innings, top_inning = top.innings))
