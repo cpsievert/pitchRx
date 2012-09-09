@@ -3,7 +3,8 @@
 \title{Parse XML files into data frame(s)}
 \usage{
   urlsToDataFrame(urls, tables = list(),
-    add.children = FALSE, use.values = FALSE)
+    extract = "attributes", extract.children = NULL,
+    ignore = NULL)
 }
 \arguments{
   \item{urls}{set of urls for parsing}
@@ -12,12 +13,14 @@
   names. The list names should correspond to XML nodes of
   interest within the XML files.}
 
-  \item{add.children}{logical parameter specifying whether
-  to scrape the XML children of the node(s) specified in
-  \code{tables}.}
+  \item{extract}{extract XML attributes or XML values (from
+  a specific node)?}
 
-  \item{use.values}{logical parameter specifying whether to
-  extract XML attributes or values of the node(s).}
+  \item{extract.children}{extract XML children for a
+  specific node? If NULL, children will not be considered.}
+
+  \item{ignore}{XML child nodes that should be excluded
+  from data frame.}
 }
 \value{
   Returns a data frames if the length of tables is one.
@@ -52,17 +55,17 @@
 }
 \examples{
 #Get Josh Hamilton's stats going into a game played on July 18th, 2009:
-url <- "http://gd2.mlb.com/components/game/mlb/year_2009/month_07/day_18/gid_2009_07_18_minmlb_texmlb_1/batters/285078.xml"
-urlsToDataFrame(url, tables = list(Player = NULL), add.children = TRUE)
+#url <- "http://gd2.mlb.com/components/game/mlb/year_2009/month_07/day_18/gid_2009_07_18_minmlb_texmlb_1/batters/285078.xml"
+#urlsToDataFrame(url, tables = list(Player = NULL), extract.children = "attributes")
 
 #Find XML files with twitter data
-branch <- "http://gd2.mlb.com/components/game/mlb/twitter/"
-doc <- htmlParse(branch)
-nodes <- getNodeSet(doc, "//a")
-values <- sapply(nodes, xmlValue)
-extensions <- str_extract_all(values, "([a-z]+)InsiderTweets.xml.([0-9]+)")
-twitter.urls <- paste(branch, extensions[llply(extensions, length) > 0], sep = "")
+#branch <- "http://gd2.mlb.com/components/game/mlb/twitter/"
+#doc <- htmlParse(branch)
+#nodes <- getNodeSet(doc, "//a")
+#values <- sapply(nodes, xmlValue)
+#extensions <- str_extract_all(values, "([a-z]+)InsiderTweets.xml.([0-9]+)")
+#twitter.urls <- paste(branch, extensions[llply(extensions, length) > 0], sep = "")
 #Parse the files into a data frame
-tweets <- urlsToDataFrame(urls = twitter.urls, tables = list(status = NULL), use.values = TRUE)
+#tweets <- urlsToDataFrame(urls = twitter.urls, tables = list(status = NULL), extract = "values")
 }
 

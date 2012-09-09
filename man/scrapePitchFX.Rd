@@ -4,8 +4,7 @@
 \usage{
   scrapePitchFX(start = "2012-01-01", end = Sys.Date(),
     tables = list(atbat = fields$atbat, pitch = fields$pitch),
-    player = NULL, type = NULL, add.children = FALSE,
-    get.values = FALSE)
+    player = NULL, type = NULL)
 }
 \arguments{
   \item{start}{date "yyyy-mm-dd" to commence scraping of
@@ -23,13 +22,6 @@
   \item{type}{A value of "pitcher" or "batter", the user
   can constrain scraping to those cases. The default value
   of NULL will scrape for both types.}
-
-  \item{add.children}{logical parameter specifying whether
-  to scrape the XML children of the node(s) specified in
-  \code{tables}.}
-
-  \item{get.values}{logical parameter specifying whether to
-  extract XML attributes or values of the node(s).}
 }
 \value{
   Returns a list containing two different data frames. The
@@ -46,7 +38,7 @@
   Details go here.
 }
 \examples{
-data <- scrapePitchFX(start = "2011-05-01", end = "2011-05-01")
-pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
+#data <- scrapePitchFX(start = "2011-05-01", end = "2011-05-01")
+#pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
 }
 

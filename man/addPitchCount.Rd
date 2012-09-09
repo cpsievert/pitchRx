@@ -9,8 +9,8 @@
   "~/inning/inning_all.xml" files.}
 }
 \value{
-  returns the original data frame with the proper pitch
-  count columns attached at the end.
+  returns a vector with the proper pitch count for each
+  record (ie, pitch) in \code{df}
 }
 \description{
   Add columns with relevant pitch count to the 'pitch' data

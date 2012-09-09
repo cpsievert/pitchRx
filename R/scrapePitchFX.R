@@ -10,16 +10,13 @@
 #' @param tables XML nodes to be parsed into a data frame
 #' @param player narrow scraping to a specifc player or set of players. The default value NULL will scrape for all players in the time period.
 #' @param type A value of "pitcher" or "batter", the user can constrain scraping to those cases. The default value of NULL will scrape for both types.
-#' @param add.children logical parameter specifying whether to scrape the XML children of the node(s) specified in \code{tables}.
-#' @param get.values logical parameter specifying whether to extract XML attributes or values of the node(s).
 #' @return Returns a list containing two different data frames. The larger data frame contains data on every pitch thrown (pitch F/X). The smaller one contains data on every atbat.
 #' @export
 #' @examples
-#' data <- scrapePitchFX(start = "2011-05-01", end = "2011-05-01")
-#' pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
+#' #data <- scrapePitchFX(start = "2011-05-01", end = "2011-05-01")
+#' #pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
 
-scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(atbat = fields$atbat, pitch = fields$pitch), 
-                          player = NULL, type = NULL, add.children = FALSE, get.values = FALSE) {
+scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(atbat = fields$atbat, pitch = fields$pitch), player = NULL, type = NULL) {
     start <- as.POSIXct(start)
     end <- as.POSIXct(end)
     if (is.null(names(tables))) stop("Please specify at least one XML node of interest.")
@@ -35,7 +32,7 @@ scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(
     if (any(names(tables) == "player")) warning("Consider scraping for 'Player' instead of 'player'")
     data(urls) 
     last.date <- as.POSIXct(max(urls$date))
-    if (last.date < end) { #update data objects if there are new items to scrape. Update: looks good!
+    if (last.date < end) { #update data objects if there are new items to scrape.
       new.urls <- updateUrls(last.date, end)
       new.players <- updatePlayers(new.urls$url_player)
       urls <- rbind(urls, new.urls)
@@ -58,7 +55,7 @@ scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(
         scraping.urls <- scraping.urls[scraping.urls %in% player.urls] #How do I subset the miniscoreboards?
     }
     data(fields)
-    data <- urlsToDataFrame(urls = scraping.urls, tables, add.children, get.values)
+    data <- urlsToDataFrame(urls = scraping.urls, tables)
     if (any(names(tables) == "atbat")) {
         if (!is.null(player)) { #Subset 'atbats' by specified player(s) and type'
             player.ids <- unique(desired.players$id)
@@ -78,7 +75,7 @@ scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(
         names(data$atbat) <- gsub("id", "pitcher", names(data$atbat))
         names(data$atbat) <- gsub("full_name", "pitcher_name", names(data$atbat))
     }
-    #Should I subset pitches too?? It might too slow to worthwhile.
+    #Should I subset pitches too?? It might too slow to be worthwhile.
     return(data)
 }
 
@@ -95,7 +92,6 @@ scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(
 #' @examples
 #' newUrls <- updateUrls(Sys.Date() - 1, Sys.Date())
 #' head(newUrls)
-#' 
 
 updateUrls <- function(last.date, end) {
     cat("updating urls", "\n")
@@ -130,7 +126,6 @@ updateUrls <- function(last.date, end) {
 #'
 #' @param new.urls new player urls added to the \code{urls} data frame
 #' @return returns new player information in a data frame
-#' 
 
 updatePlayers <- function(new.urls) {
   cat("updating players", "\n")

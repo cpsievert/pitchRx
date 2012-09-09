@@ -2,21 +2,13 @@
 \alias{animateFX}
 \title{Animate PITCHf/x}
 \usage{
-  animateFX(data, geom = "point",
-    point.alpha = aes(alpha = 0.5),
-    point.color = aes(color = pitch_types), layer = list(),
-    interval = 0.01, sleep = 1e-12)
+  animateFX(data, geom = "point", layer = list(),
+    interval = 0.01, sleep = 1e-12, freeze = NULL)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
 
   \item{geom}{type of geometry used for plotting.}
-
-  \item{point.alpha}{Default alpha when \code{geom =
-  "point"}}
-
-  \item{point.color}{Default color variable when \code{geom
-  = "point"}}
 
   \item{layer}{list of other ggplot2 (layered)
   modifications.}
@@ -26,9 +18,12 @@
 
   \item{sleep}{passed along to Sys.sleep() to flush current
   plot.}
+
+  \item{freeze}{visualize first or last frame of
+  animation.}
 }
 \value{
-  Returns a ggplot2 object.
+  Returns a series of ggplot2 objects.
 }
 \description{
   Pitch trajectories animated on a two-dimensional plot.
@@ -47,6 +42,8 @@
   locations.
 }
 \examples{
-#Simple scraping example
+#First, grab some data
+
+#Now, the fun part
 }
 
