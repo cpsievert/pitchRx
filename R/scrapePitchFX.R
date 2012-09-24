@@ -29,7 +29,6 @@ scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(
         warning("Sorry, I can't scrape data on the future!")
         end <- as.POSIXct(Sys.Date())
     }
-    if (any(names(tables) == "player")) warning("Consider scraping for 'Player' instead of 'player'")
     data(urls) 
     last.date <- as.POSIXct(max(urls$date))
     if (last.date < end) { #update data objects if there are new items to scrape.

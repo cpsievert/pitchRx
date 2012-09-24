@@ -2,25 +2,37 @@
 \alias{animateFX}
 \title{Animate PITCHf/x}
 \usage{
-  animateFX(data, geom = "point", layer = list(),
-    interval = 0.01, sleep = 1e-12, freeze = NULL)
+  animateFX(data, layer = list(), geom = "point",
+    point.color = pitch_types, point.alpha = 0.5,
+    point.size = 100 - snapshot$y, breaks = c(0, 5, 10),
+    interval = 0.01, sleep = 1e-12, ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
 
-  \item{geom}{type of geometry used for plotting.}
-
   \item{layer}{list of other ggplot2 (layered)
   modifications.}
+
+  \item{geom}{type of geometry used for plotting.}
+
+  \item{point.color}{variable used to control coloring
+  scheme when \code{geom = "point"}.}
+
+  \item{point.alpha}{variable used to control alpha when
+  \code{geom = "point"}.}
+
+  \item{point.size}{control size of "points".
+  Theoretically, this should be based on the distance from
+  home plate (ie, \code{snapshot$y})}
+
+  \item{breaks}{bin breaks for counts when \code{geom ==
+  "hex"}.}
 
   \item{interval}{time (in seconds - real time) between
   plotting the pitch locations.}
 
   \item{sleep}{passed along to Sys.sleep() to flush current
   plot.}
-
-  \item{freeze}{visualize first or last frame of
-  animation.}
 }
 \value{
   Returns a series of ggplot2 objects.

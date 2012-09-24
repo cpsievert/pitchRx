@@ -2,7 +2,7 @@
 \alias{getStrikezones}
 \title{Calculate strikezone boundaries}
 \usage{
-  getStrikezones(data, facets)
+  getStrikezones(data, facets, strikeFX = FALSE)
 }
 \arguments{
   \item{data}{PITCHf/x orginally entered into
@@ -10,6 +10,9 @@
 
   \item{facets}{variables used for faceting (passed along
   from \code{layer})}
+
+  \item{strikeFX}{logical parameter indicating whether the
+  function is called from strikeFX}
 }
 \value{
   Returns a list of boundaries for both right handed

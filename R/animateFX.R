@@ -11,12 +11,14 @@
 #' of pitch locations.
 #'
 #' @param data PITCHf/x data to be visualized.
-#' @param geom type of geometry used for plotting.
 #' @param layer list of other ggplot2 (layered) modifications.
-#' @param breaks bin breaks for counts when geom == "hex"
+#' @param geom type of geometry used for plotting.
+#' @param point.color variable used to control coloring scheme when \code{geom = "point"}.
+#' @param point.alpha variable used to control alpha when \code{geom = "point"}.
+#' @param point.size control size of "points". Theoretically, this should be based on the distance from home plate (ie, \code{snapshot$y})
+#' @param breaks bin breaks for counts when \code{geom == "hex"}.
 #' @param interval time (in seconds - real time) between plotting the pitch locations.
 #' @param sleep passed along to Sys.sleep() to flush current plot.
-#' @param freeze visualize first or last frame of animation.
 #' @return Returns a series of ggplot2 objects.
 #' @export
 #' @examples
@@ -26,7 +28,7 @@
 #' 
 #' 
 
-animateFX <- function(data, geom = "point", layer = list(), breaks = c(0,5,10), interval = 0.01, sleep = 0.000000000001, freeze = NULL){ 
+animateFX <- function(data, layer = list(), geom = "point", point.color = aes(color = pitch_types), point.alpha = aes(alpha = 0.5), point.size = 100-FX$y, breaks = c(0,5,10), interval = 0.01, sleep = 0.000000000001, ...){ 
   #Add descriptions to pitch_types
   if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
   if (!"pitch_type" %in% names(data)) warning("Make sure you have the appropriate 'pitch_type' column. If you don't have 'pitch_type', consider using ggFX()")
@@ -38,88 +40,43 @@ animateFX <- function(data, geom = "point", layer = list(), breaks = c(0,5,10), 
   idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
   if (!all(idx %in% names(data))) warning("You must have the following variables in your dataset to animate pitch locations: 'x0', 'y0', 'z0', 'vx0', 'vy0', 'vz0', 'ax', 'ay', 'az'")
   complete <- pitchFX[complete.cases(pitchFX[,idx]),] #get rid of records with any missing parameters
-  layers <- as.list(match.call())$layer
-  facets <- layers[grep("facet", as.list(layers)) + 1]
-  facets2 <- llply(str_split(as.character(facets), "~"), str_trim)
-  facet <- unlist(llply(facets2, function(x) { x[!x %in% "."] }))
-  if (length(facet) == 0) facet <- NULL
-  color <- layers[grep("color", layers)]
-  if (length(color) == 0) color <- "pitch_type"
-  reordered <- ddply(complete, facet, function(x) {
-    x[, color] <- reorder(x[, color], x[, color], length)
-    x[rev(order(x[, color])), ]
-  })
+  color <- as.list(match.call())$point.color
+  if (!is.null(color)){
+    colors <- gsub("[)]", "", gsub("aes[(]color = ","", color))[2]
+  } else colors <- "pitch_types"
+  layers <- as.character(as.list(match.call())$layer)
+  if (length(grep("facet", layers) > 0)) {
+    if (length(layers) > 2) {
+      facet <- layers[grep("facet", layers)]
+      facets <- gsub("[)]", "", gsub("facet_[a-z]+[(]","", facet))
+    } else facets <- layers[-grep("facet", layers)]
+    facets2 <- llply(str_split(as.character(facets), "~"), str_trim)
+    facets3 <- unlist(llply(facets2, function(x) { x[!x %in% "."] }))
+    reordered <- ddply(complete, facets3, function(x) { #Does this do anything if facets3 is NULL?
+      x[, colors] <- reorder(x[, colors], x[, colors], length)
+      x[rev(order(x[, colors])), ]
+    })
+  } else facets3 <- NULL
   parameters <- reordered[, names(reordered) %in% idx]
   snapshots <- getSnapshots(parameters)
   other <- reordered[, !(names(reordered) %in% idx)] #Keep 'other' variables for faceting/coloring
   if ("p_throws" %in% names(other)) other$p_throws <- paste("Pitcher Throws:", other$p_throws) #Add suffixes for context
   if ("stand" %in% names(other)) other$stand <- paste("Batter Stands:", other$stand)
   if ("b_height" %in% names(other)) {
-    boundaries <- getStrikezones(data = other, facet) #Strikezone boundaries
+    boundaries <- getStrikezones(other, facets3) #Strikezone boundaries
   } else warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively.")
-#   if (!is.null(freeze)) {
-#     n <- dim(snapshots)[2]
-#     if (freeze == "first") snapshot <- data.frame(snapshots[,1,], other)
-#     if (freeze == "last") snapshot <- data.frame(snapshots[,n,], other)
-#     names(snapshot) <- c("x", "y", "z", names(other))
-#     p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + scale_color_brewer(palette="Set2")
-#     if (geom %in% "point") p <- p + layer(data = snapshot, mapping = aes(x = x, y = z, size = 100 - y), geom = geom) + aes(alpha = 0.5, color = pitch_type)
-#     if (geom %in% c("hex", "density2d")) p <- p + layer(data = snapshot, mapping = aes(x = x, y = z), geom = geom)
-#     if (geom %in% "tile") p <- p + geom_tile(data = snapshot, mapping = aes(x = x, y = z, fill = ..count..))
-#     print(p + geom_rect(data = boundaries, aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
-#           + layer)
-#   } else {
   for (i in 1:dim(snapshots)[2]) {
-    snapshot <- data.frame(snapshots[,i,], other)
-    names(snapshot) <- c("x", "y", "z", names(other))
-#     snapshot2 <- ddply(snapshot, facet, function(x) {
-#       x[, color] <- reorder(x[, color], x[, color], length)
-#       x[rev(order(x[, color])), ]
-#     })
+    FX <- data.frame(snapshots[,i,], other)
+    names(FX) <- c("x", "y", "z", names(other))
     Sys.sleep(sleep)
-    p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + opts(legend.position = "bottom", legend.direction = "horizontal") + scale_color_brewer(palette="Set2")
-    if (geom %in% "point") p <- p + layer(data = snapshot, mapping = aes(x = x, y = z, size = 100 - y), geom = geom) + aes(alpha = 0.5, color = pitch_type)
-    if (geom %in% c("hex", "density2d")) p <- p + layer(data = snapshot, mapping = aes(x = x, y = z), geom = geom) + scale_fill_continuous(breaks = c(0, 5, 10))
-    if (geom %in% "tile") p <- p + geom_tile(data = snapshot, mapping = aes(x = x, y = z, fill = ..count..))
+    p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_color_brewer(palette="Set2")
+    if (geom %in% "point") {
+      FX$sizes <- point.size
+      p <- p + layer(data = FX, mapping = aes(x = x, y = z, size = sizes), geom = geom) + point.color + point.alpha #+ aes(...) #+ scale_size_continuous(limits=c(min(sizes), max(sizes)))
+    }
+    if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = x, y = z), geom = geom) + scale_fill_continuous(breaks = breaks)
+    if (geom %in% "tile") p <- p + geom_tile(data = FX, mapping = aes(x = x, y = z))
     print(p + geom_rect(data = boundaries, aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
           + layer)
-  }
-  #}
-  #return(snapshots)
-}
-
-#' Calculate strikezone boundaries
-#' 
-#' Strikezone boundaries calculated according to Mike Fast's specifications
-#' 
-#' @param data PITCHf/x orginally entered into \code{animateFX}
-#' @param facets variables used for faceting (passed along from \code{layer})
-#' @references \url{http://www.baseballprospectus.com/article.php?articleid=14572}
-#' @return Returns a list of boundaries for both right handed batters and left handed batters
-#' 
-getStrikezones <- function(data, facets) {
-  if (is.character(typeof(data$b_height))) {
-    h <- ldply(str_split(data$b_height, "-"), function(x) { as.numeric(x) })
-    h[,2] <- h[,2]/12
-    data$heights <- h[,1] + h[,2]
-    bounds <- ddply(data, c("stand", facets), summarize, height=mean(heights))
-    righty <- as.numeric(bounds$stand == "Batter Stands: R")
-    lefty <- as.numeric(bounds$stand == "Batter Stands: L")
-    bounds$top <- righty*(2.6 + bounds$height*0.136) + lefty*(2 + bounds$height*0.229)
-    bounds$bottom <- righty*(0.92 + bounds$height*0.136) + lefty*(0.35 + bounds$height*0.229)
-    bounds$left <- righty*-1.03 + lefty*-1.20
-    bounds$right <- righty + lefty*0.81
-    return(bounds)
-  }
-  if (is.numeric(typeof(data$b_height))) {
-    warning("Since b_height is numeric, I will assume inches have been converted to feet.")
-    bounds <- ddply(data, c("stand", facets), summarize, height=mean(b_height))
-    righty <- as.numeric(bounds$stand == "Batter Stands: R")
-    lefty <- as.numeric(bounds$stand == "Batter Stands: L")
-    bounds$top <- righty*(2.6 + bounds$height*0.136) + lefty*(2 + bounds$height*0.229)
-    bounds$bottom <- righty*(0.92 + bounds$height*0.136) + lefty*(0.35 + bounds$height*0.229)
-    bounds$left <- righty*-1.03 + lefty*-1.20
-    bounds$right <- righty + lefty*0.81
-    return(bounds)
   }
 }

@@ -26,3 +26,5 @@ Collate:
     'players.R'
     'allFields.R'
     'help.R'
+    'getStrikezones.R'
+    'strikeFX.R'
