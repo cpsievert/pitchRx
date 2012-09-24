@@ -52,11 +52,11 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
     } else facets <- layers[-grep("facet", layers)]
     facets2 <- llply(str_split(as.character(facets), "~"), str_trim)
     facets3 <- unlist(llply(facets2, function(x) { x[!x %in% "."] }))
-    reordered <- ddply(complete, facets3, function(x) { #Does this do anything if facets3 is NULL?
-      x[, colors] <- reorder(x[, colors], x[, colors], length)
-      x[rev(order(x[, colors])), ]
-    })
   } else facets3 <- NULL
+  reordered <- ddply(complete, facets3, function(x) { #Does this do anything if facets3 is NULL?
+    x[, colors] <- reorder(x[, colors], x[, colors], length)
+    x[rev(order(x[, colors])), ]
+  })
   parameters <- reordered[, names(reordered) %in% idx]
   snapshots <- getSnapshots(parameters)
   other <- reordered[, !(names(reordered) %in% idx)] #Keep 'other' variables for faceting/coloring
