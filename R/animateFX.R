@@ -71,12 +71,13 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
     Sys.sleep(sleep)
     p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_color_brewer(palette="Set2")
     if (geom %in% "point") {
-      FX$sizes <- point.size
-      p <- p + layer(data = FX, mapping = aes(x = x, y = z, size = sizes), geom = geom) + point.color + point.alpha #+ aes(...) #+ scale_size_continuous(limits=c(min(sizes), max(sizes)))
+      #FX$sizes <- point.size
+      p <- p + layer(data = FX, mapping = aes(x = x, y = z, size = 100-y), geom = geom) + point.color + point.alpha #+ aes(...) #+ scale_size_continuous(limits=c(min(sizes), max(sizes)))
     }
     if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = x, y = z), geom = geom) + scale_fill_continuous(breaks = breaks)
     if (geom %in% "tile") p <- p + geom_tile(data = FX, mapping = aes(x = x, y = z))
     print(p + geom_rect(data = boundaries, aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
           + layer)
+    rm(FX)
   }
 }
