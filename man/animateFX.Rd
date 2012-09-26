@@ -3,8 +3,9 @@
 \title{Animate PITCHf/x}
 \usage{
   animateFX(data, layer = list(), geom = "point",
-    point.color = pitch_types, point.alpha = 0.5,
-    point.size = 100 - snapshot$y, breaks = c(0, 5, 10),
+    point.color = aes(color = pitch_types),
+    point.alpha = aes(alpha = 0.5),
+    point.size = 100 - FX$y, breaks = c(0, 5, 10),
     interval = 0.01, sleep = 1e-12, ...)
 }
 \arguments{
