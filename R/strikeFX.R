@@ -29,18 +29,16 @@ strikeFX <- function(data, layer = list(), geom = "point", point.color = aes(col
   FX <- pitchFX[complete.cases(pitchFX[,locations]),] #get rid of records missing the necessary parameters
   for (i in locations)
     FX[,i] <- as.numeric(FX[,i])
+  color <- as.list(match.call())$point.color
+  if (!is.null(color)){
+    colors <- gsub("[)]", "", gsub("aes[(]color = ","", color))[2]
+  } else colors <- "pitch_types"
   layers <- as.character(as.list(match.call())$layer)
-  facet <- layers[grep("facet", layers)]
-  facets <- gsub("[)]", "", gsub("facet_[a-z]+[(]","", facet))
-  facets2 <- llply(str_split(as.character(facets), "~"), str_trim)
-  facets3 <- unlist(llply(facets2, function(x) { x[!x %in% "."] }))
-  if (length(facet) == 0) facets3 <- NULL
-  color <- layers[grep("color", layers)]
-  if (length(color) == 0) color <- "pitch_type"
+  facets <- getFacets(layers)
   if ("p_throws" %in% names(FX)) FX$p_throws <- paste("Pitcher Throws:", FX$p_throws) #Add suffixes for context
   if ("stand" %in% names(FX)) FX$stand <- paste("Batter Stands:", FX$stand)
   if ("b_height" %in% names(FX)) {
-    boundaries <- getStrikezones(FX, facets3, strikeFX = TRUE) #Strikezone boundaries
+    boundaries <- getStrikezones(FX, facets, strikeFX = TRUE) #Strikezone boundaries
   } else warning("Strikezones and location adjustments depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively.")
   #   if (!is.null(freeze)) {
   #     n <- dim(snapshots)[2]

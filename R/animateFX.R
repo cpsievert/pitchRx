@@ -45,15 +45,8 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
     colors <- gsub("[)]", "", gsub("aes[(]color = ","", color))[2]
   } else colors <- "pitch_types"
   layers <- as.character(as.list(match.call())$layer)
-  if (length(grep("facet", layers) > 0)) {
-    if (length(layers) > 2) {
-      facet <- layers[grep("facet", layers)]
-      facets <- gsub("[)]", "", gsub("facet_[a-z]+[(]","", facet))
-    } else facets <- layers[-grep("facet", layers)]
-    facets2 <- llply(str_split(as.character(facets), "~"), str_trim)
-    facets3 <- unlist(llply(facets2, function(x) { x[!x %in% "."] }))
-  } else facets3 <- NULL
-  reordered <- ddply(complete, facets3, function(x) { #Does this do anything if facets3 is NULL?
+  facets <- getFacets(layers)
+  reordered <- ddply(complete, facets, function(x) { #Does this do anything if facets is NULL?
     x[, colors] <- reorder(x[, colors], x[, colors], length)
     x[rev(order(x[, colors])), ]
   })
@@ -63,7 +56,7 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
   if ("p_throws" %in% names(other)) other$p_throws <- paste("Pitcher Throws:", other$p_throws) #Add suffixes for context
   if ("stand" %in% names(other)) other$stand <- paste("Batter Stands:", other$stand)
   if ("b_height" %in% names(other)) {
-    boundaries <- getStrikezones(other, facets3) #Strikezone boundaries
+    boundaries <- getStrikezones(other, facets, strikeFX = FALSE) #Strikezone boundaries
   } else warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively.")
   for (i in 1:dim(snapshots)[2]) {
     FX <- data.frame(snapshots[,i,], other)

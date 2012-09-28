@@ -23,10 +23,13 @@ getStrikezones <- function(data, facets, strikeFX = FALSE) {
     data2 <- join(data, bounds, by = c("stand", facets), type = "inner")
     data2$R <- as.numeric(data$stand == "Batter Stands: R")
     data2$L <- as.numeric(data$stand == "Batter Stands: L")
-    data2$tops <- data2$R*(2.6 + data$heights*0.136) + data2$L*(2 + data$heights*0.229)
-    data2$bottoms <- data2$R*(0.92 + data$heights*0.136) + data2$L*(0.35 + data$heights*0.229)
-    data3 <- ddply(data2, .(stand), summarize, 
-                                pz2 = bottoms + (pz - bottom)*((tops - bottoms)/(top - bottom)))
-    return(list(data3$pz2, bounds))
+    data2$tops <- with(data2, R*(2.6 + heights*0.136) + L*(2 + heights*0.229))
+    data2$bottoms <- with(data2, R*(0.92 + heights*0.136) + L*(0.35 + heights*0.229))
+    browser()
+    pz2 <- with(data2, R*(bottoms + (pz - bottom)*(tops - bottoms)/(top - bottom)) + 
+                        L*(bottoms + (pz - bottom)*(tops - bottoms)/(top - bottom)))
+    #data3 <- ddply(data2, .(stand), summarize, 
+    #                            pz2 = bottoms + (pz - bottom)*(tops - bottoms)/(top - bottom))
+    return(list(pz2, bounds))
   } else return(bounds)
 }
