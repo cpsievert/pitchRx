@@ -25,11 +25,8 @@ getStrikezones <- function(data, facets, strikeFX = FALSE) {
     data2$L <- as.numeric(data$stand == "Batter Stands: L")
     data2$tops <- with(data2, R*(2.6 + heights*0.136) + L*(2 + heights*0.229))
     data2$bottoms <- with(data2, R*(0.92 + heights*0.136) + L*(0.35 + heights*0.229))
-    browser()
     pz2 <- with(data2, R*(bottoms + (pz - bottom)*(tops - bottoms)/(top - bottom)) + 
                         L*(bottoms + (pz - bottom)*(tops - bottoms)/(top - bottom)))
-    #data3 <- ddply(data2, .(stand), summarize, 
-    #                            pz2 = bottoms + (pz - bottom)*(tops - bottoms)/(top - bottom))
     return(list(pz2, bounds))
   } else return(bounds)
 }
