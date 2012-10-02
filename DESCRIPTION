@@ -17,9 +17,7 @@ Depends:
 LazyData: true
 Collate:
     'urlsToDataFrame.R'
-    'scrapePitchFX.R'
     'animateFX.R'
-    'ggFX.R'
     'getSnapshots.R'
     'fields.R'
     'urls.R'
@@ -29,3 +27,4 @@ Collate:
     'getStrikezones.R'
     'strikeFX.R'
     'getFacets.R'
+    'scrapeFX.R'

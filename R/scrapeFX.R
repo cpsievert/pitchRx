@@ -13,10 +13,10 @@
 #' @return Returns a list containing two different data frames. The larger data frame contains data on every pitch thrown (pitch F/X). The smaller one contains data on every atbat.
 #' @export
 #' @examples
-#' #data <- scrapePitchFX(start = "2011-05-01", end = "2011-05-01")
+#' #data <- scrapeFX(start = "2011-05-01", end = "2011-05-01")
 #' #pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
 
-scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(atbat = fields$atbat, pitch = fields$pitch), player = NULL, type = NULL) {
+scrapeFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(atbat = fields$atbat, pitch = fields$pitch), player = NULL, type = NULL) {
     start <- as.POSIXct(start)
     end <- as.POSIXct(end)
     if (is.null(names(tables))) stop("Please specify at least one XML node of interest.")
@@ -81,7 +81,7 @@ scrapePitchFX <- function(start = "2012-01-01", end = Sys.Date(), tables = list(
 #' Update \code{urls} data frame
 #'
 #' This function scrapes "gameday_links" from the MLB website. These links are used to construct the urls needed to 
-#' obtain pitchf/x data. It should only be called in \code{scrapePitchFX} when the user enters an end date later 
+#' obtain pitchf/x data. It should only be called in \code{scrapeFX} when the user enters an end date later 
 #' than the most recent date present in \code{data(urls)}.
 #'
 #' @param last.date most recent date in \code{data(urls)}
