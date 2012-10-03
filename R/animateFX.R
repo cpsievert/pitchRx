@@ -31,15 +31,16 @@
 animateFX <- function(data, layer = list(), geom = "point", point.color = aes(color = pitch_types), point.alpha = aes(alpha = 0.5), point.size = 100-FX$y, breaks = c(0,5,10), interval = 0.01, sleep = 0.000000000001, ...){ 
   #Add descriptions to pitch_types
   if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
-  if (!"pitch_type" %in% names(data)) warning("Make sure you have the appropriate 'pitch_type' column. If you don't have 'pitch_type', consider using ggFX()")
-  types <- cbind(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
+  if ("pitch_type" %in% names(data)) {
+    types <- cbind(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
                    pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
                                  "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
                                  "Fastball", "Unknown", "Fastball ... (FO?)"))
-  pitchFX <- merge(data, types, by = "pitch_type")
+    data <- merge(data, types, by = "pitch_type")
+  } else warning("Make sure you have the appropriately named 'pitch_type' column.")
   idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
   if (!all(idx %in% names(data))) warning("You must have the following variables in your dataset to animate pitch locations: 'x0', 'y0', 'z0', 'vx0', 'vy0', 'vz0', 'ax', 'ay', 'az'")
-  complete <- pitchFX[complete.cases(pitchFX[,idx]),] #get rid of records with any missing parameters
+  complete <- data[complete.cases(data[,idx]),] #get rid of records with any missing parameters
   color <- as.list(match.call())$point.color
   if (!is.null(color)){
     colors <- gsub("[)]", "", gsub("aes[(]color = ","", color))[2]
@@ -57,7 +58,11 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
   if ("stand" %in% names(other)) other$stand <- paste("Batter Stands:", other$stand)
   if ("b_height" %in% names(other)) {
     boundaries <- getStrikezones(other, facets, strikeFX = FALSE) #Strikezone boundaries
-  } else warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively.")
+    zones <- geom_rect(data = boundaries, aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
+  } else {
+    zones <- NULL
+    warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively.")
+  }
   for (i in 1:dim(snapshots)[2]) {
     FX <- data.frame(snapshots[,i,], other)
     names(FX) <- c("x", "y", "z", names(other))
@@ -69,8 +74,7 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
     }
     if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = x, y = z), geom = geom) + scale_fill_continuous(breaks = breaks)
     if (geom %in% "tile") p <- p + geom_tile(data = FX, mapping = aes(x = x, y = z))
-    print(p + geom_rect(data = boundaries, aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
-          + layer)
+    print(p + zones + layer)
     rm(FX)
   }
 }

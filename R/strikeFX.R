@@ -19,14 +19,15 @@
 strikeFX <- function(data, layer = list(), geom = "point", point.color = aes(color = pitch_types), point.alpha = aes(alpha = 0.5), point.size = 100){ 
   #Add descriptions to pitch_types
   if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
-  if (!"pitch_type" %in% names(data)) warning("Make sure you have the appropriate 'pitch_type' column. If you don't have 'pitch_type', consider using ggFX()")
-  types <- cbind(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
-                 pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
-                               "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
-                               "Fastball", "Unknown", "Fastball ... (FO?)"))
-  pitchFX <- merge(data, types, by = "pitch_type")
+  if ("pitch_type" %in% names(data)) {
+    types <- cbind(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
+                   pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
+                                 "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
+                                 "Fastball", "Unknown", "Fastball ... (FO?)"))
+    data <- merge(data, types, by = "pitch_type")
+  } else warning("Make sure you have the appropriately named 'pitch_type' column.")
   locations <- c("px", "pz")
-  FX <- pitchFX[complete.cases(pitchFX[,locations]),] #get rid of records missing the necessary parameters
+  FX <- data[complete.cases(data[,locations]),] #get rid of records missing the necessary parameters
   for (i in locations)
     FX[,i] <- as.numeric(FX[,i])
   color <- as.list(match.call())$point.color
@@ -39,8 +40,14 @@ strikeFX <- function(data, layer = list(), geom = "point", point.color = aes(col
   if ("stand" %in% names(FX)) FX$stand <- paste("Batter Stands:", FX$stand)
   if ("b_height" %in% names(FX)) {
     boundaries <- getStrikezones(FX, facets, strikeFX = TRUE) #Strikezone boundaries
-  } else warning("Strikezones and location adjustments depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively.")
-  #   if (!is.null(freeze)) {
+    FX$pz_adj <- boundaries[[1]] #adjusted vertical locations
+    zones <- geom_rect(data = boundaries[[2]], aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
+  } else {
+    FX$pz_adj <- FX$pz
+    zones <- NULL
+    warning("Strikezones and location adjustments depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively. Otherwise, strikezones will not appear and locations will not be adjusted.")
+  }
+     #   if (!is.null(freeze)) {
   #     n <- dim(snapshots)[2]
   #     if (freeze == "first") snapshot <- data.frame(snapshots[,1,], other)
   #     if (freeze == "last") snapshot <- data.frame(snapshots[,n,], other)
@@ -52,7 +59,6 @@ strikeFX <- function(data, layer = list(), geom = "point", point.color = aes(col
   #     print(p + geom_rect(data = boundaries, aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
   #           + layer)
   #   } else {
-  FX$pz_adj <- boundaries[[1]] #adjusted vertical locations
   for (i in locations)
     FX[,i] <- as.numeric(FX[,i])
   p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide = "none") + scale_alpha(guide="none") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_color_brewer(palette="Set2")
@@ -62,6 +68,5 @@ strikeFX <- function(data, layer = list(), geom = "point", point.color = aes(col
   }
   if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj), geom = geom)
   if (geom %in% "tile") p <- p + geom_tile(data = FX, mapping = aes(x = px, y = pz_adj, fill = ..count..))
-  print(p + geom_rect(data = boundaries[[2]], aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
-        + layer)
+  print(p + zones + layer)
 }
