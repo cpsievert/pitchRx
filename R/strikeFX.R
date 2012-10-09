@@ -61,7 +61,7 @@ strikeFX <- function(data, layer = list(), geom = "point", point.color = aes(col
   #   } else {
   for (i in locations)
     FX[,i] <- as.numeric(FX[,i])
-  p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide = "none") + scale_alpha(guide="none") + theme(legend.position = "bottom", legend.direction = "horizontal") + scale_color_brewer(palette="Set2")
+  p <- ggplot() + xlim(-2.5, 2.5) + xlab("Horizontal Pitch Location") + ylim(0, 5) + ylab("Height from Ground") + scale_size(guide = "none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal") + scale_color_brewer(palette="Set2")
   if (geom %in% "point") {
     FX$sizes <- point.size
     p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj, size = sizes), geom = geom) + point.color + point.alpha #+ aes(...) #+ scale_size_continuous(limits=c(min(sizes), max(sizes)))
