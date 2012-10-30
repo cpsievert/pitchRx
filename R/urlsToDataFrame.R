@@ -223,9 +223,8 @@ attachUrls <- function(df) {
   names(df) <- gsub("url", "url_scoreboard", names(df))
   branch <- gsub("miniscoreboard.xml", "", df$url_scoreboard) #common branch among urls
   df$url <- paste(branch, paste("gid_", df$gameday_link, sep = ""), "/inning/inning_all.xml", sep = "") #files with pitchf/x info
-  df$url_scores <- gsub("inning_all.xml", "inning_Scores.xml", df$url) #files with scoring details
   df$url_player <- gsub("/inning/inning_all.xml", "/players.xml", df$url) #files with player information and statistics
-  df$date <- sapply(str_split(df$gameday_link, "_"), function(x) { paste(x[2], x[3], x[4], sep = "/") })
+  df$date <- sapply(str_split(df$gameday_link, "_"), function(x) { paste(x[1], x[2], x[3], sep = "-") })
   return(df)
 }
 

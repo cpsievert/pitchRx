@@ -2,7 +2,7 @@
 \alias{scrapeFX}
 \title{Scrape Major League Baseball's PITCHf/x Data}
 \usage{
-  scrapeFX(start = "2012-01-01", end = Sys.Date(),
+  scrapeFX(start = "2012-01-01", end = "2012-10-29",
     tables = list(atbat = fields$atbat, pitch = fields$pitch),
     player = NULL, type = NULL)
 }
