@@ -3,7 +3,7 @@
 \title{Visualize PITCHf/x strikezones}
 \usage{
   strikeFX(data, layer = list(), geom = "point",
-    point.color = aes(color = pitch_types),
+    adjust = TRUE, point.color = aes(color = pitch_types),
     point.alpha = aes(alpha = 0.5), point.size = 100)
 }
 \arguments{
@@ -14,15 +14,16 @@
 
   \item{geom}{type of geometry used for plotting.}
 
+  \item{adjust}{logical vector. Should vertical locations
+  be adjusted according to batter height?}
+
   \item{point.color}{variable used to control coloring
   scheme when \code{geom = "point"}.}
 
   \item{point.alpha}{variable used to control alpha when
   \code{geom = "point"}.}
 
-  \item{point.size}{control size of "points".
-  Theoretically, this should be based on the distance from
-  home plate (ie, \code{snapshot$y})}
+  \item{point.size}{control size of "points".}
 }
 \value{
   Returns a ggplot2 object.
