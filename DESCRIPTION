@@ -8,12 +8,14 @@ Description: Simple Methods for Scraping and Animating Major League Baseball
     PITCHf/x Data
 License: MIT
 Depends:
-    ggplot2,
     XML,
+    ggplot2,
+    animation,
     plyr,
+    reshape,
     lubridate,
     stringr,
-    animation
+    KernSmooth
 LazyData: true
 Collate:
     'urlsToDataFrame.R'

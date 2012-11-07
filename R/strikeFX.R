@@ -7,6 +7,7 @@
 #' @param data PITCHf/x data to be visualized.
 #' @param layer list of other ggplot2 (layered) modifications.
 #' @param geom type of geometry used for plotting.
+#' @param tile.density If geom="tile", this formula describes the (possibly differenced) 2D Binned Kernel Density Estimates.
 #' @param adjust logical vector. Should vertical locations be adjusted according to batter height?
 #' @param point.color variable used to control coloring scheme when \code{geom = "point"}.
 #' @param point.alpha variable used to control alpha when \code{geom = "point"}.
@@ -17,9 +18,9 @@
 #' #value
 #' 
 
-strikeFX <- function(data, layer = list(), geom = "point", adjust=TRUE, point.color = aes(color = pitch_types), point.alpha = aes(alpha = 0.5), point.size = 100){ 
+strikeFX <- function(data, layer = list(), geom = "point", tile.density=des~Called.Strike-Ball, adjust=TRUE, point.color = aes(color = pitch_types), point.alpha = aes(alpha = 0.5), point.size = 100){ 
   #Add descriptions to pitch_types
-  if (!geom %in% c("point", "hex", "density2d", "tile", "tile_diff")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
+  if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
   if ("pitch_type" %in% names(data)) {
     types <- cbind(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
                    pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
@@ -52,14 +53,15 @@ strikeFX <- function(data, layer = list(), geom = "point", adjust=TRUE, point.co
   }
   for (i in locations)
     FX[,i] <- as.numeric(FX[,i])
-  if (geom %in% "tile_diff") {
+  if (geom %in% "tile") {
     if (!is.null(facets)) {
-      stuff <- dlply(FX, facets, DifferencedDensity)
+      stuff <- dlply(FX, facets, function(x) { getDensity(x, density=tile.density) } )
       densities <- ldply(stuff)
     } else {
-      densities <- DifferencedDensity(FX, bandwidth, gridsize, range.x, truncate)
+      densities <- getDensity(FX, density=tile.density)
     }
-    return(ggplot(data=densities, aes(x=x,y=y,z=z))+geom_tile(aes(fill = z))+stat_contour()+layer)
+    t <- ggplot() + xlab("Horizontal Pitch Location")+ylab("Height from Ground")+scale_fill_gradient2(midpoint=0)
+    return(t+layer(data=densities, mapping = aes(x=x,y=y,fill=z), geom="tile")+zones+layer)
   }
   p <- ggplot() + xlim(-2.5, 2.5) + xlab("Horizontal Pitch Location") + ylim(0, 5) + ylab("Height from Ground") + scale_size(guide = "none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal") + scale_color_brewer(palette="Set2")
   if (geom %in% "point") {
@@ -67,25 +69,45 @@ strikeFX <- function(data, layer = list(), geom = "point", adjust=TRUE, point.co
     p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj, size = sizes), geom = geom) + point.color + point.alpha #+ aes(...) #+ scale_size_continuous(limits=c(min(sizes), max(sizes)))
   }
   if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj), geom = geom)
-  print(p + zones + layer)
+  return(p + zones + layer)
 }
 
-#' Differenced 2D Binned Kernel Density Estimates
+#' 2D Binned Kernel Differenced Density Estimates
 #'
-#' Computes differenced 2D Binned Kernel Density Estimates using bkde2D{KernSmooth}
+#' Computes differenced 2D Binned Kernel Density Estimates using KernSmooth::bkde2D
 #'
-#' Details go here.
-#' @param data PITCHf/x data
+#' Computes two densities on the same support and subtracts them according to the \code{density} expression.
+#' The expression should look as follows: variable~value1-value2.
 #' 
-#' @return Returns a data frame with binning values and density estimates. Similar to stat_contour?
+#' @param data PITCHf/x data
+#' @param density formula that describes the (possibly differenced) 2D Binned Kernel Density Estimates.
+#' @param bandwidth KernSmooth::bkde2D parameter
+#' @param gridsize KernSmooth::bkde2D parameter
+#' @param range.x KernSmooth::bkde2D parameter
+#' @param truncate KernSmooth::bkde2D parameter
+#' @return Returns a data frame with binning values and density estimates.
 
-DifferencedDensity <- function(data, bandwidth=c(0.1, 0.1), gridsize = c(51L, 51L), range.x = list(c(-2,2),c(1,4)), truncate = TRUE){ #dynamic handling of contours?
-  x.s <- subset(data, des == "Called Strike")[,c("px","pz_adj")]
-  est.s <- bkde2D(x.s, bandwidth, gridsize, range.x, truncate)
-  grid <- expand.grid(x = est.s$x1, y = est.s$x2) #Grid (ie, x and y values) to be used for both balls and strikes
-  x.b <- subset(data, des == "Ball")[,c("px","pz_adj")]
-  est.b <- bkde2D(x.b, bandwidth, gridsize, range.x, truncate)
-  densities <- cbind(grid, z_s=melt(est.s$fhat)$value, z_b=melt(est.b$fhat)$value)
-  densities$z <- densities$z_s - densities$z_b
-  return(densities)
+getDensity <- function(data, density, bandwidth=c(0.1, 0.1), gridsize = c(51L, 51L), range.x = list(c(-2,2),c(1,4)), truncate = TRUE){ #dynamic handling of contours?
+  formula <- as.list(density)
+  vars <- formula[-grep("~", formula)]
+  elem <- llply(vars, function(x) gsub("\\.", " ", x))
+  if (length(elem[[2]]) > 1) { #multivariate density
+    values <- elem[[2]][-grep("\\+|\\-|\\*|\\/", elem[[2]])] #throw away math symbols
+    symbols <- elem[[2]][grep("\\+|\\-|\\*|\\/", elem[[2]])] #keep math symbols
+    ctr <- 1
+    for (i in values) {
+      x <- data[data[elem[[1]]] == i, c("px", "pz_adj")]
+      est <- bkde2D(x, bandwidth, gridsize, range.x, truncate)
+      if (ctr == 1) grid <- expand.grid(x = est$x1, y = est$x2)
+      grid[i] <- melt(est$fhat)$value
+      ctr <- ctr + 1
+    }
+    grid["z"] <- grid[values[1]] - grid[values[2]]
+  } else {
+    x <- data[data[elem[[1]]] == elem[[2]], c("px", "pz_adj")]
+    est <- bkde2D(x, bandwidth, gridsize, range.x, truncate)
+    grid <- expand.grid(x = est$x1, y = est$x2)
+    grid["z"] <- melt(est$fhat)$value
+  }
+  return(grid)
 }

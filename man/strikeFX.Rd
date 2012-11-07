@@ -3,6 +3,7 @@
 \title{Visualize PITCHf/x strikezones}
 \usage{
   strikeFX(data, layer = list(), geom = "point",
+    tile.density = des ~ Called.Strike - Ball,
     adjust = TRUE, point.color = aes(color = pitch_types),
     point.alpha = aes(alpha = 0.5), point.size = 100)
 }
@@ -13,6 +14,10 @@
   modifications.}
 
   \item{geom}{type of geometry used for plotting.}
+
+  \item{tile.density}{If geom="tile", this formula
+  describes the (possibly differenced) 2D Binned Kernel
+  Density Estimates.}
 
   \item{adjust}{logical vector. Should vertical locations
   be adjusted according to batter height?}
