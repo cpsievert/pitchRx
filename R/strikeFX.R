@@ -63,7 +63,7 @@ strikeFX <- function(data, layer = list(), geom = "point", tile.density=des~Call
     t <- ggplot() + xlab("Horizontal Pitch Location")+ylab("Height from Ground")+scale_fill_gradient2(midpoint=0)
     return(t+layer(data=densities, mapping = aes(x=x,y=y,fill=z), geom="tile")+zones+layer)
   }
-  p <- ggplot() + xlim(-2.5, 2.5) + xlab("Horizontal Pitch Location") + ylim(0, 5) + ylab("Height from Ground") + scale_size(guide = "none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal") + scale_color_brewer(palette="Set2")
+  p <- ggplot() + xlim(-2.5, 2.5) + xlab("Horizontal Pitch Location") + ylim(0, 5) + ylab("Height from Ground") + scale_size(guide = "none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
   if (geom %in% "point") {
     FX$sizes <- point.size
     p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj, size = sizes), geom = geom) + point.color + point.alpha #+ aes(...) #+ scale_size_continuous(limits=c(min(sizes), max(sizes)))

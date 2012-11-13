@@ -17,7 +17,7 @@
 #' @param point.alpha variable used to control alpha when \code{geom = "point"}.
 #' @param point.size control size of "points". Theoretically, this should be based on the distance from home plate (ie, \code{snapshot$y})
 #' @param breaks bin breaks for counts when \code{geom == "hex"}.
-#' @param interval time (in seconds - real time) between plotting the pitch locations.
+#' @param interval time (in seconds) between plotting the pitch locations.
 #' @param sleep passed along to Sys.sleep() to flush current plot.
 #' @return Returns a series of ggplot2 objects.
 #' @export
@@ -63,18 +63,28 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
     zones <- NULL
     warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively.")
   }
-  for (i in 1:dim(snapshots)[2]) {
+  ctr <- 1 #Used to check whether or not batter has decided to swing
+  N <- dim(snapshots)[2] #Number of plots
+  swing <- NULL
+  for (i in 1:N) {
+    if (ctr > (2/5)*N) swing <- annotate("text", label = "SWING!", x = 0, y = 6, size = 2, colour = "red"))
     FX <- data.frame(snapshots[,i,], other)
     names(FX) <- c("x", "y", "z", names(other))
     Sys.sleep(sleep)
-    p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
-    if (geom %in% "point") {
-      #FX$sizes <- point.size
-      p <- p + layer(data = FX, mapping = aes(x = x, y = z, size = 100-y), geom = geom) + point.color + point.alpha #+ aes(...) #+ scale_size_continuous(limits=c(min(sizes), max(sizes)))
+    if (geom %in% "tile") {
+      if (!is.null(facets)) {
+        stuff <- dlply(FX, facets, function(x) { getDensity(x, density=tile.density) } )
+        densities <- ldply(stuff)
+      } else {
+        densities <- getDensity(FX, density=tile.density)
+      }
+      t <- ggplot() + xlab("Horizontal Pitch Location")+ylab("Height from Ground")+scale_fill_gradient2(midpoint=0)
+      return(t+layer(data=densities, mapping = aes(x=x,y=y,fill=z), geom="tile")+zones+swing+layer)
     }
+    p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
+    if (geom %in% "point") p <- p + layer(data = FX, mapping = aes(x = x, y = z, size = 100-y), geom = geom) + point.color + point.alpha
     if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = x, y = z), geom = geom) + scale_fill_continuous(breaks = breaks)
-    if (geom %in% "tile") p <- p + geom_tile(data = FX, mapping = aes(x = x, y = z))
-    print(p + zones + layer)
-    rm(FX)
+    print(p + swing + zones + layer)
+    ctr <- ctr + 1
   }
 }
