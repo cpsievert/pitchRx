@@ -67,7 +67,7 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
   N <- dim(snapshots)[2] #Number of plots
   swing <- NULL
   for (i in 1:N) {
-    if (ctr > (2/5)*N) swing <- annotate("text", label = "SWING!", x = 0, y = 6, size = 2, colour = "red"))
+    if (ctr > (2/5)*N) swing <- annotate("text", label = "SWING!", x = 0, y = 6, size = 2, colour = "red")
     FX <- data.frame(snapshots[,i,], other)
     names(FX) <- c("x", "y", "z", names(other))
     Sys.sleep(sleep)
