@@ -3,7 +3,7 @@
 \title{2D Binned Kernel Differenced Density Estimates}
 \usage{
   getDensity(data, density, bandwidth = c(0.1, 0.1),
-    gridsize = c(51L, 51L),
+    gridsize = c(101L, 101L),
     range.x = list(c(-2, 2), c(1, 4)), truncate = TRUE)
 }
 \arguments{

@@ -38,7 +38,7 @@
   Details go here.
 }
 \examples{
-#data <- scrapeFX(start = "2011-05-01", end = "2011-05-01")
-#pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
+data <- scrapeFX(start = "2012-05-01", end = "2012-05-01")
+pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
 }
 

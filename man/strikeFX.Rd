@@ -3,9 +3,8 @@
 \title{Visualize PITCHf/x strikezones}
 \usage{
   strikeFX(data, layer = list(), geom = "point",
-    tile.density = des ~ Called.Strike - Ball,
-    adjust = TRUE, point.color = aes(color = pitch_types),
-    point.alpha = aes(alpha = 0.5), point.size = 100)
+    tile.density = des ~ Called.Strike, adjust = TRUE,
+    point.color = aes(color = pitch_types))
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
@@ -24,11 +23,6 @@
 
   \item{point.color}{variable used to control coloring
   scheme when \code{geom = "point"}.}
-
-  \item{point.alpha}{variable used to control alpha when
-  \code{geom = "point"}.}
-
-  \item{point.size}{control size of "points".}
 }
 \value{
   Returns a ggplot2 object.
@@ -41,6 +35,10 @@
   the vertical axis.
 }
 \examples{
-#value
+data(pitches)
+strikeFX(pitches)
+strikeFX(pitches, layer=facet_grid(pitcher_name~stand))
+strikeFX(pitches, geom="tile", layer=facet_grid(pitcher_name~stand))
+strikeFX(pitches, geom="tile", tile.density=des~Called.Strike-Ball, layer=facet_grid(pitcher_name~stand))
 }
 

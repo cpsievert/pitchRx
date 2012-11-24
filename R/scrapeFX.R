@@ -13,8 +13,8 @@
 #' @return Returns a list containing two different data frames. The larger data frame contains data on every pitch thrown (pitch F/X). The smaller one contains data on every atbat.
 #' @export
 #' @examples
-#' #data <- scrapeFX(start = "2011-05-01", end = "2011-05-01")
-#' #pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
+#' data <- scrapeFX(start = "2012-05-01", end = "2012-05-01")
+#' pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
 
 scrapeFX <- function(start = "2012-01-01", end = "2012-10-29", tables = list(atbat = fields$atbat, pitch = fields$pitch), player = NULL, type = NULL) { 
   start <- as.POSIXct(start)

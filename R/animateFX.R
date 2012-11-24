@@ -10,25 +10,23 @@
 #' makes several assumptions about the opacity and size associated with each "snapshot" 
 #' of pitch locations.
 #'
-#' @param data PITCHf/x data to be visualized.
-#' @param layer list of other ggplot2 (layered) modifications.
+#' @param data data frame with appropriately named PITCHf/x variables
+#' @param layer list of ggplot2 layer modifications.
 #' @param geom type of geometry used for plotting.
 #' @param point.color variable used to control coloring scheme when \code{geom = "point"}.
-#' @param point.alpha variable used to control alpha when \code{geom = "point"}.
-#' @param point.size control size of "points". Theoretically, this should be based on the distance from home plate (ie, \code{snapshot$y})
 #' @param breaks bin breaks for counts when \code{geom == "hex"}.
+#' @param flag indicate whether or not batter has decided to swing.
 #' @param interval time (in seconds) between plotting the pitch locations.
 #' @param sleep passed along to Sys.sleep() to flush current plot.
 #' @return Returns a series of ggplot2 objects.
 #' @export
 #' @examples
-#' #First, grab some data
-#' 
-#' #Now, the fun part
-#' 
+#' data(pitches)
+#' animateFX(pitches)
+#' animateFX(pitches, layer = facet_grid(pitcher_name~stand))
 #' 
 
-animateFX <- function(data, layer = list(), geom = "point", point.color = aes(color = pitch_types), point.alpha = aes(alpha = 0.5), point.size = 100-FX$y, breaks = c(0,5,10), interval = 0.01, sleep = 0.000000000001, ...){ 
+animateFX <- function(data, layer = list(), geom = "point", point.color = aes(color = pitch_types), breaks = c(0,5,10), flag=FALSE, interval = 0.01, sleep = 0.000000000001, ...){ 
   #Add descriptions to pitch_types
   if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
   if ("pitch_type" %in% names(data)) {
@@ -67,7 +65,7 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
   N <- dim(snapshots)[2] #Number of plots
   swing <- NULL
   for (i in 1:N) {
-    if (ctr > (2/5)*N) swing <- annotate("text", label = "SWING!", x = 0, y = 6, size = 2, colour = "red")
+    if (flag & ctr > (2/5)*N) swing <- annotate("text", label = "SWING!", x = 0, y = 6, size = 2, colour = "red")
     FX <- data.frame(snapshots[,i,], other)
     names(FX) <- c("x", "y", "z", names(other))
     Sys.sleep(sleep)
@@ -82,7 +80,7 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes(co
       return(t+layer(data=densities, mapping = aes(x=x,y=y,fill=z), geom="tile")+zones+swing+layer)
     }
     p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
-    if (geom %in% "point") p <- p + layer(data = FX, mapping = aes(x = x, y = z, size = 100-y), geom = geom) + point.color + point.alpha
+    if (geom %in% "point") p <- p + layer(data = FX, mapping = aes(x = x, y = z, size = 100-y), geom = geom) + point.color
     if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = x, y = z), geom = geom) + scale_fill_continuous(breaks = breaks)
     print(p + swing + zones + layer)
     ctr <- ctr + 1

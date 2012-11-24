@@ -51,11 +51,21 @@
   inconsistent, missing values are filled with \code{NA}s.
 }
 \examples{
-#Get Josh Hamilton's stats going into a game played on July 18th, 2009:
-url <- "http://gd2.mlb.com/components/game/mlb/year_2009/month_07/day_18/gid_2009_07_18_minmlb_texmlb_1/batters/285078.xml"
-urlsToDataFrame(url, tables = list(Player = NULL), add.children = TRUE)
+#Get "batting" stats going into a game played on May 6th, 2008:
+data(urls)
+dir <- gsub("players.xml", "batters/",
+            urls$url_player[1000])
+doc <- htmlParse(dir)
+nodes <- getNodeSet(doc, "//a")
+values <- gsub(" ", "",
+               sapply(nodes, xmlValue))
+ids <- values[grep("[0-9]+", values)]
+filenames <- paste(dir, ids, sep="")
+stats <- urlsToDataFrame(filenames,
+                         tables=list(Player=NULL),
+                         add.children=TRUE)
 
-#Find XML files with twitter data
+#Scrape files with twitter data
 branch <- "http://gd2.mlb.com/components/game/mlb/twitter/"
 doc <- htmlParse(branch)
 nodes <- getNodeSet(doc, "//a")

@@ -4,33 +4,28 @@
 \usage{
   animateFX(data, layer = list(), geom = "point",
     point.color = aes(color = pitch_types),
-    point.alpha = aes(alpha = 0.5),
-    point.size = 100 - FX$y, breaks = c(0, 5, 10),
-    interval = 0.01, sleep = 1e-12, ...)
+    breaks = c(0, 5, 10), flag = FALSE, interval = 0.01,
+    sleep = 1e-12, ...)
 }
 \arguments{
-  \item{data}{PITCHf/x data to be visualized.}
+  \item{data}{data frame with appropriately named PITCHf/x
+  variables}
 
-  \item{layer}{list of other ggplot2 (layered)
-  modifications.}
+  \item{layer}{list of ggplot2 layer modifications.}
 
   \item{geom}{type of geometry used for plotting.}
 
   \item{point.color}{variable used to control coloring
   scheme when \code{geom = "point"}.}
 
-  \item{point.alpha}{variable used to control alpha when
-  \code{geom = "point"}.}
-
-  \item{point.size}{control size of "points".
-  Theoretically, this should be based on the distance from
-  home plate (ie, \code{snapshot$y})}
-
   \item{breaks}{bin breaks for counts when \code{geom ==
   "hex"}.}
 
-  \item{interval}{time (in seconds - real time) between
-  plotting the pitch locations.}
+  \item{flag}{indicate whether or not batter has decided to
+  swing.}
+
+  \item{interval}{time (in seconds) between plotting the
+  pitch locations.}
 
   \item{sleep}{passed along to Sys.sleep() to flush current
   plot.}
@@ -55,8 +50,8 @@
   locations.
 }
 \examples{
-#First, grab some data
-
-#Now, the fun part
+data(pitches)
+animateFX(pitches)
+animateFX(pitches, layer = facet_grid(pitcher_name~stand))
 }
 
