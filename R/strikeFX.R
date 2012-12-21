@@ -20,7 +20,7 @@
 #' strikeFX(pitches, geom="tile", tile.density=des~Called.Strike-Ball, layer=facet_grid(pitcher_name~stand))
 #' 
 
-strikeFX <- function(data, layer = list(), geom = "point", tile.density=des~Called.Strike, adjust=TRUE, point.color = aes(color = pitch_types)){ 
+strikeFX <- function(data, layer = list(), geom = "point", tile.density=des~Called.Strike, adjust=TRUE, point.color = aes_string(color = "pitch_types")){ 
   #Add descriptions to pitch_types
   if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
   if ("pitch_type" %in% names(data)) {

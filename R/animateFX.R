@@ -26,7 +26,7 @@
 #' animateFX(pitches, layer = facet_grid(pitcher_name~stand))
 #' 
 
-animateFX <- function(data, layer = list(), geom = "point", point.color = aes(color = pitch_types), breaks = c(0,5,10), flag=FALSE, interval = 0.01, sleep = 0.000000000001, ...){ 
+animateFX <- function(data, layer = list(), geom = "point", point.color = aes_string(color = "pitch_types"), breaks = c(0,5,10), flag=FALSE, interval = 0.01, sleep = 0.000000000001, ...){ 
   #Add descriptions to pitch_types
   if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
   if ("pitch_type" %in% names(data)) {
