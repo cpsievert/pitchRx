@@ -45,8 +45,8 @@ strikeFX <- function(data, layer = list(), geom = "point", tile.density=des~Call
   facets <- getFacets(layers)
   if ("p_throws" %in% names(FX)) FX$p_throws <- paste("Pitcher Throws:", FX$p_throws) #Add suffixes for context
   if ("stand" %in% names(FX)) FX$stand <- paste("Batter Stands:", FX$stand)
-  if ("b_height" %in% names(FX)) {
-    boundaries <- getStrikezones(FX, facets, strikeFX = TRUE) #Strikezone boundaries
+  if ("b_height" %in% names(FX) & is.numeric(FX$b_height)) { #plot strikezones (and adjust loactions) if heights are numeric
+    boundaries <- getStrikezones(FX, facets, strikeFX = TRUE) 
     if (adjust) {
       FX$pz_adj <- boundaries[[1]] #adjusted vertical locations
     } else FX$pz_adj <- FX$pz

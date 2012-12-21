@@ -57,12 +57,12 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes_st
   other <- reordered[, !(names(reordered) %in% idx)] #Keep 'other' variables for faceting/coloring
   if ("p_throws" %in% names(other)) other$p_throws <- paste("Pitcher Throws:", other$p_throws) #Add suffixes for context
   if ("stand" %in% names(other)) other$stand <- paste("Batter Stands:", other$stand)
-  if ("b_height" %in% names(other)) {
+  if ("b_height" %in% names(other) & is.numeric(other$b_height)) {
     boundaries <- getStrikezones(other, facets, strikeFX = FALSE) #Strikezone boundaries
     zones <- geom_rect(data = boundaries, aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
   } else {
     zones <- NULL
-    warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively.")
+    warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively. Also, 'b_height' also has to be a numeric vector")
   }
   ctr <- 1 #Used to check whether or not batter has decided to swing
   N <- dim(snapshots)[2] #Number of plots
