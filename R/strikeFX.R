@@ -29,7 +29,10 @@ strikeFX <- function(data, layer = list(), geom = "point", tile.density=des~Call
                                  "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
                                  "Fastball", "Unknown", "Fastball ... (FO?)"))
     data <- merge(data, types, by = "pitch_type")
-  } else warning("It may be beneficial to have a 'pitch_type' column.")
+  } else {
+    point.color <- NULL
+    warning("It may be beneficial to have a 'pitch_type' column.")
+  }
   locations <- c("px", "pz")
   FX <- data[complete.cases(data[,locations]),] #get rid of records missing the necessary parameters
   for (i in locations)

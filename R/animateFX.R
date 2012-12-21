@@ -35,7 +35,10 @@ animateFX <- function(data, layer = list(), geom = "point", point.color = aes_st
                                  "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
                                  "Fastball", "Unknown", "Fastball ... (FO?)"))
     data <- merge(data, types, by = "pitch_type")
-  } else warning("Make sure you have the appropriately named 'pitch_type' column.")
+  } else {
+    point.color <- NULL
+    warning("Make sure you have the appropriately named 'pitch_type' column.")
+  }
   idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
   if (!all(idx %in% names(data))) warning("You must have the following variables in your dataset to animate pitch locations: 'x0', 'y0', 'z0', 'vx0', 'vy0', 'vz0', 'ax', 'ay', 'az'")
   complete <- data[complete.cases(data[,idx]),] #get rid of records with any missing parameters
