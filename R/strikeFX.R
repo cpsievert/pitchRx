@@ -66,7 +66,7 @@ strikeFX <- function(data, layer = list(), geom = "point", tile.density=des~Call
     return(t+layer(data=densities, mapping = aes(x=x,y=y,fill=z), geom="tile")+zones+layer)
   }
   p <- ggplot() + xlim(-2.5, 2.5) + xlab("Horizontal Pitch Location") + ylim(0, 5) + ylab("Height from Ground") + scale_size(guide = "none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
-  if (geom %in% "point") p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj, size = sizes), geom = geom) + point.color
+  if (geom %in% "point") p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj), geom = geom) + point.color
   if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj), geom = geom)
   return(p + zones + layer)
 }
