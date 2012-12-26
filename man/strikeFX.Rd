@@ -2,27 +2,36 @@
 \alias{strikeFX}
 \title{Visualize PITCHf/x strikezones}
 \usage{
-  strikeFX(data, layer = list(), geom = "point",
-    tile.density = des ~ Called.Strike, adjust = TRUE,
-    point.color = aes(color = pitch_types))
+  strikeFX(data, geom = "point", point.size = 3,
+    point.alpha = 1/3, color = "pitch_types",
+    tile.density = des ~ Called.Strike,
+    breaks = c(0, 5, 10), adjust = TRUE, layer = list(),
+    ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
 
-  \item{layer}{list of other ggplot2 (layered)
-  modifications.}
-
   \item{geom}{type of geometry used for plotting.}
 
-  \item{tile.density}{If geom="tile", this formula
-  describes the (possibly differenced) 2D Binned Kernel
-  Density Estimates.}
+  \item{point.size}{Size of points}
+
+  \item{point.alpha}{ggplot2 alpha parameter}
+
+  \item{color}{variable used to control coloring scheme.}
+
+  \item{tile.density}{If geom="tile", this formula defines
+  the (possibly differenced) 2D Kernel Density Estimates.}
+
+  \item{breaks}{bin breaks for counts when \code{geom ==
+  "hex"}.}
 
   \item{adjust}{logical vector. Should vertical locations
   be adjusted according to batter height?}
 
-  \item{point.color}{variable used to control coloring
-  scheme when \code{geom = "point"}.}
+  \item{layer}{list of other ggplot2 (layered)
+  modifications.}
+
+  \item{...}{extra options passed onto geom commands}
 }
 \value{
   Returns a ggplot2 object.
@@ -31,7 +40,7 @@
   Pitch locations as they crossed home plate.
 }
 \details{
-  Scatterplot with "px" on the horizonatl axis and "pz" on
+  Scatterplot with "px" on the horizontal axis and "pz" on
   the vertical axis.
 }
 \examples{

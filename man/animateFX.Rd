@@ -2,24 +2,19 @@
 \alias{animateFX}
 \title{Animate PITCHf/x}
 \usage{
-  animateFX(data, layer = list(), geom = "point",
-    point.color = aes(color = pitch_types),
-    breaks = c(0, 5, 10), flag = FALSE, interval = 0.01,
-    sleep = 1e-12, ...)
+  animateFX(data, color = "pitch_types", point.size = 3,
+    point.alpha = 1/3, flag = FALSE, interval = 0.01,
+    sleep = 1e-12, layer = list(), ...)
 }
 \arguments{
   \item{data}{data frame with appropriately named PITCHf/x
   variables}
 
-  \item{layer}{list of ggplot2 layer modifications.}
+  \item{point.size}{Size of points}
 
-  \item{geom}{type of geometry used for plotting.}
+  \item{point.alpha}{ggplot2 alpha parameter}
 
-  \item{point.color}{variable used to control coloring
-  scheme when \code{geom = "point"}.}
-
-  \item{breaks}{bin breaks for counts when \code{geom ==
-  "hex"}.}
+  \item{color}{variable used to control coloring scheme.}
 
   \item{flag}{indicate whether or not batter has decided to
   swing.}
@@ -29,6 +24,10 @@
 
   \item{sleep}{passed along to Sys.sleep() to flush current
   plot.}
+
+  \item{layer}{list of ggplot2 layer modifications.}
+
+  \item{...}{extra options passed onto geom commands}
 }
 \value{
   Returns a series of ggplot2 objects.

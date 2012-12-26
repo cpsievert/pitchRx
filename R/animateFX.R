@@ -11,13 +11,14 @@
 #' of pitch locations.
 #'
 #' @param data data frame with appropriately named PITCHf/x variables
-#' @param layer list of ggplot2 layer modifications.
-#' @param geom type of geometry used for plotting.
-#' @param point.color variable used to control coloring scheme when \code{geom = "point"}.
-#' @param breaks bin breaks for counts when \code{geom == "hex"}.
+#' @param point.size Size of points
+#' @param point.alpha ggplot2 alpha parameter
+#' @param color variable used to control coloring scheme.
 #' @param flag indicate whether or not batter has decided to swing.
 #' @param interval time (in seconds) between plotting the pitch locations.
 #' @param sleep passed along to Sys.sleep() to flush current plot.
+#' @param layer list of ggplot2 layer modifications.
+#' @param ... extra options passed onto geom commands
 #' @return Returns a series of ggplot2 objects.
 #' @export
 #' @examples
@@ -26,66 +27,58 @@
 #' animateFX(pitches, layer = facet_grid(pitcher_name~stand))
 #' 
 
-animateFX <- function(data, layer = list(), geom = "point", point.color = aes_string(color = "pitch_types"), breaks = c(0,5,10), flag=FALSE, interval = 0.01, sleep = 0.000000000001, ...){ 
-  #Add descriptions to pitch_types
-  if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
-  if ("pitch_type" %in% names(data)) {
-    types <- cbind(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
-                   pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
-                                 "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
-                                 "Fastball", "Unknown", "Fastball ... (FO?)"))
-    data <- merge(data, types, by = "pitch_type")
-  } else {
-    point.color <- NULL
-    warning("Make sure you have the appropriately named 'pitch_type' column.")
+animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3, flag=FALSE, interval = 0.01, sleep = 0.000000000001, layer = list(), ...){ 
+  if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
+    data$pitch_type <- factor(data$pitch_type)
+    types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
+                        pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
+                                      "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
+                                      "Fastball", "Unknown", "Fastball ... (FO?)"))
+    data <- join(data, types, by = "pitch_type", type="inner")
+  } 
+  if (!color %in% names(data)) {
+    warning(paste(color, "is the variable that defines coloring but it isn't in the dataset!"))
+    color <- ""
   }
-  idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
-  if (!all(idx %in% names(data))) warning("You must have the following variables in your dataset to animate pitch locations: 'x0', 'y0', 'z0', 'vx0', 'vy0', 'vz0', 'ax', 'ay', 'az'")
-  complete <- data[complete.cases(data[,idx]),] #get rid of records with any missing parameters
-  color <- as.list(match.call())$point.color
-  if (!is.null(color)){
-    colors <- gsub("[)]", "", gsub("aes[(]color = ","", color))[2]
-  } else colors <- "pitch_types"
   layers <- as.character(as.list(match.call())$layer)
   facets <- getFacets(layers)
-  reordered <- ddply(complete, facets, function(x) { #Does this do anything if facets is NULL?
-    x[, colors] <- reorder(x[, colors], x[, colors], length)
-    x[rev(order(x[, colors])), ]
-  })
+  idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
+  if (!all(idx %in% names(data))) warning("You must have the following variables in your dataset to animate pitch locations: 'x0', 'y0', 'z0', 'vx0', 'vy0', 'vz0', 'ax', 'ay', 'az'")
+  complete <- data[complete.cases(data[,idx]),] #get rid of records with any missing parameter values
+  if (color!="") { #Special aesthetic handling if coloring exists. Less prevalent cases should be plotted last.
+    reordered <- ddply(complete, facets, function(x) { #Does this do anything if facets is NULL?
+      x[, color] <- reorder(x[, color], x[, color], length)
+      x[rev(order(x[, color])), ]
+    })
+    aes_mapping <- aes_string(x = "x", y="z", colour = color)
+  } else {
+    reordered <- complete
+    aes_mapping <- aes_string(x = "x", y="z")
+  }
   parameters <- reordered[, names(reordered) %in% idx]
   snapshots <- getSnapshots(parameters)
   other <- reordered[, !(names(reordered) %in% idx)] #Keep 'other' variables for faceting/coloring
   if ("p_throws" %in% names(other)) other$p_throws <- paste("Pitcher Throws:", other$p_throws) #Add suffixes for context
   if ("stand" %in% names(other)) other$stand <- paste("Batter Stands:", other$stand)
-  if ("b_height" %in% names(other) & is.numeric(other$b_height)) {
+  if ("b_height" %in% names(other)) {
     boundaries <- getStrikezones(other, facets, strikeFX = FALSE) #Strikezone boundaries
-    zones <- geom_rect(data = boundaries, aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha = 0.2, color="grey20") #draw strikezones
+    other <- join(other, boundaries, by="stand", type="inner")
   } else {
     zones <- NULL
-    warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively. Also, 'b_height' also has to be a numeric vector")
+    warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively. Also, 'b_height' must be numeric; otherwise, strikezones will not appear.")
   }
   ctr <- 1 #Used to check whether or not batter has decided to swing
-  N <- dim(snapshots)[2] #Number of plots
+  N <- dim(snapshots)[2] #Number of plots in animation
   swing <- NULL
   for (i in 1:N) {
     if (flag & ctr > (2/5)*N) swing <- annotate("text", label = "SWING!", x = 0, y = 6, size = 2, colour = "red")
     FX <- data.frame(snapshots[,i,], other)
     names(FX) <- c("x", "y", "z", names(other))
     Sys.sleep(sleep)
-    if (geom %in% "tile") {
-      if (!is.null(facets)) {
-        stuff <- dlply(FX, facets, function(x) { getDensity(x, density=tile.density) } )
-        densities <- ldply(stuff)
-      } else {
-        densities <- getDensity(FX, density=tile.density)
-      }
-      t <- ggplot() + xlab("Horizontal Pitch Location")+ylab("Height from Ground")+scale_fill_gradient2(midpoint=0)
-      return(t+layer(data=densities, mapping = aes(x=x,y=y,fill=z), geom="tile")+zones+swing+layer)
-    }
-    p <- ggplot() + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
-    if (geom %in% "point") p <- p + layer(data = FX, mapping = aes(x = x, y = z, size = 100-y), geom = geom) + point.color
-    if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = x, y = z), geom = geom) + scale_fill_continuous(breaks = breaks)
-    print(p + swing + zones + layer)
+    p <- ggplot(data=FX) + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
+    p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="black") #draw strikezones
+    p <- p + geom_point(mapping=aes_mapping, size=point.size, alpha=point.alpha, ...)
+    print(p+swing+layer)
     ctr <- ctr + 1
   }
 }
