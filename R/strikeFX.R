@@ -9,7 +9,8 @@
 #' @param point.size Size of points
 #' @param point.alpha ggplot2 alpha parameter
 #' @param color variable used to control coloring scheme.
-#' @param tile.density If geom="tile", this formula defines the (possibly differenced) 2D Kernel Density Estimates.
+#' @param tile.density1 If geom="tile", this list defines a density estimate.
+#' @param tile.density2 If geom="tile", this list defines a second density estimate, which is subtracted from the first density etimate.
 #' @param breaks bin breaks for counts when \code{geom == "hex"}.
 #' @param adjust logical vector. Should vertical locations be adjusted according to batter height?
 #' @param layer list of other ggplot2 (layered) modifications.
@@ -21,11 +22,11 @@
 #' strikeFX(pitches)
 #' strikeFX(pitches, layer=facet_grid(pitcher_name~stand))
 #' strikeFX(pitches, geom="tile", layer=facet_grid(pitcher_name~stand))
-#' strikeFX(pitches, geom="tile", tile.density=des~Called.Strike-Ball, layer=facet_grid(pitcher_name~stand))
-#' 
+#' strikeFX(pitches, geom="tile", tile.density1=list(des="Called Strike"), layer=facet_grid(pitcher_name~stand))
+#' strikeFX(pitches, geom="tile", tile.density1=list(des="Called Strike"), tile.density2=list(des="Ball"),layer=facet_grid(pitcher_name~stand))
 
-strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", tile.density=des~Called.Strike, breaks = c(0,5,10), adjust=TRUE, layer = list(), ...){ 
-  if (!geom %in% c("point", "hex", "density2d", "tile")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
+strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), diff.density=TRUE, breaks = c(0,5,10), adjust=TRUE, layer = list(), ...){ 
+  if (!geom %in% c("point", "bin", "hex")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -64,29 +65,27 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   legendz <- theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
   xrange <- xlim(-2.5,2.5)
   yrange <- ylim(0,5)
-  if (geom %in% "tile") {
-    formula <- as.list(tile.density)
-    vars <- formula[-grep("~", formula)]
-    elem <- llply(vars, function(x) gsub("\\.", " ", x)) 
-    if (length(elem[[2]]) == 1) { 
-      tile_mapping <- aes_string(x="px",y="pz_adj")
-      t <- ggplot(data=FX, mapping=tile_mapping)+labelz+xrange+yrange
-      t <- t + stat_density2d(geom="tile", aes(fill = ..density..), contour = FALSE)
-      return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")) #draw strikezones
-    } else { #Special handling for differenced density estimates
-      values <- elem[[2]][-grep("\\+|\\-|\\*|\\/", elem[[2]])] #throw away math symbols
+  if (geom %in% c("bin", "hex")) { 
+    if (identical(density1, density2)) { #densities are not differenced
+      FX1 <- subsetFX(FX, density1)
+      t <- ggplot(data=FX1, aes(px, pz_adj))+labelz+xrange+yrange
+    } else { #densities are differenced
       if (!is.null(facets)) {
-        stuff <- dlply(FX, facets, function(x) { diffDensity(x, var=elem[[1]], values=values) } )
+        stuff <- dlply(FX, facets, function(x) { diffDensity(x, density1, density2) } )
         densities <- ldply(stuff)
       } else {
-        densities <- diffDensity(FX, var=elem[[1]], values=values)
+        densities <- diffDensity(FX, density1, density2)
+      }
+      if (!"stand" %in% names(densities)) {
+        nhalf <- dim(densities)[1]/2
+        densities$stand <- c(rep("Batter Stands: R", nhalf), rep("Batter Stands: L", nhalf))
       }
       densities <- join(densities, boundaries[[2]], by="stand", type="inner")
-      aes_map2 <- aes_string(x="x",y="y")
-      t <- ggplot(data=densities, mapping=aes_map2)+labelz+xrange+yrange
-      t <- t + geom_tile(aes(fill=z))+layer+scale_fill_gradient2(midpoint=0)
-     return(t+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="black")) #draw strikezones
+      t <- ggplot(data=densities, aes(x,y))+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
     }
+    if (geom %in% "bin") t <- t + stat_summary2d(aes(z=z), ...) #shouldn't use log since we have differenced densities
+    if (geom %in% "hex") t <- t + stat_summary_hex(aes(z=z), ...)
+    return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white"))
   }
   # Color aesthetic requires special handling, because it can be "none".
   p <- ggplot(data=FX, aes(ymax=top, ymin=bottom, xmax=right, xmin=left)) + legendz + labelz + xrange + yrange #+ scale_size(guide = "none") + scale_alpha(guide="none")
@@ -104,6 +103,22 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   print(p + layer)
 }
 
+
+#' Special subset handling for density estimates
+#' 
+#' @param data PITCHf/x data
+#' @param density either density1 or density2 passed on from \link{strikeFX}
+
+subsetFX <- function(data, density) {
+  if (length(density) == 1) {
+    index <- data[,names(density)] %in% density
+    subset(data, index)
+  } else {
+    if (length(density) > 1) warning("The length of each density parameter should be 0 or 1.")
+    data
+  }
+}
+
 #' Differenced 2D Kernel Density Estimates
 #'
 #' Computes differenced 2D Kernel Density Estimates using MASS::kde2d
@@ -112,19 +127,16 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
 #' The expression should look as follows: variable~value1-value2.
 #' 
 #' @param data PITCHf/x data
-#' @param var variable of interest
-#' @param values values of var used for 2D Kernel Density Estimation.
-#' @return Returns a data frame with differenced density estimates.
+#' @param density1 either density1 or density2 passed on from \link{strikeFX}.
+#' @param density2 either density1 or density2 passed on from \link{strikeFX}
+#' @return Returns a data frame with differenced density estimates as column z.
 
-diffDensity <- function(data, var, values){ #dynamic handling of contours?
-  ctr <- 1
-  for (i in values) {
-    points <- data[data[var] == i, c("px", "pz_adj")]
-    est <- kde2d(points[,1], points[,2], n=100, lims=c(-2.5, 2.5, 0, 5))
-    if (ctr == 1) grid <- expand.grid(x = est$x, y = est$y)
-    grid[i] <- as.vector(est$z)
-    ctr <- ctr + 1
-  }
-  grid["z"] <- grid[values[1]] - grid[values[2]]
+diffDensity <- function(data, density1, density2){ #add binned estimates?
+  data1 <- subsetFX(data, density1)
+  data2 <- subsetFX(data, density2)
+  est1 <- kde2d(data1[,"px"], data1[,"pz_adj"], n=100, lims=c(-2.5, 2.5, 0, 5))
+  grid <- expand.grid(x = est1$x, y = est1$y)
+  est2 <- kde2d(data2[,"px"], data2[,"pz_adj"], n=100, lims=c(-2.5, 2.5, 0, 5))
+  grid["z"] <- as.vector(est1$z) - as.vector(est2$z)
   return(grid)
 }
