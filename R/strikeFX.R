@@ -26,7 +26,7 @@
 #' strikeFX(pitches, geom="tile", tile.density1=list(des="Called Strike"), tile.density2=list(des="Ball"),layer=facet_grid(pitcher_name~stand))
 
 strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), diff.density=TRUE, breaks = c(0,5,10), adjust=TRUE, layer = list(), ...){ 
-  if (!geom %in% c("point", "bin", "hex")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
+  if (!geom %in% c("point", "bin", "hex", "contour")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -68,7 +68,10 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   if (geom %in% c("bin", "hex")) { 
     if (identical(density1, density2)) { #densities are not differenced
       FX1 <- subsetFX(FX, density1)
-      t <- ggplot(data=FX1, aes(px, pz_adj))+labelz+xrange+yrange
+      t <- ggplot(data=FX1, aes(x=px, y=pz_adj))+labelz+xrange+yrange
+      if (geom %in% "bin") t <- t + geom_bin2d(...) 
+      if (geom %in% "hex") t <- t + geom_hex(...)
+      return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white"))
     } else { #densities are differenced
       if (!is.null(facets)) {
         stuff <- dlply(FX, facets, function(x) { diffDensity(x, density1, density2) } )
@@ -83,7 +86,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       densities <- join(densities, boundaries[[2]], by="stand", type="inner")
       t <- ggplot(data=densities, aes(x,y))+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
     }
-    if (geom %in% "bin") t <- t + stat_summary2d(aes(z=z), ...) #shouldn't use log since we have differenced densities
+    if (geom %in% "bin") t <- t + stat_summary2d(aes(z=z), ...) #shouldn't use fun=log since we have differenced densities
     if (geom %in% "hex") t <- t + stat_summary_hex(aes(z=z), ...)
     return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white"))
   }
@@ -96,10 +99,6 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
     point_mapping <- aes_string(x = "px", y="pz_adj", colour = color)
   }
   if (geom %in% "point") p <- p + geom_point(mapping=point_mapping, size=point.size, alpha=point.alpha, ...)
-  #if (geom %in% "bin2d") p <- p + geom_bin2d() + scale_fill_continuous(breaks = breaks) #Implement similar to stat_density2d?
-  #if (geom %in% "density2d") p <- p + geom_density2d()
-  #if (geom %in% "raster") p <- p + geom_raster()
-  #if (geom %in% c("hex", "density2d")) p <- p + layer(data = FX, mapping = aes(x = px, y = pz_adj), geom = geom)
   print(p + layer)
 }
 

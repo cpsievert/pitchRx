@@ -2,18 +2,20 @@
 \alias{diffDensity}
 \title{Differenced 2D Kernel Density Estimates}
 \usage{
-  diffDensity(data, var, values)
+  diffDensity(data, density1, density2)
 }
 \arguments{
   \item{data}{PITCHf/x data}
 
-  \item{var}{variable of interest}
+  \item{density1}{either density1 or density2 passed on
+  from \link{strikeFX}.}
 
-  \item{values}{values of var used for 2D Kernel Density
-  Estimation.}
+  \item{density2}{either density1 or density2 passed on
+  from \link{strikeFX}}
 }
 \value{
-  Returns a data frame with differenced density estimates.
+  Returns a data frame with differenced density estimates
+  as column z.
 }
 \description{
   Computes differenced 2D Kernel Density Estimates using
