@@ -2,7 +2,7 @@
 \alias{diffDensity}
 \title{Differenced 2D Kernel Density Estimates}
 \usage{
-  diffDensity(data, density1, density2)
+  diffDensity(data, density1, density2, lims)
 }
 \arguments{
   \item{data}{PITCHf/x data}
@@ -11,7 +11,10 @@
   from \link{strikeFX}.}
 
   \item{density2}{either density1 or density2 passed on
-  from \link{strikeFX}}
+  from \link{strikeFX}.}
+
+  \item{lims}{MASS::kde2d paramaters passed from
+  \link{strikeFX}.}
 }
 \value{
   Returns a data frame with differenced density estimates
