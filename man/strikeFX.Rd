@@ -5,13 +5,15 @@
   strikeFX(data, geom = "point", point.size = 3,
     point.alpha = 1/3, color = "pitch_types",
     density1 = list(), density2 = list(),
-    diff.density = TRUE, breaks = c(0, 5, 10),
-    adjust = TRUE, layer = list(), ...)
+    diff.density = TRUE, adjust = TRUE, layer = list(),
+    ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
 
-  \item{geom}{type of geometry used for plotting.}
+  \item{geom}{plotting geometry. Multiple geometries can be
+  plotted at once, but only considers: "point", "hex",
+  "bin" and "contour".}
 
   \item{point.size}{Size of points}
 
@@ -26,11 +28,8 @@
   second density estimate, which is subtracted from the
   first density etimate.}
 
-  \item{breaks}{bin breaks for counts when \code{geom ==
-  "hex"}.}
-
-  \item{adjust}{logical vector. Should vertical locations
-  be adjusted according to batter height?}
+  \item{adjust}{logical. Should vertical locations be
+  adjusted according to batter height?}
 
   \item{layer}{list of other ggplot2 (layered)
   modifications.}

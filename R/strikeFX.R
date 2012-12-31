@@ -5,14 +5,13 @@
 #' Scatterplot with "px" on the horizontal axis and "pz" on the vertical axis.
 #'
 #' @param data PITCHf/x data to be visualized.
-#' @param geom type of geometry used for plotting.
+#' @param geom plotting geometry. Multiple geometries can be plotted at once, but only considers: "point", "hex", "bin" and "contour". 
 #' @param point.size Size of points
 #' @param point.alpha ggplot2 alpha parameter
 #' @param color variable used to control coloring scheme.
 #' @param tile.density1 If geom="tile", this list defines a density estimate.
 #' @param tile.density2 If geom="tile", this list defines a second density estimate, which is subtracted from the first density etimate.
-#' @param breaks bin breaks for counts when \code{geom == "hex"}.
-#' @param adjust logical vector. Should vertical locations be adjusted according to batter height?
+#' @param adjust logical. Should vertical locations be adjusted according to batter height?
 #' @param layer list of other ggplot2 (layered) modifications.
 #' @param ... extra options passed onto geom commands
 #' @return Returns a ggplot2 object.
@@ -25,8 +24,8 @@
 #' strikeFX(pitches, geom="tile", tile.density1=list(des="Called Strike"), layer=facet_grid(pitcher_name~stand))
 #' strikeFX(pitches, geom="tile", tile.density1=list(des="Called Strike"), tile.density2=list(des="Ball"),layer=facet_grid(pitcher_name~stand))
 
-strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), diff.density=TRUE, breaks = c(0,5,10), adjust=TRUE, layer = list(), ...){ 
-  if (!geom %in% c("point", "bin", "hex", "contour")) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
+strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), diff.density=TRUE, adjust=TRUE, layer = list(), ...){ 
+  if (any(!geom %in% c("point", "bin", "hex", "contour"))) warning("Current functionality is designed to support the following geometries: 'point', 'hex', 'density2d', 'tile'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -63,12 +62,12 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   #Recycled plot formats
   labelz <- labs(x = "Horizontal Pitch Location", y = "Height from Ground")
   legendz <- theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
-  xrange <- xlim(-2.5,2.5)
-  yrange <- ylim(0,5)
-  if (geom %in% c("bin", "hex")) { 
+  #xrange <- xlim(-2.5,2.5)
+  #yrange <- ylim(0,5)
+  if (geom %in% c("bin", "hex", "contour")) { #special handling for (2D) density geometries
     if (identical(density1, density2)) { #densities are not differenced
       FX1 <- subsetFX(FX, density1)
-      t <- ggplot(data=FX1, aes(x=px, y=pz_adj))+labelz+xrange+yrange
+      t <- ggplot(data=FX1, aes(x=px, y=pz_adj))+labelz
       if (geom %in% "bin") t <- t + geom_bin2d(...) 
       if (geom %in% "hex") t <- t + geom_hex(...)
       return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white"))
@@ -84,22 +83,23 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
         densities$stand <- c(rep("Batter Stands: R", nhalf), rep("Batter Stands: L", nhalf))
       }
       densities <- join(densities, boundaries[[2]], by="stand", type="inner")
-      t <- ggplot(data=densities, aes(x,y))+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
+      t <- ggplot(data=densities, aes(x,y))+labelz+scale_fill_gradient2(midpoint=0)
     }
     if (geom %in% "bin") t <- t + stat_summary2d(aes(z=z), ...) #shouldn't use fun=log since we have differenced densities
     if (geom %in% "hex") t <- t + stat_summary_hex(aes(z=z), ...)
     return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white"))
   }
-  # Color aesthetic requires special handling, because it can be "none".
-  p <- ggplot(data=FX, aes(ymax=top, ymin=bottom, xmax=right, xmin=left)) + legendz + labelz + xrange + yrange #+ scale_size(guide = "none") + scale_alpha(guide="none")
-  p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="black") #draw strikezones
-  if (color == "") {
-    point_mapping <- aes_string(x = "px", y="pz_adj")
-  } else {
-    point_mapping <- aes_string(x = "px", y="pz_adj", colour = color)
+  if (i %in% "point") {
+    p <- ggplot(data=FX, aes(ymax=top, ymin=bottom, xmax=right, xmin=left)) + legendz + labelz + scale_size(guide = "none") + scale_alpha(guide="none")
+    p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="black") #draw strikezones
+    if (color == "") {
+      point_mapping <- aes_string(x = "px", y="pz_adj")
+    } else {
+      point_mapping <- aes_string(x = "px", y="pz_adj", colour = color)
+    }
+    p <- p + geom_point(mapping=point_mapping, size=point.size, alpha=point.alpha, ...)
+    return(p + layer)
   }
-  if (geom %in% "point") p <- p + geom_point(mapping=point_mapping, size=point.size, alpha=point.alpha, ...)
-  print(p + layer)
 }
 
 
