@@ -89,7 +89,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
     if (geom %in% "hex") t <- t + stat_summary_hex(aes(z=z), ...)
     return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white"))
   }
-  if (i %in% "point") {
+  if (geom %in% "point") {
     p <- ggplot(data=FX, aes(ymax=top, ymin=bottom, xmax=right, xmin=left)) + legendz + labelz + scale_size(guide = "none") + scale_alpha(guide="none")
     p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="black") #draw strikezones
     if (color == "") {
