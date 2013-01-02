@@ -95,13 +95,14 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       }
     }
     densities <- join(densities, boundaries[[2]], by="stand", type="inner")
-    t2 <- ggplot(data=densities, aes(x,y))+layer+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
+    t2 <- ggplot(data=densities, aes(x,y))+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
     if (geom %in% c("bin", "tile")) t2 <- t2 + stat_summary2d(aes(z=z), ...) #shouldn't use fun=log, since we have differenced densities
     if (geom %in% "hex") t2 <- t2 + stat_summary_hex(aes(z=z), ...)
     #Contours and strikezones are drawn last
     #if (contour) t2 <- t2 + stat_density2d(aes(z=z), ...)
-    if (contour) t2 <- t2 + stat_contour(aes(z=z)) #passing binwidth throws error
-    return(t2+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20"))
+    if (contour) t2 <- t2 + stat_contour(aes(z=z)) #passing binwidth here throws error
+    t2 <- t2 + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20")
+    return(t2+layer)
   }
   if (geom %in% "point") {
     p <- ggplot(data=FX, aes(ymax=top, ymin=bottom, xmax=right, xmin=left)) + legendz + labelz + xrange + yrange + scale_size(guide = "none") + scale_alpha(guide="none")
