@@ -10,7 +10,8 @@
 #' @param point.alpha ggplot2 alpha parameter
 #' @param color variable used to control coloring scheme.
 #' @param density1 List defines a density estimate.
-#' @param density2 List defines a density estimate. If \code{density1 != density2}, the density estimates are automatically differenced
+#' @param density2 List defines a density estimate. If \code{density1 != density2}, the density estimates are automatically differenced.
+#' @param contour logical. Should contour lines be included?
 #' @param adjust logical. Should vertical locations be adjusted according to batter height?
 #' @param layer list of other ggplot2 (layered) modifications.
 #' @param limitz limits for horizontal and vertical axes. 
@@ -20,13 +21,18 @@
 #' @examples
 #' data(pitches)
 #' strikeFX(pitches)
-#' strikeFX(pitches, layer=facet_grid(pitcher_name~stand))
-#' strikeFX(pitches, geom="bin", layer=facet_grid(pitcher_name~stand))
-#' strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), layer=facet_grid(pitcher_name~stand))
-#' strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"),layer=facet_grid(pitcher_name~stand))
+#' strikeFX(pitches, geom="tile")
+#' strikeFX(pitches, geom="tile", contour=TRUE)
+#' strikeFX(pitches, geom="tile", contour=TRUE, layer=facet_grid(.~stand))
+#' strikeFX(pitches, geom="tile", contour=TRUE, layer=facet_grid(pitcher_name~stand))
+#' strikeFX(pitches, geom="hex")
+#' strikeFX(pitches, geom="hex", contour=TRUE, binwidth=c(0.1, 0.1))
+#' strikeFX(pitches, geom="hex", contour=TRUE, density1=list(des="Called Strike"), density2=list(des="Ball"))
+#' strikeFX(pitches, geom="hex", contour=TRUE, density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))
+#' 
 
-strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), adjust=TRUE, layer = list(), limitz=c(-2.5, 2.5, 0, 5), ...){ 
-  if (any(!geom %in% c("point", "bin", "hex", "contour"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'contour'.")
+strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), contour=FALSE, adjust=TRUE, layer = list(), limitz=c(-2.5, 2.5, 0, 5), ...){ 
+  if (any(!geom %in% c("point", "bin", "hex", "tile"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -65,13 +71,17 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   legendz <- theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
   xrange <- xlim(limitz[1:2])
   yrange <- ylim(limitz[3:4])
-  if (geom %in% c("bin", "hex", "contour")) { #special handling for (2D) density geometries
+  if (geom %in% c("bin", "hex", "tile")) { #special handling for (2D) density geometries
     if (identical(density1, density2)) { #densities are not differenced
       FX1 <- subsetFX(FX, density1)
       t <- ggplot(data=FX1, aes(x=px, y=pz_adj))+labelz+xrange+yrange
       if (geom %in% "bin") t <- t + geom_bin2d(...) 
       if (geom %in% "hex") t <- t + geom_hex(...)
-      return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white"))
+      if (geom %in% "tile") t <- t + stat_density2d(geom="tile", aes(fill = ..density..), contour = FALSE)
+      #Contours and strikezones are drawn last
+      if (contour) t <- t + geom_density2d(...)
+      t <- t + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")
+      return(t+layer)
     } else { #densities are differenced
       if (!is.null(facets)) {
         stuff <- dlply(FX, facets, function(x) { diffDensity(x, density1, density2, limz=limitz) } )
@@ -83,12 +93,15 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
         nhalf <- dim(densities)[1]/2
         densities$stand <- c(rep("Batter Stands: R", nhalf), rep("Batter Stands: L", nhalf))
       }
-      densities <- join(densities, boundaries[[2]], by="stand", type="inner")
-      t <- ggplot(data=densities, aes(x,y))+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
     }
-    if (geom %in% "bin") t <- t + stat_summary2d(aes(z=z), ...) #shouldn't use fun=log since we have differenced densities
-    if (geom %in% "hex") t <- t + stat_summary_hex(aes(z=z), ...)
-    return(t+layer+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white"))
+    densities <- join(densities, boundaries[[2]], by="stand", type="inner")
+    t2 <- ggplot(data=densities, aes(x,y))+layer+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
+    if (geom %in% c("bin", "tile")) t2 <- t2 + stat_summary2d(aes(z=z), ...) #shouldn't use fun=log, since we have differenced densities
+    if (geom %in% "hex") t2 <- t2 + stat_summary_hex(aes(z=z), ...)
+    #Contours and strikezones are drawn last
+    #if (contour) t2 <- t2 + stat_density2d(aes(z=z), ...)
+    if (contour) t2 <- t2 + stat_contour(aes(z=z)) #passing binwidth throws error
+    return(t2+geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20"))
   }
   if (geom %in% "point") {
     p <- ggplot(data=FX, aes(ymax=top, ymin=bottom, xmax=right, xmin=left)) + legendz + labelz + xrange + yrange + scale_size(guide = "none") + scale_alpha(guide="none")
@@ -98,6 +111,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
     } else {
       point_mapping <- aes_string(x = "px", y="pz_adj", colour = color)
     }
+    if (contour) p <- p + geom_density2d(point_mapping, colour="black")
     p <- p + geom_point(mapping=point_mapping, size=point.size, alpha=point.alpha, ...)
     return(p + layer)
   }

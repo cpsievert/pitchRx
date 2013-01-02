@@ -2,7 +2,7 @@
 \alias{diffDensity}
 \title{Differenced 2D Kernel Density Estimates}
 \usage{
-  diffDensity(data, density1, density2, lims)
+  diffDensity(data, density1, density2, limz)
 }
 \arguments{
   \item{data}{PITCHf/x data}
