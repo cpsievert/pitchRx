@@ -79,7 +79,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       if (geom %in% "hex") t <- t + geom_hex(...)
       if (geom %in% "tile") t <- t + stat_density2d(geom="tile", aes(fill = ..density..), contour = FALSE)
       #Contours and strikezones are drawn last
-      if (contour) t <- t + geom_density2d(...)
+      if (contour) t <- t + geom_density2d()
       t <- t + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")
       return(t+layer)
     } else { #densities are differenced
