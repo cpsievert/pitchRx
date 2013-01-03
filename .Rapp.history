@@ -1,0 +1,648 @@
+block5 <- profr(#
+{#
+ptm <- proc.time()#
+	nasa.trend<-unique(nasa[,c("x","y")])#
+	nasa$z <- nasa$y*72+nasa$x#
+	nasa <- nasa[order(nasa$z),]#
+	nasa$temp <- 0#
+	nz<-unique(nasa$z)#
+	idx <- 1:72#
+	for (i in 1:length(nz)) {#
+	    nasa$temp[i] <- coefficients(rlm(temperature~year+month, data=nasa[idx,]))[2]#
+	    idx <- idx + 72#
+	}#
+#	nasa$temp <- unlist(temp)#
+ptm4 <- proc.time() - ptm#
+})#
+ptm4
+ddply
+ldply
+llply
+block5 <- profr(#
+{#
+ptm <- proc.time()#
+	nasa.trend<-unique(nasa[,c("x","y")])#
+	nasa$z <- nasa$y*72+nasa$x#
+	nasa <- nasa[order(nasa$z),]#
+	nasa$temp <- 0#
+	nz<-unique(nasa$z)#
+	idx <- 1:72#
+	for (i in 1:length(nz)) {#
+	    nasa.trend$temp[i] <- coefficients(rlm(temperature~year+month, data=nasa[idx, ]))[2]#
+	    idx <- idx + 72#
+	}#
+#	nasa$temp <- unlist(temp)#
+ptm4 <- proc.time() - ptm#
+})#
+ptm4
+block5 <- profr(#
+{#
+ptm <- proc.time()#
+	nasa.trend<-unique(nasa[,c("x","y")])#
+	nasa$z <- nasa$y*72+nasa$x#
+	nasa <- nasa[order(nasa$z),]#
+	nasa.trend$temp <- 0#
+	nz<-unique(nasa$z)#
+	idx <- 1:72#
+	for (i in 1:length(nz)) {#
+	    nasa.trend$temp[i] <- coefficients(rlm(temperature~year+month, data=nasa[idx, ]))[2]#
+	    idx <- idx + 72#
+	}#
+#	nasa$temp <- unlist(temp)#
+ptm4 <- proc.time() - ptm#
+})#
+ptm4
+head(nasa)
+tail(nasa)
+length(unique(nasa$z))
+library(devtools)
+library("devtools")
+library(help=devtools)
+library(devtools)
+library(DBI)
+library(RMySQL)
+drv <- dbDriver("MySQL")
+co <- dbConnect(drv, user="2009Expo", password="R R0cks", port=3306, dbname="baseball", host="headnode.stat.iastate.edu")
+dbListTables(co)
+dbListFields(co, "Batting")
+dbGetQuery(co, "SELECT count(*) FROM Batting")
+library(gWidgets)
+options("guiToolkit"="RGtk2")
+printval <- function(...) print(svalue(obj))#
+obj <- gslider(from=0, to=7734, by=100, value=0, container=gwindow(), handler=printval)#
+# Putting it together#
+## set up#
+availDists <- c(Normal="rnorm", Exponential="rexp")#
+availKernels <- c("gaussian", "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine")#
+#
+# Create the handler, the function that is executed when the GUI item value changes#
+updatePlot <- function(h, ...) {#
+  x <- do.call(availDists[svalue(distribution)], list(svalue(sampleSize)))#
+  plot(density(x, adjust = svalue(bandwidthAdjust),#
+     kernel = svalue(kernel)), main="Density plot")#
+  rug(x)#
+}#
+updatePlot#
+#
+# Create the GUI items and link to handler function#
+distribution <- gradio(names(availDists), horizontal=FALSE, handler=updatePlot)#
+kernel <- gcombobox(availKernels, handler=updatePlot)#
+bandwidthAdjust <- gslider(from=0,to=2,by=.01, value=1, handler=updatePlot)#
+sampleSize <- gradio(c(50,100,200, 300), handler = updatePlot)#
+#
+## now layout#
+window <- gwindow("gWidgetsDensity")#
+BigGroup <- ggroup(cont=window)#
+group <- ggroup(horizontal=FALSE, container=BigGroup)#
+tmp <- gframe("Distribution", container=group)#
+add(tmp, distribution)#
+#
+tmp <- gframe("Sample size", container=group)#
+add(tmp, sampleSize)#
+tmp <- gframe("Kernel", container=group)#
+add(tmp, kernel)#
+tmp <- gframe("Bandwidth adjust", container=group)#
+add(tmp, bandwidthAdjust, expand=TRUE)#
+#
+add(BigGroup, ggraphics())
+densityGUI <- function() {#
+  # Kernel options#
+  availDists <- c(Normal="rnorm", Exponential="rexp")#
+  availKernels <- c("gaussian", "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine")#
+#
+  # Create the handler#
+  updatePlot <- function(h,...) {#
+    x <- do.call(availDists[svalue(distribution)],list(svalue(sampleSize)))#
+    plot(density(x, adjust = svalue(bandwidthAdjust),#
+      kernel = svalue(kernel)),main="Density plot")#
+    rug(x)#
+  }
+GUI elements#
+  distribution <- gradio(names(availDists), horizontal=FALSE, handler=updatePlot)#
+  kernel <- gcombobox(availKernels, handler=updatePlot)#
+  bandwidthAdjust <- gslider(from=0,to=2,by=.01, value=1, handler=updatePlot)#
+  sampleSize <- gradio(c(50,100,200, 300), handler = updatePlot)#
+#
+  # GUI layout#
+  window <- gwindow("gWidgetsDensity")#
+  BigGroup <- ggroup(cont=window)#
+  group <- ggroup(horizontal=FALSE, container=BigGroup)#
+  tmp <- gframe("Distribution", container=group)#
+  add(tmp, distribution)#
+#
+  tmp <- gframe("Sample size", container=group)#
+  add(tmp, sampleSize)#
+  tmp <- gframe("Kernel", container=group)#
+  add(tmp, kernel)#
+  tmp <- gframe("Bandwidth adjust", container=group)#
+  add(tmp, bandwidthAdjust, expand=TRUE)#
+#
+  # Put graphics canvas into frame#
+  add(BigGroup, ggraphics())#
+}
+densityGUI()
+densityGUI <- function() {#
+  # Kernel options#
+  availDists <- c(Normal="rnorm", Exponential="rexp")#
+  availKernels <- c("gaussian", "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine")#
+#
+  # Create the handler#
+  updatePlot <- function(h,...) {#
+    x <- do.call(availDists[svalue(distribution)],list(svalue(sampleSize)))#
+    plot(density(x, adjust = svalue(bandwidthAdjust),#
+      kernel = svalue(kernel)),main="Density plot")#
+    rug(x)#
+  }#
+#
+  # GUI elements#
+  distribution <- gradio(names(availDists), horizontal=FALSE, handler=updatePlot)#
+  kernel <- gcombobox(availKernels, handler=updatePlot)#
+  bandwidthAdjust <- gslider(from=.01,to=2,by=.01, value=1, handler=updatePlot)#
+  sampleSize <- gradio(c(50,100,200, 300), handler = updatePlot)#
+#
+  # GUI layout#
+  window <- gwindow("gWidgetsDensity")#
+  BigGroup <- ggroup(cont=window)#
+  group <- ggroup(horizontal=FALSE, container=BigGroup)#
+  tmp <- gframe("Distribution", container=group)#
+  add(tmp, distribution)#
+#
+  tmp <- gframe("Sample size", container=group)#
+  add(tmp, sampleSize)#
+  tmp <- gframe("Kernel", container=group)#
+  add(tmp, kernel)#
+  tmp <- gframe("Bandwidth adjust", container=group)#
+  add(tmp, bandwidthAdjust, expand=TRUE)#
+#
+  # Put graphics canvas into frame#
+  add(BigGroup, ggraphics())#
+}
+densityGUI()
+obj <- gedit("Hello world", container = gwindow())
+densityGUI <- function() {#
+  # Kernel options#
+  #availDists <- c(Normal="rnorm", Exponential="rexp")#
+  availKernels <- c("gaussian", "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine")#
+#
+  # Create the handler#
+  updatePlot <- function(h,...) {#
+    x <- do.call(availDists[svalue(distribution)],list(svalue(sampleSize)))#
+    plot(density(x, adjust = svalue(bandwidthAdjust),#
+      kernel = svalue(kernel)),main="Density plot")#
+    rug(x)#
+  }#
+#
+  # GUI elements#
+  distribution <- gedit("name distribution here", horizontal=FALSE, handler=updatePlot)#
+  kernel <- gcombobox(availKernels, handler=updatePlot)#
+  bandwidthAdjust <- gslider(from=.01,to=2,by=.01, value=1, handler=updatePlot)#
+  sampleSize <- gradio(c(50,100,200, 300), handler = updatePlot)#
+#
+  # GUI layout#
+  window <- gwindow("gWidgetsDensity")#
+  BigGroup <- ggroup(cont=window)#
+  group <- ggroup(horizontal=FALSE, container=BigGroup)#
+  tmp <- gframe("Distribution", container=group)#
+  add(tmp, distribution)#
+#
+  tmp <- gframe("Sample size", container=group)#
+  add(tmp, sampleSize)#
+  tmp <- gframe("Kernel", container=group)#
+  add(tmp, kernel)#
+  tmp <- gframe("Bandwidth adjust", container=group)#
+  add(tmp, bandwidthAdjust, expand=TRUE)#
+#
+  # Put graphics canvas into frame#
+  add(BigGroup, ggraphics())#
+}
+densityGUI()
+densityGUI <- function(availDists) {#
+  # Kernel options#
+  #availDists <- c(Normal="rnorm", Exponential="rexp")#
+  availKernels <- c("gaussian", "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine")#
+#
+  # Create the handler#
+  updatePlot <- function(h,...) {#
+    x <- do.call(availDists[svalue(distribution)],list(svalue(sampleSize)))#
+    plot(density(x, adjust = svalue(bandwidthAdjust),#
+      kernel = svalue(kernel)),main="Density plot")#
+    rug(x)#
+  }#
+#
+  # GUI elements#
+  distribution <- gradio(names(availDists), horizontal=FALSE, handler=updatePlot)#
+  kernel <- gcombobox(availKernels, handler=updatePlot)#
+  bandwidthAdjust <- gslider(from=.01,to=2,by=.01, value=1, handler=updatePlot)#
+  sampleSize <- gradio(c(50,100,200, 300), handler = updatePlot)#
+#
+  # GUI layout#
+  window <- gwindow("gWidgetsDensity")#
+  BigGroup <- ggroup(cont=window)#
+  group <- ggroup(horizontal=FALSE, container=BigGroup)#
+  tmp <- gframe("Distribution", container=group)#
+  add(tmp, distribution)#
+#
+  tmp <- gframe("Sample size", container=group)#
+  add(tmp, sampleSize)#
+  tmp <- gframe("Kernel", container=group)#
+  add(tmp, kernel)#
+  tmp <- gframe("Bandwidth adjust", container=group)#
+  add(tmp, bandwidthAdjust, expand=TRUE)#
+#
+  # Put graphics canvas into frame#
+  add(BigGroup, ggraphics())#
+}
+densityGUI(availDists = c(Normal="rnorm", Exponential="rexp"))
+?runif
+names(c(Normal="rnorm", Exponential="rexp", Uniform="runif", Gamma="rgamma"))
+svalue(c(Normal="rnorm", Exponential="rexp", Uniform="runif", Gamma="rgamma"))
+obj <- gspinbutton(from=0, to=7734, by=100, value=0, container=gwindow())
+densityGUI <- function(availDists) {#
+  # Kernel options#
+  #availDists <- c(Normal="rnorm", Exponential="rexp")#
+  if (names(availDists))#
+  availKernels <- c("gaussian", "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine")#
+#
+  # Create the handler#
+  updatePlot <- function(h,...) {#
+    x <- do.call(availDists[svalue(distribution)],list(svalue(sampleSize)))#
+    plot(density(x, adjust = svalue(bandwidthAdjust),#
+      kernel = svalue(kernel)),main="Density plot")#
+    rug(x)#
+  }#
+#
+  # GUI elements#
+  distribution <- gradio(names(availDists), horizontal=FALSE, handler=updatePlot)#
+  kernel <- gcombobox(availKernels, handler=updatePlot)#
+  bandwidthAdjust <- gslider(from=.01,to=2,by=.01, value=1, handler=updatePlot)#
+  sampleSize <- gspinbutton(from=50, to=500, by=10, value=50, handler = updatePlot)#
+#
+  # GUI layout#
+  window <- gwindow("gWidgetsDensity")#
+  BigGroup <- ggroup(cont=window)#
+  group <- ggroup(horizontal=FALSE, container=BigGroup)#
+  tmp <- gframe("Distribution", container=group)#
+  add(tmp, distribution)#
+#
+  tmp <- gframe("Sample size", container=group)#
+  add(tmp, sampleSize)#
+  tmp <- gframe("Kernel", container=group)#
+  add(tmp, kernel)#
+  tmp <- gframe("Bandwidth adjust", container=group)#
+  add(tmp, bandwidthAdjust, expand=TRUE)#
+#
+  # Put graphics canvas into frame#
+  add(BigGroup, ggraphics())#
+}
+densityGUI(availDists = c(Normal="rnorm", Exponential="rexp", Uniform="runif", Gamma="rgamma"))
+densityGUI <- function(availDists) {#
+  # Kernel options#
+  #availDists <- c(Normal="rnorm", Exponential="rexp")#
+  #if (names(availDists))#
+  availKernels <- c("gaussian", "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine")#
+#
+  # Create the handler#
+  updatePlot <- function(h,...) {#
+    x <- do.call(availDists[svalue(distribution)],list(svalue(sampleSize)))#
+    plot(density(x, adjust = svalue(bandwidthAdjust),#
+      kernel = svalue(kernel)),main="Density plot")#
+    rug(x)#
+  }#
+#
+  # GUI elements#
+  distribution <- gradio(names(availDists), horizontal=FALSE, handler=updatePlot)#
+  kernel <- gcombobox(availKernels, handler=updatePlot)#
+  bandwidthAdjust <- gslider(from=.01,to=2,by=.01, value=1, handler=updatePlot)#
+  sampleSize <- gspinbutton(from=50, to=500, by=10, value=50, handler = updatePlot)#
+#
+  # GUI layout#
+  window <- gwindow("gWidgetsDensity")#
+  BigGroup <- ggroup(cont=window)#
+  group <- ggroup(horizontal=FALSE, container=BigGroup)#
+  tmp <- gframe("Distribution", container=group)#
+  add(tmp, distribution)#
+#
+  tmp <- gframe("Sample size", container=group)#
+  add(tmp, sampleSize)#
+  tmp <- gframe("Kernel", container=group)#
+  add(tmp, kernel)#
+  tmp <- gframe("Bandwidth adjust", container=group)#
+  add(tmp, bandwidthAdjust, expand=TRUE)#
+#
+  # Put graphics canvas into frame#
+  add(BigGroup, ggraphics())#
+}
+densityGUI(availDists = c(Normal="rnorm", Exponential="rexp", Uniform="runif", Gamma="rgamma"))
+densityGUI(availDists = c(Normal="rnorm", Exponential="rexp", Uniform="runif", Gamma="rgamma", Whatif="this"))
+svalue(c(1, "se", s"e"))
+svalue(c(1, "se"))
+?join
+library(plyr)
+?join
+litter=factor(rep(1:8,each=2))
+diet=factor(rep(1:2,each=8))
+drug=factor(rep(1:2,8))
+X=model.matrix(~diet*drug)
+X
+beta=c(4,1,-1.5,0.5)
+Z=model.matrix(~0+litter)
+Z
+set.seed(98723)
+u=rnorm(8,0,.8)
+e=rnorm(16,0,.3)
+y=X%*%beta+Z%*%u+e
+y=round(y,2)
+y
+d=data.frame(litter,diet,drug,y)
+o=lm(y~diet+litter+drug+diet:drug)
+a=anova(o)
+a
+a[1,3]/a[2,3]
+w=tapply(y,litter,mean)
+w
+?t.test
+t.test(w[1:4],w[5:8],var.equal=T)$stat^2
+library(nlme)
+o=lme(y~diet+drug+diet:drug,random=~1|litter)
+anova(o)
+library(lme4)
+o=lmer(y~diet+drug+diet:drug+(1|litter))
+anova(o)
+?lme
+?lmer
+?LM
+?lm
+block=factor(rep(1:4,each=12))
+geno=factor(rep(rep(1:3,each=4),4))
+fert=rep(seq(0,150,by=50),12)
+X=model.matrix(~geno+fert+I(fert^2)+geno:fert)
+beta=c(125,15,-10,.4,-0.0015,0,.2)
+Z1=model.matrix(~0+block)
+Z2=model.matrix(~0+geno:block)
+Z=cbind(Z1,Z2)
+set.seed(532)
+u=c(rnorm(4,0,6),rnorm(12,0,7))
+e=rnorm(48,0,6)
+y=X%*%beta+Z%*%u+e
+y=round(y,1)
+d=data.frame(block,geno,fert,y)
+d
+o=lm(y~block+geno+block:geno+factor(fert)+geno:factor(fert))
+anova(o)
+a=as.matrix(anova(o))
+MSE=a[6,3]
+MSE
+MSBlockGeno=a[4,3]
+(MSBlockGeno-MSE)/4
+sige=sqrt(MSE)
+sigw=sqrt((MSBlockGeno-MSE)/4)
+MSGeno=a[2,3]
+Fstat=MSGeno/MSBlockGeno
+Fstat
+pval=1-pf(Fstat,a[2,1],a[4,1])
+pval
+gmeans=tapply(y,geno,mean)
+gmeans
+est=gmeans[2]-gmeans[1]
+names(est)=NULL
+se=sqrt(2*MSBlockGeno/(4*4))
+lower=est-qt(.975,a[4,1])*se
+upper=est+qt(.975,a[4,1])*se
+c(estimate=est,se=se,lower=lower,upper=upper)
+library(nlme)
+f=factor((fert+50)/50)
+f
+g=geno
+o=lme(y~g*f,random=~1|block/g)
+model.matrix(o)
+o
+o=lm(y~block+geno+block:geno+factor(fert)+geno:factor(fert))
+o
+anova(o)
+o=lme(y~g*f,random=~1|block/g)
+o
+anova(o)
+sigw
+sige
+fixed.effects(o)
+vcov(o)
+ci=function(lmeout,C,df,a=0.05)#
+{#
+  b=fixed.effects(lmeout)#
+  V=vcov(lmeout)#
+  Cb=C%*%b#
+  se=sqrt(diag(C%*%V%*%t(C)))#
+  tval=qt(1-a/2,df)#
+  low=Cb-tval*se#
+  up=Cb+tval*se#
+  m=cbind(C,Cb,se,low,up)#
+  dimnames(m)[[2]]=c(paste("c",1:ncol(C),sep=""),#
+             "estimate","se",#
+             paste(100*(1-a),"% Conf.",sep=""),#
+             "limits")#
+  m#
+}
+?dimnames
+?names
+?dimnames
+C=matrix(c(0,1,0,0,0,0,.25,0,.25,0,.25,0),nrow=1)
+ci(o,C,6)
+X=model.matrix(o)
+X
+apply(X[g==2,],2,mean)-apply(X[g==1,],2,mean)
+random.effects(o)
+cbind(u,unlist(random.effects(o)))
+litter=factor(rep(1:8,each=2))
+diet=factor(rep(1:2,each=8))
+drug=factor(rep(1:2,8))
+X=model.matrix(~diet*drug)
+beta=c(4,1,-1.5,0.5)
+Z=model.matrix(~0+litter)
+set.seed(98723)
+u=rnorm(8,0,.8)
+e=rnorm(16,0,.3)
+y=X%*%beta+Z%*%u+e
+y=round(y,2)
+y
+X%*%beta
+d=data.frame(litter,diet,drug,y)
+o=lm(y~diet+litter+drug+diet:drug)
+a=anova(o)
+a
+?pf
+pf(4.18616, 1, 6)
+1-pf(4.18616, 1, 6)
+o=lme(y~diet+drug+diet:drug,random=~1|litter, method="ML")
+o
+d=read.delim("http://www.public.iastate.edu/~dnett/S511/soup.txt")#
+d$recipe=as.factor(d$recipe)#
+d$tasteorder=as.factor(d$tasteorder)#
+d$batch=as.factor(d$batch)#
+d$taster=as.factor(d$taster)
+library (lme4)
+o=lmer(y~recipe + tasteorder+(1|batch)+(1| taster),data=d)
+summary(o)
+vcomps=as.numeric(summary(o)@REmat[,3])
+vcomps
+vcomps[1]/sum(vcomps)
+ranef(o)
+d
+ranef(o)$taster
+ranef(o)$taster[1,1]
+fixef(o)
+sqrt(c(1,0,0,0,1/3,1/3)%*%vcov(o)%*%c(1,0,0,0,1/3,1/3))
+vcov(o)
+vcov(o)%*%c(0,-1,0,0,0,0)
+vcov(o)[2,2]
+sqrt(vcov(o)[2,2])
+o.additive=lmer(y~recipe+tasteorder+(1|batch)+(1| taster),#
+                REML=F,data=d)
+o.interaction=lmer(y~recipe*tasteorder+(1|batch)+(1| taster),#
+                REML=F,data=d)
+anova(o.additive,o.interaction)
+?gls
+?corClasses
+d=read.delim("http://www.public.iastate.edu/~dnett/S511/RepeatedMeasures.txt")#
+head(d)#
+#
+d$Program=as.factor(d$Program)#
+d$Subj=as.factor(d$Subj)#
+d$Timef=as.factor(d$Time)#
+head(d)
+means = tapply(d$Strength,#
+    list(d$Time,d$Program),mean)#
+means
+x.axis = unique(d$Time)#
+#
+par(fin=c(6.0,6.0),pch=18,mkh=.1,mex=1.5,#
+            cex=1.2,lwd=3)#
+matplot(c(2,14), c(79,85.7), type="n", #
+     xlab="Time(Days)", ylab="Strength",#
+     main= "Observed Strength Means")   #
+matlines(x.axis,means,type='l',lty=c(1,2,3))#
+matpoints(x.axis,means, pch=c(16,17,15))    #
+legend(2.1,85.69,legend=c("RI program",#
+    'WI Program','Controls'),lty=c(1,2,3),col=1:3,bty='n')
+d.timemle = gls(Strength ~ Program+Time+#
+     Program*Time+I(Time^2), data=d,#
+  correlation = corAR1(form=~1|Subj),#
+  method="ML")
+coef(d.timemle)
+d.timer = lme(Strength ~ Program+Time+#
+     Program*Time+I(Time^2), #
+  random = ~ Time + I(Time^2) | Subj,#
+  data=d,#
+  correlation = corAR1(form=~1|Subj),#
+  control=list(msMaxIter=100),#
+  method="REML")
+d.timer
+coef(d.timer)
+fixef(d.timer)
+ranef(d.timer)
+head(d)
+fixef(d.timer)+ranef(d.timer)[1,]
+d.timeru = lme(Strength ~ Program+Time+#
+     Program*Time+I(Time^2), #
+  random = ~ Time + I(Time^2) | Subj,#
+  data=d,#
+  method="REML")
+anova(d.timer,d.timeru)
+fixef(d.timer)
+ranef(d.timer)
+d.timer
+anova(d.timer,d.timeru)
+d.timeru
+read.table("http://www.public.iastate.edu/˜dnett/S511/HeartRate.txt",#
++ header=T)->heart#
+#attach the data frame#
+attach(heart)#
+#change explanatory variables to factors#
+woman=as.factor(woman)#
+drug=as.factor(drug)#
+time=as.factor(time)
+read.table("http://www.public.iastate.edu/˜dnett/S511/HeartRate.txt",#
+header=T)->heart#
+#attach the data frame#
+attach(heart)#
+#change explanatory variables to factors#
+woman=as.factor(woman)#
+drug=as.factor(drug)#
+time=as.factor(time)
+read.table("http://www.public.iastate.edu/˜dnett/S511/HeartRate.txt",
+header=T)
+d=read.delim("http://www.public.iastate.edu/~dnett/S511/Disease.txt")#
+head(d)#
+#
+d$ses=as.factor(d$ses)#
+d$sector=as.factor(d$sector)#
+#
+o=glm(disease~age+ses+sector,#
+      family=binomial(link=logit),#
+      data=d)#
+#
+summary(o)#
+#
+coef(o)#
+round(vcov(o),3)#
+confint(o)#
+#
+oreduced=glm(disease~age+sector,#
+      family=binomial(link=logit),#
+      data=d)#
+#
+anova(oreduced,o,test="Chisq")#
+#
+o=oreduced#
+#
+anova(o,test="Chisq")#
+#
+head(model.matrix(o))#
+#
+b=coef(o)#
+b
+d=read.delim("http://www.public.iastate.edu/~dnett/S511/Trout.txt")#
+d
+o=glm(cbind(tumor,total-tumor)~dose,#
+      family=binomial(link=logit),#
+      data=d)#
+#
+summary(o)
+deviance(o)
+df.residual(o)
+?gl
+d$dosef=gl(5,4)
+d
+o=glm(cbind(tumor,total-tumor)~dosef,#
+      family=binomial(link=logit),#
+      data=d)
+summary(o)
+1-pchisq(deviance(o),df.residual(o))
+residuals(o,type="deviance")
+model.matrix(o)
+o=glm(cbind(tumor,total-tumor)~dose,#
+      family=binomial(link=logit),#
+      data=d)
+model.matrix(o)
+X=model.matrix(o)
+library(MASS)
+pX <- X%*%ginv(t(X)%*%X)%*%X
+pX <- X%*%ginv(t(X)%*%X)%*%t(X)
+d$y
+pie <- d$tumor/d$total
+y <- log(pie/(1-pie))
+pX%*%y
+ginv(t(X)%*%X)%*%t(X)%*%y
+summary(o)
+vcov(o)
+anova(d.timer,d.timeru)
+d.timeru
+?qchisq
+1-qchisq(15.87815,1)
+1-pchisq(15.87815,1)
+library(devtools)
+setwd("~/Desktop/github/local/pitchRx")
+install(".")
+library(pitchRx)
+data(pitches)
+strikeFX(pitches, geom="contour", density1=list(des="Called Strike"))
+traceback()

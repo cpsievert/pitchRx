@@ -89,16 +89,17 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       } else {
         densities <- diffDensity(FX, density1, density2, limz=limitz)
       }
-      if (!"stand" %in% names(densities)) {
+      common <- intersect(names(densities), names(boundaries[[2]]))
+      if (length(common) == 0) { #Artifically create a variable (stand) if none exists (required for joining and thus drawing strikezones)
         nhalf <- dim(densities)[1]/2
         densities$stand <- c(rep("Batter Stands: R", nhalf), rep("Batter Stands: L", nhalf))
       }
     }
-    densities <- join(densities, boundaries[[2]], by="stand", type="inner")
-    t2 <- ggplot(data=densities, aes(x,y))+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
-    if (geom %in% c("bin", "tile")) t2 <- t2 + stat_summary2d(aes(z=z), ...) #shouldn't use fun=log, since we have differenced densities
+    dens <- join(densities, boundaries[[2]], type="inner") #defaults to join "by" all common variables
+    t2 <- ggplot(data=dens, aes(x,y))+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
+    if (geom %in% c("bin", "tile")) t2 <- t2 + stat_summary2d(aes(z=z), ...) 
     if (geom %in% "hex") t2 <- t2 + stat_summary_hex(aes(z=z), ...)
-    #Contours and strikezones are drawn last
+     #Contours and strikezones are drawn last
     #if (contour) t2 <- t2 + stat_density2d(aes(z=z), ...)
     if (contour) t2 <- t2 + stat_contour(aes(z=z)) #passing binwidth here throws error
     t2 <- t2 + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20")
