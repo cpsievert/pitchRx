@@ -96,9 +96,9 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       }
     }
     dens <- join(densities, boundaries[[2]], type="inner") #defaults to join "by" all common variables
-    t2 <- ggplot(data=dens, aes(x,y), environment=environment())+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
-    if (geom %in% c("bin", "tile")) t2 <- t2 + stat_summary2d(aes(z=z), ...) 
-    if (geom %in% "hex") t2 <- t2 + stat_summary_hex(aes(z=z), ...)
+    t2 <- ggplot(data=dens, aes(x,y))+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
+    if (geom %in% c("bin", "tile")) t2 <- t2 + stat_summary2d(aes(z=z), environment=environment(), ...) 
+    if (geom %in% "hex") t2 <- t2 + stat_summary_hex(aes(z=z), environment=environment(), ...)
      #Contours and strikezones are drawn last
     #if (contour) t2 <- t2 + stat_density2d(aes(z=z), ...)
     if (contour) t2 <- t2 + stat_contour(aes(z=z)) #passing binwidth here throws error
