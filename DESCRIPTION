@@ -10,7 +10,7 @@ License: MIT
 Depends:
     MASS,
     XML,
-    ggplot2,
+    ggplot2 (>= 0.9.3),
     animation,
     plyr,
     reshape,
