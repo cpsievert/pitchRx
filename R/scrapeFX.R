@@ -36,13 +36,13 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-10-29", tables = list(atb
   }
   urls <- subset(urls, date >= start & date <= end) #Subset urls to dates of interest
   scraping.urls <- NULL
-  if (any(names(tables) == "game")) {
+  if ("game" %in% names(tables)) {
     scraping.urls <- c(scraping.urls, unique(urls[,"url_scoreboard"]))  
     warning("This function will scrape the game node within the '~/miniscoreboard.xml'. Information in the game node from other files can be derived from here.")
   }
   if (any(names(tables) %in% c("atbat", "pitch", "runner"))) scraping.urls <- c(scraping.urls, urls[,"url"])
   if (any(names(tables) %in% c("player", "coach", "umpire"))) scraping.urls <- c(scraping.urls, urls[,"url_player"])
-  if (!is.null(player)) { 
+  if (length(player) > 0) { 
     data(players)
     desired.players <- suppressWarnings(subset(players, full_name == player))
     scoreboards <- unique(gsub("gid_[0-9]{1,4}_[0-9]{1,2}_[0-9]{1,2}_[a-z]{1,6}_[a-z]{1,6}_[0-9]/players.xml", "miniscoreboard.xml", desired.players$url_player))
@@ -52,12 +52,20 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-10-29", tables = list(atb
   }
   data(fields)
   data <- urlsToDataFrame(urls = scraping.urls, tables)
-  if (any(names(tables) == "atbat")) {
-    if (!is.null(player)) { #Subset 'atbats' by specified player(s) and type'
+  if ("atbat" %in% names(tables)) {
+    if (length(player) > 0) { 
       player.ids <- unique(desired.players$id)
-      if (type == "pitcher") data$atbat <- suppressWarnings(subset(data$atbat, pitcher == player.ids))
-      if (type == "batter") data$atbat <- suppressWarnings(subset(data$atbat, batter == player.ids))
-      if (is.null(type)) data$atbat <- suppressWarnings(subset(data$atbat, pitcher == player.ids || batter == player.ids))
+      if (length(type) == 0) { #Subset 'atbats' by specified player(s)
+        data$atbat <- suppressWarnings(subset(data$atbat, pitcher %in% player.ids || batter %in% player.ids))
+      } else { #Subset 'atbats' by specified player(s) and their respective type(s)
+        types <- tolower(type)
+        if (types %in% c("pitcher", "batter")) {
+          for (i in 1:length(player.ids)) {
+            if (typed == "pitcher") data$atbat <- suppressWarnings(subset(data$atbat, pitcher %in% player.ids[i]))
+            if (typed == "batter") data$atbat <- suppressWarnings(subset(data$atbat, batter %in% player.ids[i]))
+          }
+        } else warning("The data was not subsetted according to type. At least one entry is not equal to 'pitcher' or 'batter'.")
+      }
     }
     #Add batter name to 'atbats'
     unique.players <- players[!duplicated(players[,c("id", "full_name")]), c("id", "full_name")]
