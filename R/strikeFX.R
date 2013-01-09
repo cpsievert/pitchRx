@@ -15,6 +15,7 @@
 #' @param adjust logical. Should vertical locations be adjusted according to batter height?
 #' @param layer list of other ggplot2 (layered) modifications.
 #' @param limitz limits for horizontal and vertical axes. 
+#' @param env the \link{environment} in which expr is to be evaluated. 
 #' @param ... extra options passed onto geom commands
 #' @return Returns a ggplot2 object.
 #' @export
@@ -31,7 +32,7 @@
 #' strikeFX(pitches, geom="hex", contour=TRUE, density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))
 #' 
 
-strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), contour=FALSE, adjust=TRUE, layer = list(), limitz=c(-2.5, 2.5, 0, 5), ...){ 
+strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), contour=FALSE, adjust=TRUE, layer = list(), limitz=c(-2.5, 2.5, 0, 5), env=parent.frame(), ...){ 
   if (any(!geom %in% c("point", "bin", "hex", "tile"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
@@ -49,7 +50,9 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   FX <- data[complete.cases(data[,locations]),] #get rid of records missing the necessary parameters
   for (i in locations)
     FX[,i] <- as.numeric(FX[,i])
-  layers <- as.character(as.list(match.call())$layer)
+  #layers <- as.character(as.list(match.call())$layer)
+  layer <- eval(layer, envir=env) #allows for calls to be defined from higher-level functions (necessary for shiny implementation)
+  layers <- eval(match.call()$layer, envir=env) 
   facets <- getFacets(layers)
   if ("p_throws" %in% names(FX)) FX$p_throws <- paste("Pitcher Throws:", FX$p_throws) #Add suffixes for context
   if ("stand" %in% names(FX)) FX$stand <- paste("Batter Stands:", FX$stand)
@@ -96,12 +99,12 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       }
     }
     dens <- join(densities, boundaries[[2]], type="inner") #defaults to join "by" all common variables
-    t2 <- ggplot(data=dens, environment=environment())+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
+    t2 <- ggplot(data=dens)+layer+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
     if (geom %in% c("bin", "tile")) t2 <- t2 + stat_summary2d(aes(x=x,y=y,z=z), ...) 
     if (geom %in% "hex") t2 <- t2 + stat_summary_hex(aes(x=x,y=y,z=z), ...)
     if (contour) t2 <- t2 + stat_contour(aes(x=x,y=y,z=z)) #passing binwidth here throws error
     t2 <- t2 + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20")
-    return(t2+layer)
+    return(t2)
   }
   if (geom %in% "point") {
     p <- ggplot(data=FX, aes(ymax=top, ymin=bottom, xmax=right, xmin=left), environment=environment()) + legendz + labelz + xrange + yrange + scale_size(guide = "none") + scale_alpha(guide="none")

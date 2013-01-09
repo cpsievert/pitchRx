@@ -6,7 +6,7 @@
     point.alpha = 1/3, color = "pitch_types",
     density1 = list(), density2 = list(), contour = FALSE,
     adjust = TRUE, layer = list(),
-    limitz = c(-2.5, 2.5, 0, 5), ...)
+    limitz = c(-2.5, 2.5, 0, 5), environment, ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
@@ -37,6 +37,9 @@
   modifications.}
 
   \item{limitz}{limits for horizontal and vertical axes.}
+
+  \item{environment}{the \link{environment} in which expr
+  is to be evaluated.}
 
   \item{...}{extra options passed onto geom commands}
 }
