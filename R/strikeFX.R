@@ -50,9 +50,8 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   FX <- data[complete.cases(data[,locations]),] #get rid of records missing the necessary parameters
   for (i in locations)
     FX[,i] <- as.numeric(FX[,i])
-  #layers <- as.character(as.list(match.call())$layer)
-  layer <- eval(layer, envir=env) #allows for calls to be defined from higher-level functions (necessary for shiny implementation)
-  layers <- eval(match.call()$layer, envir=env) 
+  layer <- eval(layer, envir=env) #allows layers to be derived from calls and variables in higher-level functions (necessary for shiny implementation)
+  layers <- eval(match.call()$layer, envir=env) #same
   facets <- getFacets(layers)
   if ("p_throws" %in% names(FX)) FX$p_throws <- paste("Pitcher Throws:", FX$p_throws) #Add suffixes for context
   if ("stand" %in% names(FX)) FX$stand <- paste("Batter Stands:", FX$stand)

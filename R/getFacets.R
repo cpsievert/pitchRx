@@ -6,13 +6,17 @@
 #' @result character vector with variable names (if faceting is present). Otherwise, \code{NULL}
 #' 
 getFacets <- function(layers){
-  if (length(grep("facet", layers) > 0)) {
-    if (length(layers) > 2) {
-      facet <- layers[grep("facet", layers)]
-      facets <- gsub("[)]", "", gsub("facet_[a-z]+[(]","", facet))
-    } else facets <- layers[-grep("facet", layers)]
-    facets2 <- llply(str_split(as.character(facets), "~"), str_trim)
-    facets3 <- unlist(llply(facets2, function(x) { x[!x %in% "."] }))
-  } else facets3 <- NULL
-  return(facets3)
+  rows <- layers$rows
+  cols <- layers$cols
+  if (length(rows) > 0) {
+    row.facet <- as.character(rows)
+  } else {
+    row.facet <- NULL
+  }
+  if (length(cols) > 0) {
+    col.facet <- as.character(cols)
+  } else {
+    col.facet <- NULL
+  }
+  return(c(row.facet, col.facet))
 }
