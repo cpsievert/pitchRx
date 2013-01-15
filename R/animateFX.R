@@ -18,6 +18,7 @@
 #' @param interval time (in seconds) between plotting the pitch locations.
 #' @param sleep passed along to Sys.sleep() to flush current plot.
 #' @param layer list of ggplot2 layer modifications.
+#' @param env the \link{environment} in which expr is to be evaluated. 
 #' @param ... extra options passed onto geom commands
 #' @return Returns a series of ggplot2 objects.
 #' @export
@@ -27,7 +28,7 @@
 #' animateFX(pitches, layer = facet_grid(pitcher_name~stand))
 #' 
 
-animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3, flag=FALSE, interval = 0.01, sleep = 0.000000000001, layer = list(), ...){ 
+animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3, flag=FALSE, interval = 0.01, sleep = 0.000000000001, layer = list(), env=parent.frame(), ...){ 
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -40,7 +41,7 @@ animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3
     warning(paste(color, "is the variable that defines coloring but it isn't in the dataset!"))
     color <- ""
   }
-  layers <- as.character(as.list(match.call())$layer)
+  layers <- eval(layer, envir=env) #allows layers to be derived from calls and variables in higher-level functions (necessary for shiny implementation)
   facets <- getFacets(layers)
   idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
   if (!all(idx %in% names(data))) warning("You must have the following variables in your dataset to animate pitch locations: 'x0', 'y0', 'z0', 'vx0', 'vy0', 'vz0', 'ax', 'ay', 'az'")
