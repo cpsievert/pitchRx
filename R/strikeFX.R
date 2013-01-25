@@ -82,7 +82,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       #Contours and strikezones are drawn last
       if (contour) t <- t + geom_density2d()
       t <- t + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")
-      return(t+layer)
+      return(t+layers)
     } else { #densities are differenced
       if (!is.null(facets)) {
         stuff <- dlply(FX, facets, function(x) { diffDensity(x, density1, density2, limz=limitz) } )
@@ -97,7 +97,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       }
     }
     dens <- join(densities, boundaries[[2]], type="inner") #defaults to join "by" all common variables
-    t2 <- ggplot(data=dens)+layer+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
+    t2 <- ggplot(data=dens)+layers+labelz+xrange+yrange+scale_fill_gradient2(midpoint=0)
     if (geom %in% c("bin", "tile")) t2 <- t2 + stat_summary2d(aes(x=x,y=y,z=z), ...) 
     if (geom %in% "hex") t2 <- t2 + stat_summary_hex(aes(x=x,y=y,z=z), ...)
     if (contour) t2 <- t2 + stat_contour(aes(x=x,y=y,z=z)) #passing binwidth here throws error
@@ -114,7 +114,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
     }
     if (contour) p <- p + geom_density2d(point_mapping, colour="black")
     p <- p + geom_point(mapping=point_mapping, size=point.size, alpha=point.alpha, ...)
-    return(p + layer)
+    return(p + layers)
   }
 }
 

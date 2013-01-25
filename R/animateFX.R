@@ -79,7 +79,7 @@ animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3
     p <- ggplot(data=FX) + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
     p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="black") #draw strikezones
     p <- p + geom_point(mapping=aes_mapping, size=point.size, alpha=point.alpha, ...)
-    print(p+swing+layer)
+    print(p+swing+layers)
     ctr <- ctr + 1
   }
 }
