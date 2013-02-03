@@ -2,9 +2,8 @@
 \alias{scrapeFX}
 \title{Scrape Major League Baseball's PITCHf/x Data}
 \usage{
-  scrapeFX(start = "2012-01-01", end = "2012-10-29",
-    tables = list(atbat = fields$atbat, pitch = fields$pitch),
-    player = NULL, type = NULL)
+  scrapeFX(start = "2012-01-01", end = "2012-12-31",
+    tables = list(atbat = fields$atbat, pitch = fields$pitch))
 }
 \arguments{
   \item{start}{date "yyyy-mm-dd" to commence scraping of
@@ -14,31 +13,40 @@
   F/X data}
 
   \item{tables}{XML nodes to be parsed into a data frame}
-
-  \item{player}{narrow scraping to a specifc player or set
-  of players. The default value NULL will scrape for all
-  players in the time period.}
-
-  \item{type}{A value of "pitcher" or "batter", the user
-  can constrain scraping to those cases. The default value
-  of NULL will scrape for both types.}
 }
 \value{
-  Returns a list containing two different data frames. The
-  larger data frame contains data on every pitch thrown
-  (pitch F/X). The smaller one contains data on every
-  atbat.
+  Returns a list containing a data frame specific to each
+  element in \code{tables}. The default setting returns two
+  data frames. The larger one contains data "PITCHfx
+  parameters" for each pitch. The smaller one contains data
+  relevant to each atbat.
 }
 \description{
-  This function is a wrapper around \code{urlsToDataFrame}
-  which reduces the time required to obtain PITCHf/x from
-  the source files.
+  This function is a wrapper around \link{urlsToDataFrame}
+  which increases convenience for scraping PITCHf/x
+  directly from XML files.
 }
 \details{
-  Details go here.
+  Data should be collected on a yearly (or shorter) basis.
+  By default, records from the 'pitch' and 'atbat' level
+  are collected. One should manipulate the \code{tables}
+  parameter if other data is desired.
 }
 \examples{
+#Collect PITCHf/x data for May 1st, 2012
 data <- scrapeFX(start = "2012-05-01", end = "2012-05-01")
+#Join tables for data analysis
 pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
+
+\dontrun{Algorithm for obtaining all available PITCHfx data**
+# (1) Collect PITCHfx data from 2012
+data12 <- scrapeFX()
+# (2) Write data12$pitch and data12$atbat to a database
+# (3) Remove 2012 data from working space
+rm(data12)
+# (4) Repeat (1)-(3) for 2011, 2010, 2009 & 2008}
+}
+\seealso{
+  \link{urlsToDataFrame}
 }
 

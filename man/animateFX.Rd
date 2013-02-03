@@ -4,7 +4,8 @@
 \usage{
   animateFX(data, color = "pitch_types", point.size = 3,
     point.alpha = 1/3, flag = FALSE, interval = 0.01,
-    sleep = 1e-12, layer = list(), ...)
+    sleep = 1e-12, layer = list(), env = parent.frame(),
+    ...)
 }
 \arguments{
   \item{data}{data frame with appropriately named PITCHf/x
@@ -26,6 +27,9 @@
   plot.}
 
   \item{layer}{list of ggplot2 layer modifications.}
+
+  \item{env}{the \link{environment} in which expr is to be
+  evaluated.}
 
   \item{...}{extra options passed onto geom commands}
 }

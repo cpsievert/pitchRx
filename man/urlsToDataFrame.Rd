@@ -24,14 +24,17 @@
   Otherwise, it returns a list of data frames.
 }
 \description{
-  This function takes on a list of XML file names (ie,
-  urls) and parses them into an appropriate amount of data
-  frames.
+  This function takes on a list of XML files (ie, urls) and
+  shapes them into a data frame or list of data frames
 }
 \details{
-  This function can coerce either XML attributes or XML
-  values into a data frame. The node(s) of interest need to
-  be specified as the name(s) of \code{tables}.
+  \code{urlsToDataFrame} coerces either XML attributes or
+  XML values into a data frame. The XML nodes (aka, tags)
+  of interest need to be specified as the name(s) of the
+  \code{tables} parameter. The values of each \code{tables}
+  parameter should be a character vector that defines the
+  field names for the respective data frame. These field
+  names should match XML attributes or tags.
 
   When \code{use.values = FALSE}, the length of
   \code{tables} is equal to the number of data frames
