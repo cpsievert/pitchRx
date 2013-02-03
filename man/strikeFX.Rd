@@ -50,17 +50,15 @@
   Pitch locations as they crossed home plate.
 }
 \details{
-  Scatterplot with "px" on the horizontal axis and "pz" on
-  the vertical axis.
+  Various bivariate plots with "px" on the horizontal axis
+  and "pz" on the vertical axis.
 }
 \examples{
 data(pitches)
 strikeFX(pitches)
 strikeFX(pitches, geom="tile")
-strikeFX(pitches, geom="tile", contour=TRUE)
-strikeFX(pitches, geom="tile", contour=TRUE, layer=facet_grid(.~stand))
+strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
 strikeFX(pitches, geom="tile", contour=TRUE, layer=facet_grid(pitcher_name~stand))
-strikeFX(pitches, geom="hex")
 strikeFX(pitches, geom="hex", contour=TRUE, binwidth=c(0.1, 0.1))
 strikeFX(pitches, geom="hex", contour=TRUE, density1=list(des="Called Strike"), density2=list(des="Ball"))
 strikeFX(pitches, geom="hex", contour=TRUE, density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))

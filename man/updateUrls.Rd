@@ -19,8 +19,4 @@
   in \code{scrapeFX} when the user enters an end date later
   than the most recent date present in \code{data(urls)}.
 }
-\examples{
-newUrls <- updateUrls(Sys.Date() - 1, Sys.Date())
-head(newUrls)
-}
 

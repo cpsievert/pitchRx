@@ -67,15 +67,5 @@ filenames <- paste(dir, ids, sep="")
 stats <- urlsToDataFrame(filenames,
                          tables=list(Player=NULL),
                          add.children=TRUE)
-
-#Scrape files with twitter data
-branch <- "http://gd2.mlb.com/components/game/mlb/twitter/"
-doc <- htmlParse(branch)
-nodes <- getNodeSet(doc, "//a")
-values <- sapply(nodes, xmlValue)
-extensions <- str_extract_all(values, "([a-z]+)InsiderTweets.xml.([0-9]+)")
-twitter.urls <- paste(branch, extensions[llply(extensions, length) > 0], sep = "")
-#Parse the files into a data frame
-tweets <- urlsToDataFrame(urls = twitter.urls, tables = list(status = NULL), use.values = TRUE)
 }
 

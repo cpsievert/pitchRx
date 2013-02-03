@@ -6,7 +6,7 @@ file names to games table.}
   attachUrls(df)
 }
 \arguments{
-  \item{df}{data frame with all "game" attributes from
+  \item{df}{'game' data frame with attributes from
   "~/miniscoreboard.xml" files.}
 }
 \value{

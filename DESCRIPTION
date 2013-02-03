@@ -24,7 +24,6 @@ Collate:
     'fields.R'
     'urls.R'
     'players.R'
-    'allFields.R'
     'help.R'
     'getStrikezones.R'
     'strikeFX.R'

@@ -5,7 +5,7 @@
   addPitchCount(df)
 }
 \arguments{
-  \item{df}{data frame with all "pitch" attributes from
+  \item{df}{'pitch' data frame with attributes from
   "~/inning/inning_all.xml" files.}
 }
 \value{

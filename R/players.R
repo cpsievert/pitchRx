@@ -1,6 +1,6 @@
-#' All MLB players from 2008 until 2012-07-21
+#' All MLB players from 2008-2012
 #' 
-#' A data frame with personal information on every MLB player.
+#' A data frame with the full name and corresponding ID for every player
 #' 
 #' @docType data
 #' @name players

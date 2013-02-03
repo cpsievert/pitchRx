@@ -41,9 +41,7 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atb
   if (last.date < end) { #update urls if new ones exist
     new.urls <- updateUrls(last.date, end)
     urls <- rbind(urls, new.urls)
-#     new.players <- updatePlayers(new.urls$url_player)
-#     browser()
-#     players <- rbind(players, new.players)
+    #update players?
   }
   urls <- subset(urls, date >= start & date <= end) #Subset urls to dates of interest
   if ("game" %in% names(tables)) { #Special handling since game node appears in other files (and we don't want the records from the other files)
@@ -53,14 +51,6 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atb
     print("This function will scrape the game node within the '~/miniscoreboard.xml'. Information in the game node from other files can be derived from here.")
     tables <- tables[-grep("game", names(tables))] #'game' info is collected, don't need the tables element anymore
   } else game <- NULL
-#   if (length(player) > 0) { 
-#     data(players)
-#     desired.players <- suppressWarnings(subset(players, full_name == player))
-#     scoreboards <- unique(gsub("gid_[0-9]{1,4}_[0-9]{1,2}_[0-9]{1,2}_[a-z]{1,6}_[a-z]{1,6}_[0-9]/players.xml", "miniscoreboard.xml", desired.players$url_player))
-#     pfx.urls <- gsub("players.xml", "inning/inning_all.xml", desired.players$url_player)
-#     player.urls <- c(desired.players$url_player, scoreboards, pfx.urls)
-#     scraping.urls <- scraping.urls[scraping.urls %in% player.urls] #How do I subset the miniscoreboards?
-#   }
   scraping.urls <- NULL
   if (any(names(tables) %in% c("atbat", "pitch", "runner"))) scraping.urls <- c(scraping.urls, urls[,"url"])
   if (any(names(tables) %in% c("player", "coach", "umpire"))) scraping.urls <- c(scraping.urls, urls[,"url_player"])
@@ -68,29 +58,15 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atb
   if (!is.null(game)) data$game <- game 
   data <- cleanList(data)
   if ("atbat" %in% names(tables)) {
-#     if (length(player) > 0) { 
-#       player.ids <- unique(desired.players$id)
-#       if (length(type) == 0) { #Subset 'atbats' by specified player(s)
-#         data$atbat <- suppressWarnings(subset(data$atbat, pitcher %in% player.ids || batter %in% player.ids))
-#       } else { #Subset 'atbats' by specified player(s) and their respective type(s)
-#         typed <- tolower(type)
-#         if (typed %in% c("pitcher", "batter")) {
-#           for (i in 1:length(player.ids)) {
-#             if (typed == "pitcher") data$atbat <- suppressWarnings(subset(data$atbat, pitcher %in% as.character(player.ids[i])))
-#             if (typed == "batter") data$atbat <- suppressWarnings(subset(data$atbat, batter %in% as.character(player.ids[i])))
-#           }
-#         } else warning("The data was not subsetted according to type. At least one entry is not equal to 'pitcher' or 'batter'.")
-#       }
-#     }
     #Add batter name to 'atbats'
-    unique.players <- players[!duplicated(players[,c("id", "full_name")]), c("id", "full_name")]
+    data(players)
     names(data$atbat) <- gsub("batter", "id", names(data$atbat))
-    data$atbat <- join(data$atbat, unique.players, by = "id")
+    data$atbat <- join(data$atbat, players, by = "id")
     names(data$atbat) <- gsub("id", "batter", names(data$atbat))
     names(data$atbat) <- gsub("full_name", "batter_name", names(data$atbat))
     #Add pitcher name to 'atbats'
     names(data$atbat) <- gsub("pitcher", "id", names(data$atbat))
-    data$atbat <- join(data$atbat, unique.players, by = "id")
+    data$atbat <- join(data$atbat, players, by = "id")
     names(data$atbat) <- gsub("id", "pitcher", names(data$atbat))
     names(data$atbat) <- gsub("full_name", "pitcher_name", names(data$atbat))
   }
@@ -106,10 +82,6 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atb
 #' @param last.date most recent date in \code{data(urls)}
 #' @param end any date more recent than last.date
 #' @return returns a data frame
-#' @export
-#' @examples
-#' newUrls <- updateUrls(Sys.Date() - 1, Sys.Date())
-#' head(newUrls)
 
 updateUrls <- function(last.date, end) {
     cat("updating urls", "\n")
@@ -157,7 +129,6 @@ updatePlayers <- function(new.urls) {
   return(new.players)
 }
 
-
 #' Clean list of data frames (for scrapeFX)
 #' 
 #' @param ldf list of dataframes
@@ -183,7 +154,7 @@ cleanList <- function(ldf) {
 #' Add columns with relevant "~/miniscoreboard.xml", "~/inning/inning_all.xml" and "~/player.xml" 
 #' file names to games table.
 #'
-#' @param df data frame with all "game" attributes from "~/miniscoreboard.xml" files.
+#' @param df 'game' data frame with attributes from "~/miniscoreboard.xml" files.
 #' @return returns the original data frame with the proper url columns attached at the end.
 
 attachUrls <- function(df) {
@@ -197,9 +168,8 @@ attachUrls <- function(df) {
 
 #' Add columns with relevant pitch count to the 'pitch' data frame.
 #'
-#' @param df data frame with all "pitch" attributes from "~/inning/inning_all.xml" files.
+#' @param df 'pitch' data frame with attributes from "~/inning/inning_all.xml" files.
 #' @return returns the original data frame with the proper pitch count columns attached at the end.
-#' @export
 
 addPitchCount <- function(df) {
   df$balls <- as.numeric(df$type == "B")

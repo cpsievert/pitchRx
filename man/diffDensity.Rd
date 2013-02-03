@@ -13,7 +13,7 @@
   \item{density2}{either density1 or density2 passed on
   from \link{strikeFX}.}
 
-  \item{lims}{MASS::kde2d paramaters passed from
+  \item{limz}{MASS::kde2d paramaters passed from
   \link{strikeFX}.}
 }
 \value{
