@@ -4,11 +4,10 @@ Introduction to pitchRx package
 <!--browseURL(paste0('http://127.0.0.1:', tools:::httpdPort, '/library/pitchRx/doc/index.html'))>
 
 ```{r setup, include=FALSE}
-opts_chunk$set(fig.path="figure/", cache.path="cache/", dev="CairoPNG", out.extra='style="display:block; margin: auto"', fig.align="center", warning=FALSE, fig.height=7, fig.width=5)
+opts_chunk$set(fig.path="figure/", cache.path="cache/", dev="CairoPNG", fig.align="center", warning=FALSE, message=FALSE, fig.height=7, fig.width=5)
 opts_knit$set(animation.fun = hook_r2swf)
-setwd("~/Desktop/github/local/pitchRx")
-require(devtools)
-install(".")
+#require(devtools)
+#install_github('pitchRx', 'cpsievert')
 require(pitchRx)
 ```
 
@@ -96,13 +95,13 @@ data(pitches)
 ```
 
 ```{r ani, fig.show="animate", interval=0.01, cache=TRUE}
-animateFX(pitches)
+animateFX(pitches, point.size=5)
 ```
 
 The plotting options for **pitchRx** encompass the flexibility and syntax of the ggplot2 grammar of graphics.
 
-```{r ani2, fig.show="animate", interval=0.01, cache=TRUE, fig.height=28, fig.width=20}
-animateFX(pitches, layer=facet_grid(pitcher_name~stand, labeller = label_both))
+```{r ani2, fig.show="animate", interval=0.01, cache=TRUE, fig.height=14, fig.width=10}
+animateFX(pitches, point.size=5, layer=facet_grid(pitcher_name~stand, labeller = label_both))
 ```
 
 ### Strikezone Densities
@@ -113,10 +112,21 @@ I can also examine static pitch locations at the moment they cross the plate.
 strikeFX(pitches, layer=facet_grid(.~stand))
 ```
 
-Unlike $$\texttt{animateFX}$$, $$\texttt{strikeFX}$$ allows different geometries.
+Unlike `animateFX`, `strikeFX` allows different geometries.
 
-```{r strike2}
-strikeFX(pitches, geom="tile", contour=TRUE)
+```{r strike2, fig.height=14, fig.width=10}
+strikeFX(pitches, geom="tile", contour=TRUE, layer=facet_grid(pitch_types~stand))
 ```
 
+`strikeFX` allows one to easily manipulate the density of interest through two parameters: `density1` and `density2`. If these densities are identical, the density is defined accordingly. This is useful for avoiding repeative subsetting of data frames. For example, say I want the density of 'Called Strikes'.
+
+```{r strike3, fig.height=14, fig.width=10}
+strikeFX(pitches, geom="tile", density1=list(des="Called Strike"), density2=list(des="Called Strike"), layer=facet_grid(pitch_types~stand))
+```
+
+If you specify two different densities, `strikeFX` will plot differenced bivariate density estimates. In this case, we are subtracting the "Ball" density from the previous "Called Strike" density.
+
+```{r strike4, fig.height=14, fig.width=10}
+strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(pitch_types~stand))
+```
 

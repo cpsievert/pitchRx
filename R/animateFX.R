@@ -29,7 +29,7 @@
 #' animateFX(pitches, layer = facet_grid(pitcher_name~stand))
 #' 
 
-animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3, limitz=c(-2.5, 2.5, 0, 7), flag=FALSE, interval = 0.01, sleep = 0.000000000001, layer = list(), env=parent.frame(), ...){ 
+animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3, limitz=c(-3.5, 3.5, 0, 7), flag=FALSE, interval = 0.01, sleep = 0.000000000001, layer = list(), env=parent.frame(), ...){ 
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),

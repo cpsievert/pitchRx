@@ -3,7 +3,7 @@
 \title{Animate PITCHf/x}
 \usage{
   animateFX(data, color = "pitch_types", point.size = 3,
-    point.alpha = 1/3, limitz = c(-2.5, 2.5, 0, 7),
+    point.alpha = 1/3, limitz = c(-3.5, 3.5, 0, 7),
     flag = FALSE, interval = 0.01, sleep = 1e-12,
     layer = list(), env = parent.frame(), ...)
 }

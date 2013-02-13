@@ -50,8 +50,6 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
     FX[,i] <- as.numeric(FX[,i])
   layers <- eval(layer, envir=env) #allows layers to be derived from calls and variables in higher-level functions (necessary for shiny implementation)
   facets <- getFacets(layers)
-  #if ("p_throws" %in% names(FX)) FX$p_throws <- paste("Pitcher Throws:", FX$p_throws) #Add suffixes for context
-  #if ("stand" %in% names(FX)) FX$stand <- paste("Batter Stands:", FX$stand)
   if ("b_height" %in% names(FX)) { #plot strikezones (and adjust loactions) if heights are numeric
     boundaries <- getStrikezones(FX, facets, strikeFX = TRUE) 
     if (adjust) {
@@ -91,7 +89,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
       common <- intersect(names(densities), names(boundaries[[2]]))
       if (length(common) == 0) { #Artifically create a variable (stand) if none exists (required for joining and thus drawing strikezones)
         nhalf <- dim(densities)[1]/2
-        densities$stand <- c(rep("Batter Stands: R", nhalf), rep("Batter Stands: L", nhalf))
+        densities$stand <- c(rep("R", nhalf), rep("L", nhalf))
       }
     }
     dens <- join(densities, boundaries[[2]], type="inner") #defaults to join "by" all common variables

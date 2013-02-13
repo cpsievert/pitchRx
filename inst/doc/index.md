@@ -88,14 +88,14 @@ PITCHf/x Visualization
 
 ### Animation
 
-I can use the $\texttt{pitches}$ data frame created in the previous section to animate pitch trajectories.
+I can use the `pitches` data frame created in the previous section to animate pitch trajectories.
 
 
 
 
 
 ```r
-animateFX(pitches)
+animateFX(pitches, point.size = 5)
 ```
 
 <div align = "center">
@@ -107,11 +107,12 @@ The plotting options for **pitchRx** encompass the flexibility and syntax of the
 
 
 ```r
-animateFX(pitches, layer = facet_grid(pitcher_name ~ stand, labeller = label_both))
+animateFX(pitches, point.size = 5, layer = facet_grid(pitcher_name ~ stand, 
+    labeller = label_both))
 ```
 
 <div align = "center">
- <embed width="360" height="504" name="plugin" src="figure/ani2.swf" type="application/x-shockwave-flash"> 
+ <embed width="720" height="1008" name="plugin" src="figure/ani2.swf" type="application/x-shockwave-flash"> 
 </div>
 
 
@@ -124,17 +125,39 @@ I can also examine static pitch locations at the moment they cross the plate.
 strikeFX(pitches, layer = facet_grid(. ~ stand))
 ```
 
-<img src="figure/strike.png" title="plot of chunk strike" alt="plot of chunk strike" style="display:block; margin: auto" />
+![plot of chunk strike](figure/strike.png) 
 
 
-Unlike $$\texttt{animateFX}$$, $$\texttt{strikeFX}$$ allows different geometries.
+Unlike `animateFX`, `strikeFX` allows different geometries.
 
 
 ```r
-strikeFX(pitches, geom = "tile", contour = TRUE)
+strikeFX(pitches, geom = "tile", contour = TRUE, layer = facet_grid(pitch_types ~ 
+    stand))
 ```
 
-<img src="figure/strike2.png" title="plot of chunk strike2" alt="plot of chunk strike2" style="display:block; margin: auto" />
+![plot of chunk strike2](figure/strike2.png) 
 
+
+`strikeFX` allows one to easily manipulate the density of interest through two parameters: `density1` and `density2`. If these densities are identical, the density is defined accordingly. This is useful for avoiding repeative subsetting of data frames. For example, say I want the density of 'Called Strikes'.
+
+
+```r
+strikeFX(pitches, geom = "tile", density1 = list(des = "Called Strike"), density2 = list(des = "Called Strike"), 
+    layer = facet_grid(pitch_types ~ stand))
+```
+
+![plot of chunk strike3](figure/strike3.png) 
+
+
+If you specify two different densities, `strikeFX` will plot differenced bivariate density estimates. In this case, we are subtracting the "Ball" density from the previous "Called Strike" density.
+
+
+```r
+strikeFX(pitches, geom = "hex", density1 = list(des = "Called Strike"), density2 = list(des = "Ball"), 
+    layer = facet_grid(pitch_types ~ stand))
+```
+
+![plot of chunk strike4](figure/strike4.png) 
 
 
