@@ -13,6 +13,7 @@
 #' @param data data frame with appropriately named PITCHf/x variables
 #' @param point.size Size of points
 #' @param point.alpha ggplot2 alpha parameter
+#' @param limitz limits for horizontal and vertical axes. 
 #' @param color variable used to control coloring scheme.
 #' @param flag indicate whether or not batter has decided to swing.
 #' @param interval time (in seconds) between plotting the pitch locations.
@@ -28,7 +29,7 @@
 #' animateFX(pitches, layer = facet_grid(pitcher_name~stand))
 #' 
 
-animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3, flag=FALSE, interval = 0.01, sleep = 0.000000000001, layer = list(), env=parent.frame(), ...){ 
+animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3, limitz=c(-2.5, 2.5, 0, 7), flag=FALSE, interval = 0.01, sleep = 0.000000000001, layer = list(), env=parent.frame(), ...){ 
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -59,8 +60,6 @@ animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3
   parameters <- reordered[, names(reordered) %in% idx]
   snapshots <- getSnapshots(parameters)
   other <- reordered[, !(names(reordered) %in% idx)] #Keep 'other' variables for faceting/coloring
-  if ("p_throws" %in% names(other)) other$p_throws <- paste("Pitcher Throws:", other$p_throws) #Add suffixes for context
-  if ("stand" %in% names(other)) other$stand <- paste("Batter Stands:", other$stand)
   if ("b_height" %in% names(other)) {
     boundaries <- getStrikezones(other, facets, strikeFX = FALSE) #Strikezone boundaries
     other <- join(other, boundaries, by="stand", type="inner")
@@ -68,6 +67,8 @@ animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3
     zones <- NULL
     warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively. Also, 'b_height' must be numeric; otherwise, strikezones will not appear.")
   }
+  xrange <- xlim(limitz[1:2])
+  yrange <- ylim(limitz[3:4])
   ctr <- 1 #Used to check whether or not batter has decided to swing
   N <- dim(snapshots)[2] #Number of plots in animation
   swing <- NULL
@@ -76,7 +77,7 @@ animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3
     FX <- data.frame(snapshots[,i,], other)
     names(FX) <- c("x", "y", "z", names(other))
     Sys.sleep(sleep)
-    p <- ggplot(data=FX) + xlim(-3.5, 3.5) + xlab("Horizontal Pitch Location") + ylim(0, 7) + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
+    p <- ggplot(data=FX) + xrange + yrange + xlab("Horizontal Pitch Location") + ylab("Height from Ground") + scale_size(guide="none") + scale_alpha(guide="none") + theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
     p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="black") #draw strikezones
     p <- p + geom_point(mapping=aes_mapping, size=point.size, alpha=point.alpha, ...)
     print(p+swing+layers)

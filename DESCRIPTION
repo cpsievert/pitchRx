@@ -7,11 +7,11 @@ Maintainer: Carson Sievert <sievert@iastate.edu>
 Description: Simple Methods for Scraping and Animating Major League Baseball
     PITCHf/x Data
 License: MIT
+Suggests: shiny, knitr, animation
 Depends:
     MASS,
     XML,
     ggplot2 (>= 0.9.3),
-    animation,
     plyr,
     reshape,
     lubridate,

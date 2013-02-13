@@ -1,0 +1,122 @@
+Introduction to pitchRx package
+=======================================
+
+<!--browseURL(paste0('http://127.0.0.1:', tools:::httpdPort, '/library/pitchRx/doc/index.html'))>
+
+```{r setup, include=FALSE}
+opts_chunk$set(fig.path="figure/", cache.path="cache/", dev="CairoPNG", out.extra='style="display:block; margin: auto"', fig.align="center", warning=FALSE, fig.height=7, fig.width=5)
+opts_knit$set(animation.fun = hook_r2swf)
+setwd("~/Desktop/github/local/pitchRx")
+require(devtools)
+install(".")
+require(pitchRx)
+```
+
+
+Introduction
+------------
+
+The  **pitchRx** package provides tools for collecting and visualizing Major League Baseball (MLB) PITCHf/x data.
+
+
+Data Collection
+----------------------------
+
+### Collecting PITCHf/x Data
+
+**pitchRx** makes it easy to collect PITCHf/x data directly from the source. Since its establishment in 2008, Major League Baseball Advanced Media (MLBAM) has made PITCHf/x data available in XML format.  MLBAM provides this service for free. To keep it that way, please be mindful when using this library to query their website.
+
+One should collect PITCHf/x on a yearly basis (or shorter - since this is large amount of data). After storing your data appropriately, the collection process can then be repeated for subsequent years (or other timelines).
+
+```{r basic_scraping, eval=FALSE}
+data <- scrapeFX(start="2011-01-01", end="2011-12-31")
+#RMySQL is preferred for data storage
+library(RMySQL)
+drv <- dbDriver("MySQL")
+MLB <- dbConnect(drv, user="your_user_name", password="your_password", port=your_port, dbname="your_database_name", host="your_host")
+dbWriteTable(MLB, value = data$pitch, name = "pitch", row.names = FALSE, append = TRUE)
+dbWriteTable(MLB, value = data$atbat, name = "atbat", row.names = FALSE, append = TRUE)
+rm(data) #clear workspace so you can repeat for other year(s)
+```
+
+If you are storing data via MySQL, you may want to append to these <a href="https://github.com/cpsievert/pitchFX/blob/master/tables.sql">table formats</a>. By default, two data frames are returned. One contains data on the 'pitch' level and the other on the 'atbat' level. If you're interested in having a deeper level of information at your disposal. You can scrape for other data to supplement the core PITCHf/x tables.
+
+```{r advanced_scraping, eval=FALSE}
+data <- scrapeFX(start="2011-01-01", end="2011-12-31",
+                tables=list(atbat = fields$atbat, 
+                pitch = fields$pitch, game = fields$game, 
+                player = fields$player, runner = NULL, 
+                umpire = NULL, coach = NULL))
+```
+
+No matter how you're storing your data, you will want to join the 'atbat' and 'pitch' table at some point. If you're interested in a subset of data, consider subsetting the 'atbat' table before joining with pitches. For instance, if want all 'four-seam' and 'cutting' fastballs thrown by Mariano Rivera nad Phil Hughes during the 2011 season:
+
+```{r joining, eval=FALSE}
+names <- c("Mariano Rivera", "Phil Hughes")
+atbats <- subset(data$atbat, pitcher_name == name)
+pitchFX <- join(atbats, data$pitch, by=c("num", "url") ,type="inner")
+pitches <- subset(pitchFX, pitch_type == c("FF", "FC"))
+```
+
+If you're storing your data with MySQL, you could save a bit of time with the following. Note that you want to add criteria for the year of interest (if you have multiple years in your database).
+
+```{r sql, eval=FALSE}
+Rivera <- dbGetQuery(MLB, "SELECT * FROM atbat INNER JOIN pitch ON (atbat.num = pitch.num AND atbat.url = pitch.url) WHERE atbat.pitcher_name = 'Mariano Rivera' or atbat.pitcher_name = 'Phil Hughes'")
+```
+
+### Collecting XML data
+
+**pitchRx** has convenient functionality for extracting XML data from multiple files into appropriate data frame(s). One has to simply create the XML file names and specify XML nodes/attributes of interest. Keeping with the baseball theme, we can extract various statistics for batters entering a particular game.
+
+```{r urls, eval=FALSE}
+data(urls)
+dir <- gsub("players.xml", "batters/", 
+            urls$url_player[1000])
+doc <- htmlParse(dir)
+nodes <- getNodeSet(doc, "//a")
+values <- gsub(" ", "", 
+              sapply(nodes, xmlValue))
+ids <- values[grep("[0-9]+", values)]
+filenames <- paste(dir, ids, sep="")
+stats <- urlsToDataFrame(filenames, 
+  tables=list(Player=NULL), 
+  add.children=TRUE)
+```
+
+
+PITCHf/x Visualization
+--------------------
+
+### Animation
+
+I can use the `pitches` data frame created in the previous section to animate pitch trajectories.
+
+```{r load_pitches, echo=FALSE}
+data(pitches)
+```
+
+```{r ani, fig.show="animate", interval=0.01, cache=TRUE}
+animateFX(pitches)
+```
+
+The plotting options for **pitchRx** encompass the flexibility and syntax of the ggplot2 grammar of graphics.
+
+```{r ani2, fig.show="animate", interval=0.01, cache=TRUE, fig.height=28, fig.width=20}
+animateFX(pitches, layer=facet_grid(pitcher_name~stand, labeller = label_both))
+```
+
+### Strikezone Densities
+
+I can also examine static pitch locations at the moment they cross the plate.
+
+```{r strike, fig.width=10}
+strikeFX(pitches, layer=facet_grid(.~stand))
+```
+
+Unlike $$\texttt{animateFX}$$, $$\texttt{strikeFX}$$ allows different geometries.
+
+```{r strike2}
+strikeFX(pitches, geom="tile", contour=TRUE)
+```
+
+

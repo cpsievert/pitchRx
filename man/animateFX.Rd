@@ -3,9 +3,9 @@
 \title{Animate PITCHf/x}
 \usage{
   animateFX(data, color = "pitch_types", point.size = 3,
-    point.alpha = 1/3, flag = FALSE, interval = 0.01,
-    sleep = 1e-12, layer = list(), env = parent.frame(),
-    ...)
+    point.alpha = 1/3, limitz = c(-2.5, 2.5, 0, 7),
+    flag = FALSE, interval = 0.01, sleep = 1e-12,
+    layer = list(), env = parent.frame(), ...)
 }
 \arguments{
   \item{data}{data frame with appropriately named PITCHf/x
@@ -14,6 +14,8 @@
   \item{point.size}{Size of points}
 
   \item{point.alpha}{ggplot2 alpha parameter}
+
+  \item{limitz}{limits for horizontal and vertical axes.}
 
   \item{color}{variable used to control coloring scheme.}
 
