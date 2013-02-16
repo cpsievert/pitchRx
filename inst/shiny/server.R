@@ -1,9 +1,6 @@
 library(shiny)
 library(animation)
 library(devtools)
-setwd("~/Desktop/github/local/pitchRx")
-install(".")
-#install_github('pitchRx', 'cpsievert')
 library(pitchRx)
 
 valid <- function(input, default) { 
@@ -115,6 +112,9 @@ shinyServer(function(input, output) {
     if (facet1 != "No facet" & facet2 != "No facet") {
       facet_layer <- call("facet_grid", paste(facet2, "~", facet1, sep=""))
     }
+    if (input$coord.equal) {
+      coord_equal <- coord_equal()
+    } else coord_equal <- NULL
 #     if (input$visMethod == "custom") {
 #       custom_map <- aes_string(x=input$customX, y=input$customY)
 #       print(ggplot(data, custom_map)+geom_point()+xlim(input$xmin, input$xmax)+ylim(input$ymin, input$ymax)) 
@@ -127,7 +127,8 @@ shinyServer(function(input, output) {
                          description = "Generated from <a href='http://cpsievert.github.com/home.html'>Carson Sievert</a>'s PITCHf/x <a href='https://gist.github.com/4440099'>visualization tool</a>")
       ani.start()
       print(animateFX(data, point.size=input$point_size, 
-                      point.alpha=input$point_alpha, layer=facet_layer))
+                      point.alpha=input$point_alpha, 
+                      layer=list(facet_layer, coord_equal), parent=TRUE))
       ani.stop()
       ani.options(oopt)
     }
@@ -152,7 +153,6 @@ shinyServer(function(input, output) {
       contours <- input$tile_contour
       a <- input$tile_adjust
     }
-    #browser(expr= valid(input$denVar1, "None"))
     if (input$visMethod == "strike") {
       den1 <- list()
       den2 <- list()
@@ -166,9 +166,9 @@ shinyServer(function(input, output) {
       }
       print(strikeFX(data, geom=input$geom, point.size=input$point_size, 
                      point.alpha=input$point_alpha, color=input$pointColor, density1=den1,
-                     density2=den2, layer=facet_layer, contour=contours, adjust=a,
-                     limitz=c(input$xmin, input$xmax, input$ymin, input$ymax),
-                     binwidth=binwidths))
+                     density2=den2, layer=list(facet_layer, coord_equal), contour=contours, 
+                     adjust=a, limitz=c(input$xmin, input$xmax, input$ymin, input$ymax),
+                     binwidth=binwidths, parent=TRUE))
     }
   })
   

@@ -15,7 +15,7 @@
 #' @param adjust logical. Should vertical locations be adjusted according to batter height?
 #' @param layer list of other ggplot2 (layered) modifications.
 #' @param limitz limits for horizontal and vertical axes. 
-#' @param env the \link{environment} in which expr is to be evaluated. 
+#' @param parent is the function being called from a higher-level function? (experimental)
 #' @param ... extra options passed onto geom commands
 #' @return Returns a ggplot2 object.
 #' @export
@@ -30,7 +30,7 @@
 #' strikeFX(pitches, geom="hex", contour=TRUE, density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))
 #' 
 
-strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), contour=FALSE, adjust=TRUE, layer = list(), limitz=c(-2.5, 2.5, 0, 5), env=parent.frame(), ...){ 
+strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), contour=FALSE, adjust=TRUE, layer = list(), limitz=c(-2.5, 2.5, 0, 5), parent=FALSE, ...){ 
   if (any(!geom %in% c("point", "bin", "hex", "tile"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
@@ -48,7 +48,13 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   FX <- data[complete.cases(data[,locations]),] #get rid of records missing the necessary parameters
   for (i in locations)
     FX[,i] <- as.numeric(FX[,i])
-  layers <- eval(layer, envir=env) #allows layers to be derived from calls and variables in higher-level functions (necessary for shiny implementation)
+  layers <- NULL
+  if (parent) { #ugly workaround for shiny implementation
+    for (i in layer)
+      layers <- list(layers, eval(i)) 
+  } else {
+    layers <- layer
+  }
   facets <- getFacets(layers)
   if ("b_height" %in% names(FX)) { #plot strikezones (and adjust loactions) if heights are numeric
     boundaries <- getStrikezones(FX, facets, strikeFX = TRUE) 

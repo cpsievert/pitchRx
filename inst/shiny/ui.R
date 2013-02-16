@@ -28,7 +28,7 @@ shinyUI(pageWithSidebar(
                  c("Visualize strikezones" = "strike", 
                    "Animate flight paths" = "animate")),
     HTML("<hr />"),
-    helpText(HTML("<h3>Plotting Options</h3>")),
+    helpText(HTML("<h3>Axis Settings</h3>")),
     conditionalPanel(
       condition = "input.visMethod == 'custom'",
       uiOutput("customX"),
@@ -38,6 +38,8 @@ shinyUI(pageWithSidebar(
     numericInput("xmax", "x-axis maximum:", 3.5),
     numericInput("ymin", "y-axis minimum", 0),
     numericInput("ymax", "y-axis maximum", 7),
+    checkboxInput("coord.equal", strong("Preserve Plotting Persepective"), TRUE),
+    helpText(HTML("<h3>Facetting</h3>")),
     selectInput("facet1", "Column-wise Split:", 
                 choices = c("stand", "pitch_type", "pitcher_name", "top_inning", "No facet", "Enter my own")),
     conditionalPanel(

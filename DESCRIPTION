@@ -18,7 +18,8 @@ Depends:
     plyr,
     reshape,
     lubridate,
-    stringr
+    stringr,
+    hexbin
 LazyData: true
 Collate:
     'urlsToDataFrame.R'

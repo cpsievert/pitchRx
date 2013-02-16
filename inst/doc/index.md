@@ -1,16 +1,13 @@
 Introduction to pitchRx package
 =======================================
 
-<!--browseURL(paste0('http://127.0.0.1:', tools:::httpdPort, '/library/pitchRx/doc/index.html'))>
+<!--- view local page:
+browseURL(paste0('http://127.0.0.1:', tools:::httpdPort, '/library/pitchRx/doc/index.html'))
+-->
+
+The  **pitchRx** package provides tools for collecting and visualizing Major League Baseball (MLB) [PITCHf/x](http://en.wikipedia.org/wiki/PITCHf/x) data.
 
 
-
-
-
-Introduction
-------------
-
-The  **pitchRx** package provides tools for collecting and visualizing Major League Baseball (MLB) PITCHf/x data.
 
 
 Data Collection
@@ -103,12 +100,12 @@ animateFX(pitches, point.size = 5)
 </div>
 
 
-The plotting options for **pitchRx** encompass the flexibility and syntax of the ggplot2 grammar of graphics.
+The plotting options for **pitchRx** encompass the flexibility and syntax of the [ggplot2](http://ggplot2.org/) grammar of graphics. 
 
 
 ```r
-animateFX(pitches, point.size = 5, layer = facet_grid(pitcher_name ~ stand, 
-    labeller = label_both))
+animateFX(pitches, point.size = 5, layer = list(coord_equal(), facet_grid(pitcher_name ~ 
+    stand, labeller = label_both)))
 ```
 
 <div align = "center">
@@ -122,13 +119,24 @@ I can also examine static pitch locations at the moment they cross the plate.
 
 
 ```r
-strikeFX(pitches, layer = facet_grid(. ~ stand))
+s <- strikeFX(pitches, layer = facet_grid(. ~ stand))
+s
 ```
 
 ![plot of chunk strike](figure/strike.png) 
 
 
-Unlike `animateFX`, `strikeFX` allows different geometries.
+With `strikeFX`, ggplot2 arithmetic is preserved.
+
+
+```r
+s + coord_equal() + facet_grid(. ~ stand)
+```
+
+![plot of chunk strike2](figure/strike2.png) 
+
+
+Unlike `animateFX`, `strikeFX` encompasses different geometries.
 
 
 ```r
@@ -136,7 +144,7 @@ strikeFX(pitches, geom = "tile", contour = TRUE, layer = facet_grid(pitch_types 
     stand))
 ```
 
-![plot of chunk strike2](figure/strike2.png) 
+![plot of chunk strike3](figure/strike3.png) 
 
 
 `strikeFX` allows one to easily manipulate the density of interest through two parameters: `density1` and `density2`. If these densities are identical, the density is defined accordingly. This is useful for avoiding repeative subsetting of data frames. For example, say I want the density of 'Called Strikes'.
@@ -147,7 +155,7 @@ strikeFX(pitches, geom = "tile", density1 = list(des = "Called Strike"), density
     layer = facet_grid(pitch_types ~ stand))
 ```
 
-![plot of chunk strike3](figure/strike3.png) 
+![plot of chunk strike4](figure/strike4.png) 
 
 
 If you specify two different densities, `strikeFX` will plot differenced bivariate density estimates. In this case, we are subtracting the "Ball" density from the previous "Called Strike" density.
@@ -158,6 +166,6 @@ strikeFX(pitches, geom = "hex", density1 = list(des = "Called Strike"), density2
     layer = facet_grid(pitch_types ~ stand))
 ```
 
-![plot of chunk strike4](figure/strike4.png) 
+![plot of chunk strike5](figure/strike5.png) 
 
 
