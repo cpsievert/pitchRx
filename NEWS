@@ -4,9 +4,9 @@ NEW FEATURES
 
   - first version of pitchRx. 
 
-  - for main overview of package, see the html file in the "Overview of user guides and package vignettes".
+  - intro to data collection with pitchRx: http://cpsievert.wordpress.com/2013/01/10/easily-obtain-mlb-pitchfx-data-using-r/
 
-- for shiny demonstration, see: http://cpsievert.wordpress.com/2013/01/13/pitchrx-shiny-fun-flexible-mlb-pitchfx-visualization
+- using pitchRx via shiny: http://cpsievert.wordpress.com/2013/01/13/pitchrx-shiny-fun-flexible-mlb-pitchfx-visualization
 
 
 MISC
