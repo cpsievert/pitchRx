@@ -20,7 +20,7 @@ shinyUI(pageWithSidebar(
     ),
     conditionalPanel(
       condition = "input.dataSource == 'source'",
-      helpText(HTML("<div style=\"text-indent: 25px\">Another Shiny app for data collection is currently under construction.</div>"))
+      helpText(HTML("<div style=\"text-indent: 25px\">See <a href='http://cpsievert.wordpress.com/2013/01/10/easily-obtain-mlb-pitchfx-data-using-r/'>my post</a> on collecting PITCHf/x data from the source using <a href='http://cran.r-project.org/web/packages/pitchRx/'>pitchRx</a>.</div>"))
     ),
     HTML("<hr />"),
     helpText(HTML("<h3>Visualization Method</h3>")),
