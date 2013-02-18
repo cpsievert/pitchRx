@@ -56,7 +56,6 @@
 }
 \examples{
 data(pitches)
-animateFX(pitches)
-animateFX(pitches, layer = facet_grid(pitcher_name~stand))
+\dontrun{animateFX(pitches, layer = facet_grid(pitcher_name~stand))}
 }
 

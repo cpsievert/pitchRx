@@ -12,10 +12,10 @@
 #' @return Returns a list containing a data frame specific to each element in \code{tables}. The default setting returns two data frames. The larger one contains data "PITCHfx parameters" for each pitch. The smaller one contains data relevant to each atbat.
 #' @export
 #' @examples
-#' #Collect PITCHf/x data for May 1st, 2012
-#' data <- scrapeFX(start = "2012-05-01", end = "2012-05-01")
+#' \dontrun{Collect PITCHf/x data for May 1st, 2012
+#' dat <- scrapeFX(start = "2012-05-01", end = "2012-05-01")
 #' #Join tables for data analysis
-#' pitchFX <- join(data$pitch, data$atbat, by = c("num", "url"), type = "inner")
+#' pitchFX <- join(dat$pitch, dat$atbat, by = c("num", "url"), type = "inner")}
 #' 
 #' \dontrun{Algorithm for obtaining all available PITCHfx data** 
 #' # (1) Collect PITCHfx data from 2012
@@ -35,13 +35,13 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atb
   }
   if (year(start) < 2008) warning("pitchFX data wasn't recorded consistently until 2008. Do you want to consider a later start date?")
   if (end > as.POSIXct(Sys.Date())) warning("Sorry, I can't scrape data on the future!")
-  data(fields)
-  data(urls) 
+  scrape.env <- environment()
+  data(fields, package="pitchRx", envir=scrape.env)
+  data(urls, package="pitchRx", envir=scrape.env)
   last.date <- as.POSIXct(max(urls$date))
   if (last.date < end) { #update urls if new ones exist
     new.urls <- updateUrls(last.date, end)
     urls <- rbind(urls, new.urls)
-    #update players?
   }
   urls <- subset(urls, date >= start & date <= end) #Subset urls to dates of interest
   if ("game" %in% names(tables)) { #Special handling since game node appears in other files (and we don't want the records from the other files)
@@ -59,7 +59,7 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atb
   data <- cleanList(data)
   if ("atbat" %in% names(tables)) {
     #Add batter name to 'atbats'
-    data(players)
+    data(players, package="pitchRx", envir=scrape.env)
     names(data$atbat) <- gsub("batter", "id", names(data$atbat))
     data$atbat <- join(data$atbat, players, by = "id")
     names(data$atbat) <- gsub("id", "batter", names(data$atbat))

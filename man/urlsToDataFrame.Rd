@@ -54,7 +54,7 @@
   inconsistent, missing values are filled with \code{NA}s.
 }
 \examples{
-#Get "batting" stats going into a game played on May 6th, 2008:
+\dontrun{Obtain "batting" stats going into a game played on May 6th, 2008:
 data(urls)
 dir <- gsub("players.xml", "batters/",
             urls$url_player[1000])
@@ -66,6 +66,6 @@ ids <- values[grep("[0-9]+", values)]
 filenames <- paste(dir, ids, sep="")
 stats <- urlsToDataFrame(filenames,
                          tables=list(Player=NULL),
-                         add.children=TRUE)
+                         add.children=TRUE)}
 }
 

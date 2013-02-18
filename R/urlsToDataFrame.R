@@ -23,7 +23,7 @@
 #' @return Returns a data frames if the length of tables is one. Otherwise, it returns a list of data frames.
 #' @export
 #' @examples
-#' #Get "batting" stats going into a game played on May 6th, 2008:
+#' \dontrun{Obtain "batting" stats going into a game played on May 6th, 2008:
 #' data(urls)
 #' dir <- gsub("players.xml", "batters/", 
 #'             urls$url_player[1000])
@@ -35,7 +35,7 @@
 #' filenames <- paste(dir, ids, sep="")
 #' stats <- urlsToDataFrame(filenames, 
 #'                          tables=list(Player=NULL), 
-#'                          add.children=TRUE)
+#'                          add.children=TRUE)}
 
 urlsToDataFrame <- function(urls, tables = list(), add.children = FALSE, use.values = FALSE) {
   #Order tables alphabetically. This is important because the atbat node must be parsed first if you want an atbat ID for the pitch table 
