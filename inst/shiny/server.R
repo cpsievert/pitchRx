@@ -1,7 +1,10 @@
 library(shiny)
+if (!require(animation)) install.packages("animation", repos="http://streaming.stat.iastate.edu/CRAN/")
+if (!require(pitchRx)) install.packages("pitchRx", repos="http://streaming.stat.iastate.edu/CRAN/")
+if (!require(Cairo)) install.packages("Cairo", repos="http://streaming.stat.iastate.edu/CRAN/")
 library(animation)
-library(devtools)
 library(pitchRx)
+library(Cairo)
 
 valid <- function(input, default) { 
   if (is.null(input)) return(FALSE)
