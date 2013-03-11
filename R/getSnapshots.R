@@ -7,6 +7,7 @@
 #' @param data The nine PITCHf/x parameters used to determine the location of a pitch at a given time.
 #' @param interval the amount of time between 'snapshots'
 #' @return Return a three dimensinal array. The third dimension corresponds to different 'snapshots' of locations.
+#' @export
 
 getSnapshots <- function(data, interval = 0.01) {
   idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
