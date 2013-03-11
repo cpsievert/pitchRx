@@ -1,17 +1,26 @@
 #' Use rgl to visualize PITCHf/x
 #' 
-#' Three-dimensional plot of pitch trajectories
+#' Three-dimensional plot of pitch trajectories.
 #' 
 #' Details go here.
 #'
-#' @param data data frame with appropriately named PITCHf/x variables
+#' @param data data.frame with appropriately named PITCHf/x variables
+#' @param spheres Use \link{spheres3d} or \link{plot3d}?
+#' @param color variable used to control coloring scheme.
 #' @param interval the amount of time between 'snapshots'
+#' @param alpha color transparency
 #' @param print.legend print coloring legend in R console?
-#' @return rgl plot3d() object is returned.
+#' @param ... other param passed onto \link{plot3d} or \link{spheres3d}
+#' @return rgl object is returned.
 #' @export
+#' @examples
+#' 
+#' data(pitches)
+#' Rivera <- subset(pitches, pitcher_name=="Mariano Rivera")
+#' \dontrun{interactiveFX(Rivera, interval=.05)}
 #' 
 
-rglFX <- function(data, color="pitch_types", interval=0.01, print.legend=TRUE){
+interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01, alpha=1, print.legend=TRUE){
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -27,15 +36,14 @@ rglFX <- function(data, color="pitch_types", interval=0.01, print.legend=TRUE){
   nplots <- length(snaps[1,,1]) #Number of 'snapshots' required for EVERY pitch to reach home plate
   if (!color %in% names(data) || is.null(color)) { #convert types to colors!
     warning(paste(color, "is the variable that defines coloring but it isn't in the dataset!"))
-    full.pal <- "#000000"
+    full.pal <- rgb(0, 0, 0, alpha)
   } else {
-    #types <- rep(as.character(data[,color]), times=nplots)
     types <- as.character(data[,color])
     ncolors <- length(unique(types))
-    if (ncolors > 3) pal <- terrain.colors(ncolors, alpha = 1)
-    if (ncolors == 3) pal <- c("#ff0000", "#00ff00", "#0000ff") 
-    if (ncolors == 2) pal <- c("#ff0000", "#0000ff") 
-    if (ncolors == 1) pal <- "#000000"
+    if (ncolors > 3) pal <- terrain.colors(ncolors)
+    if (ncolors == 3) pal <- c(rgb(1, 0, 0), rgb(0, 1, 0), rgb(0, 0, 1))
+    if (ncolors == 2) pal <- c(rgb(1, 0, 0), rgb(0, 0, 1))
+    if (ncolors == 1) pal <- rgb(0, 0, 0)
     if (print.legend) {
       legend <- data.frame(unique(types), pal)
       names(legend) <- c(color, "colors")
@@ -45,7 +53,15 @@ rglFX <- function(data, color="pitch_types", interval=0.01, print.legend=TRUE){
     full.pal <- factor(types)
     levels(full.pal) <- pal
   }
-  plot3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
-         xlab="Horizontal Axis", ylab="Distance from Home Plate", zlab="Height From Ground",
-         col=as.character(full.pal))
+  open3d()
+  if (spheres){
+    spheres3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
+           col=as.character(full.pal), radius=.12, alpha=alpha)
+    axes3d(c('x', 'y', 'z')) 
+    title3d(xlab='Horizontal Axis', ylab='Distance from Home Plate', zlab='Height From Ground')
+  } else {
+    plot3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
+           xlab="Horizontal Axis", ylab="Distance from Home Plate", zlab="Height From Ground",
+           col=as.character(full.pal), alpha=alpha)
+  }
 }

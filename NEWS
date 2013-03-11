@@ -4,7 +4,7 @@ NEW FEATURES
 
    - see here for a comprehensive tutorial: http://cpsievert.github.com/pitchRx/demo
 
-   - rgl 3D plots are now available through rglFX() 
+   - 3D plots of pitch trajectories are now available through interactiveFX(). Note that spheres==TRUE employs basic rgl::spheres3d functionality; otherwise rgl::plot3d is used
 
 
 		CHANGES IN pitchRx VERSION 0.1

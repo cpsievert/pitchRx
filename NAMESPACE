@@ -1,5 +1,5 @@
 export(animateFX)
-export(rglFX)
+export(interactiveFX)
 export(scrapeFX)
 export(strikeFX)
 export(urlsToDataFrame)

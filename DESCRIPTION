@@ -26,7 +26,7 @@ LazyData: true
 Collate:
     'animateFX.R'
     'strikeFX.R'
-    'rglFX.R'
+    'interactiveFX.R'
     'getSnapshots.R'
     'getStrikezones.R'
     'getFacets.R'
