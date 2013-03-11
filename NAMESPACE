@@ -1,4 +1,5 @@
 export(animateFX)
+export(getSnapshots)
 export(interactiveFX)
 export(scrapeFX)
 export(strikeFX)
