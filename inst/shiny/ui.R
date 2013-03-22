@@ -70,7 +70,7 @@ shinyUI(pageWithSidebar(
         checkboxInput("point_contour", strong("Add contour lines"), FALSE),
         conditionalPanel(
           condition = "input.visMethod == 'strike'",
-        checkboxInput("point_adjust", strong("Adjust vertical locations to aggregate strikezone"), TRUE)
+          checkboxInput("point_adjust", strong("Adjust vertical locations to aggregate strikezone"), TRUE)
         )
       ),
       conditionalPanel(
@@ -97,22 +97,22 @@ shinyUI(pageWithSidebar(
           sliderInput("bin_ybin", "Bin Height:",
                       min = 0.1, max = 3, value = 0.25, step = 0.05),
           checkboxInput("bin_adjust", strong("Adjust vertical locations to aggregate strikezone"), TRUE)
-      )
-    )
-  ),
-    #panel for density geometries
-    conditionalPanel( 
-      condition = "input.geom == 'bin' || input.geom == 'hex' || input.geom == 'tile'",
-      helpText(HTML("<h3>Alter Density(ies)</h3>")),
-      uiOutput("denVar1"),
-      conditionalPanel(
-        condition = "input.denVar1 != 'None'",
-        uiOutput("vals1")
+        )
       ),
-      uiOutput("denVar2"),
-      conditionalPanel(
-        condition = "input.denVar2 != 'None'",
-        uiOutput("vals2")
+      #panel for density geometries
+      conditionalPanel( 
+        condition = "input.geom == 'bin' || input.geom == 'hex' || input.geom == 'tile'",
+        helpText(HTML("<h3>Alter Density(ies)</h3>")),
+        uiOutput("denVar1"),
+        conditionalPanel(
+          condition = "input.denVar1 != 'None'",
+          uiOutput("vals1")
+        ),
+        uiOutput("denVar2"),
+        conditionalPanel(
+          condition = "input.denVar2 != 'None'",
+          uiOutput("vals2")
+        )
       )
     )
   ),

@@ -2,10 +2,11 @@
 #' 
 #' Used within \code{pitchRx} plotting functions
 #' 
-#' @param layers ggplot2 layers from the original plotting call
+#' @param layer ggplot2 layer(s) from the original plotting call
 #' @result character vector with variable names (if faceting is present). Otherwise, \code{NULL}
 #' 
-getFacets <- function(layers){
+getFacets <- function(layer){
+  layers <- unlist(layer)
   if (length(layers) == 0) return(NULL)
   rows <- layers$rows
   cols <- layers$cols
@@ -21,3 +22,5 @@ getFacets <- function(layers){
   }
   return(c(row.facet, col.facet))
 }
+
+

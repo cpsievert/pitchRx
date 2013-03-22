@@ -41,8 +41,8 @@ interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01
     types <- as.character(data[,color])
     ncolors <- length(unique(types))
     if (ncolors > 3) pal <- terrain.colors(ncolors)
-    if (ncolors == 3) pal <- c(rgb(1, 0, 0), rgb(0, 1, 0), rgb(0, 0, 1))
-    if (ncolors == 2) pal <- c(rgb(1, 0, 0), rgb(0, 0, 1))
+    if (ncolors == 3) pal <- c(rgb(0, 0, 1), rgb(0, 1, 0), rgb(1, 0, 0))
+    if (ncolors == 2) pal <- c(rgb(0, 0, 1), rgb(1, 0, 0))
     if (ncolors == 1) pal <- rgb(0, 0, 0)
     if (print.legend) {
       legend <- data.frame(unique(types), pal)

@@ -1,10 +1,13 @@
 library(shiny)
 if (!require(animation)) install.packages("animation", repos="http://streaming.stat.iastate.edu/CRAN/")
-if (!require(pitchRx)) install.packages("pitchRx", repos="http://streaming.stat.iastate.edu/CRAN/")
-if (!require(Cairo)) install.packages("Cairo", repos="http://streaming.stat.iastate.edu/CRAN/")
 library(animation)
-library(pitchRx)
+if (!require(Cairo)) install.packages("Cairo", repos="http://streaming.stat.iastate.edu/CRAN/")
 library(Cairo)
+#if (!require(pitchRx)) install.packages("pitchRx", repos="http://streaming.stat.iastate.edu/CRAN/")
+library(devtools)
+install_github('pitchRx', 'cpsievert')
+library(pitchRx)
+
 
 valid <- function(input, default) { 
   if (is.null(input)) return(FALSE)
@@ -132,6 +135,10 @@ shinyServer(function(input, output) {
                       layer=list(facet_layer, coord_equal), parent=TRUE))
       ani.stop()
       ani.options(oopt)
+    }
+    if (input$visMethod == "interactive") {
+      interactiveFX(data, interval=input$interval, color=input$pointColor, alpha=input$point_alpha)
+      browseURL(paste("file://", writeWebGL(dir=file.path(tempdir(), "webGL"), width=500, height=500),sep=""))
     }
     #Set binwidths for hex and bins
     #contours require special handling within each geometry
