@@ -10,7 +10,8 @@ License: MIT
 Suggests:
     shiny,
     knitr,
-    animation
+    animation,
+    rgl
 Depends:
     R (>= 2.15.1),
     MASS,
@@ -20,8 +21,7 @@ Depends:
     reshape,
     lubridate,
     stringr,
-    hexbin,
-    rgl
+    hexbin
 LazyData: true
 Collate:
     'animateFX.R'
