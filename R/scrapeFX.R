@@ -82,6 +82,7 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atb
 #' @param last.date most recent date in \code{data(urls)}
 #' @param end any date more recent than last.date
 #' @return returns a data frame
+#' @export
 
 updateUrls <- function(last.date, end) {
     cat("updating urls", "\n")
@@ -106,7 +107,7 @@ updateUrls <- function(last.date, end) {
     #Generate date from game id
     split.urls <- str_split(url, "/")
     gids <- sapply(split.urls, function(x) { x[10] })
-    date <- sapply(str_split(gids, "_"), function(x) { paste(x[2], x[3], x[4], sep = "/") })
+    date <- sapply(str_split(gids, "_"), function(x) { paste(x[2], x[3], x[4], sep = "-") })
     urls <- data.frame(date = date, url_scoreboard = url.scoreboard, url = url, url_player = url.player)
     if (length(grep("NA", date) > 0)) {#Some days don't have games (even in the middle of season). In this case, "NA/NA/NA" are produced, which causes errors when urls is subsetted
       urls <- urls[-grep("NA", date),]

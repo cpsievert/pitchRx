@@ -57,7 +57,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
     if (adjust) {
       FX$pz_adj <- boundaries[[1]] #adjusted vertical locations
     } else FX$pz_adj <- FX$pz # "adjusted" vert locations
-    FX <- join(FX, boundaries[[2]], by="stand", type="inner")
+    FX <- plyr::join(FX, boundaries[[2]], by="stand", type="inner")
   } else {
     FX$pz_adj <- FX$pz
     zones <- NULL
@@ -137,7 +137,7 @@ subsetFX <- function(data, density) {
 #' Computes differenced 2D Kernel Density Estimates using MASS::kde2d
 #'
 #' Computes two densities on the same support and subtracts them according to the \code{density} expression.
-#' The expression should look as follows: variable~value1-value2.
+#' 
 #' 
 #' @param data PITCHf/x data
 #' @param density1 either density1 or density2 passed on from \link{strikeFX}.

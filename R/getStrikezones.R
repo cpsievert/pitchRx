@@ -21,7 +21,8 @@ getStrikezones <- function(data, facets, strikeFX = FALSE) {
   bounds$left <- righty*-1.03 + lefty*-1.20
   bounds$right <- righty + lefty*0.81
   if (strikeFX) { #adjust vertical pitch locations
-    data2 <- join(data, bounds, by = c("stand", facets), type = "inner")
+    joinby <- unique(c("stand", facets))
+    data2 <- plyr::join(data, bounds, by = joinby, type = "inner")
     data2$R <- as.numeric(data$stand == "R")
     data2$L <- as.numeric(data$stand == "L")
     data2$tops <- with(data2, R*(2.6 + heights*0.136) + L*(2 + heights*0.229))
