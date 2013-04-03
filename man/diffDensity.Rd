@@ -26,8 +26,6 @@
 }
 \details{
   Computes two densities on the same support and subtracts
-  them according to the \code{density} expression. The
-  expression should look as follows:
-  variable~value1-value2.
+  them according to the \code{density} expression.
 }
 

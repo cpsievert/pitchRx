@@ -2,10 +2,10 @@
 \alias{getFacets}
 \title{Extract faceting variables}
 \usage{
-  getFacets(layers)
+  getFacets(layer)
 }
 \arguments{
-  \item{layers}{ggplot2 layers from the original plotting
+  \item{layer}{ggplot2 layer(s) from the original plotting
   call}
 }
 \description{
