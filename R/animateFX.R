@@ -64,11 +64,12 @@ animateFX <- function(data, color = "pitch_types", point.size=3, point.alpha=1/3
     aes_mapping <- aes_string(x = "x", y="z")
   }
   parameters <- reordered[, names(reordered) %in% idx]
-  snapshots <- getSnapshots(parameters)
+  snapshots <- getSnapshots(parameters, interval)
   other <- reordered[, !(names(reordered) %in% idx)] #Keep 'other' variables for faceting/coloring
   if ("b_height" %in% names(other)) {
     boundaries <- getStrikezones(other, facets, strikeFX = FALSE) #Strikezone boundaries
-    other <- join(other, boundaries, by="stand", type="inner")
+    joinby <- unique(c("stand", facets))
+    other <- plyr::join(other, boundaries, by=joinby, type="inner")
   } else {
     zones <- NULL
     warning("Strikezones depend on the stance (and height) of the batter. Make sure these variables are being entered as 'stand' and 'b_height', respectively. Also, 'b_height' must be numeric; otherwise, strikezones will not appear.")

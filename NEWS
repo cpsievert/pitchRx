@@ -1,3 +1,11 @@
+		CHANGES IN pitchRx VERSION 0.3
+
+NEW FEATURES
+   
+    - The data(urls) object is now updated to include 2013 urls.
+
+   - The function updateUrls() is now exported so that users can collect urls that are not already provided in data(urls).
+
 		CHANGES IN pitchRx VERSION 0.2
 
 NEW FEATURES
