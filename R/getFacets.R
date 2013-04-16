@@ -22,5 +22,3 @@ getFacets <- function(layer){
   }
   return(c(row.facet, col.facet))
 }
-
-

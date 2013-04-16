@@ -5,12 +5,12 @@
 #' Details go here.
 #'
 #' @param data data.frame with appropriately named PITCHf/x variables
-#' @param spheres Use \link{spheres3d} or \link{plot3d}?
+#' @param spheres Use rgl::spheres3d or rgl::plot3d?
 #' @param color variable used to control coloring scheme.
 #' @param interval the amount of time between 'snapshots'
 #' @param alpha color transparency
 #' @param print.legend print coloring legend in R console?
-#' @param ... other param passed onto \link{plot3d} or \link{spheres3d}
+#' @param ... other param passed onto rgl::spheres3d or rgl::plot3d
 #' @return rgl object is returned.
 #' @export
 #' @examples
@@ -20,7 +20,7 @@
 #' \dontrun{interactiveFX(Rivera, interval=.05)}
 #' 
 
-interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01, alpha=1, print.legend=TRUE){
+interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01, alpha=1, print.legend=TRUE, ...){
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -56,12 +56,12 @@ interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01
   open3d()
   if (spheres){
     spheres3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
-           col=as.character(full.pal), radius=.12, alpha=alpha)
+           col=as.character(full.pal), radius=.12, alpha=alpha, ...)
     axes3d(c('x', 'y', 'z')) 
     title3d(xlab='Horizontal Axis', ylab='Distance from Home Plate', zlab='Height From Ground')
   } else {
     plot3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
            xlab="Horizontal Axis", ylab="Distance from Home Plate", zlab="Height From Ground",
-           col=as.character(full.pal), alpha=alpha)
+           col=as.character(full.pal), alpha=alpha, ...)
   }
 }
