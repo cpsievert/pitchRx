@@ -1,0 +1,147 @@
+<!--
+%\VignetteEngine{knitr}
+%\VignetteIndexEntry{A Markdown Vignette with knitr}
+-->
+
+Introduction to pitchRx package
+====================================
+
+The  **pitchRx** package provides tools for collecting and visualizing Major League Baseball (MLB) [PITCHf/x](http://en.wikipedia.org/wiki/PITCHf/x) data.
+
+```{r setup, include=FALSE}
+options(CBoundsCheck=TRUE)
+library(knitr)
+opts_chunk$set(fig.path="figure/", cache.path="cache/", fig.align="center", warning=FALSE, message=FALSE, fig.height=7, fig.width=5)
+opts_knit$set(animation.fun = hook_r2swf)
+library(pitchRx)
+```
+
+Data Collection
+----------------------------
+
+### Collecting PITCHf/x Data
+
+**pitchRx** makes it easy to collect PITCHf/x data directly from the source. Since its establishment in 2008, Major League Baseball Advanced Media (MLBAM) has made PITCHf/x data available in XML format.  MLBAM provides this service for free. To keep it that way, please be mindful when using this library to query their website.
+
+One should collect PITCHf/x on a yearly basis (or shorter - since this is large amount of data). While waiting for `scrapeFX` to collect data, you might want to set up a SQL-like database. If you are storing data via MySQL, you may find these <a href="https://github.com/cpsievert/pitchFX/blob/master/tables.sql">table formats</a> helpful. After storing your data appropriately, the collection process can then be repeated for other years.
+
+```{r basic_scraping, eval=FALSE}
+data <- scrapeFX(start="2011-01-01", end="2011-12-31")
+#RMySQL is preferred for data storage
+library(RMySQL)
+drv <- dbDriver("MySQL")
+MLB <- dbConnect(drv, user="your_user_name", password="your_password", port=your_port, dbname="your_database_name", host="your_host")
+dbWriteTable(MLB, value = data$pitch, name = "pitch", row.names = FALSE, append = TRUE)
+dbWriteTable(MLB, value = data$atbat, name = "atbat", row.names = FALSE, append = TRUE)
+rm(data) #clear workspace so you can repeat for other year(s)
+```
+
+By default, `scrapeFX` returns two data frames: `data$atbat` and `data$pitch`. One contains data on the 'pitch' level and the other on the 'atbat' level. If you're interested in having a deeper level of information at your disposal, you can use `scrapeFX` to collect other information to supplement this core PITCHf/x data. By using the command below, you will collect seven different data frames. For example, `data$umpire` will contain information on umpires for each game in 2011. 
+
+```{r advanced_scraping, eval=FALSE}
+data <- scrapeFX(start="2011-01-01", end="2011-12-31",
+                tables=list(atbat = fields$atbat, 
+                pitch = fields$pitch, game = fields$game, 
+                player = fields$player, runner = NULL, 
+                umpire = NULL, coach = NULL))
+```
+
+No matter how you're storing your data, you will want to join `data$atbat` with `data$pitch` at some point. For instance, lets combine all information on the 'atbat and 'pitch' level for every 'four-seam' and 'cutting' fastball thrown by Mariano Rivera nad Phil Hughes during the 2011 season:
+
+```{r joining, eval=FALSE}
+names <- c("Mariano Rivera", "Phil Hughes")
+atbats <- subset(data$atbat, pitcher_name == name)
+pitchFX <- join(atbats, data$pitch, by=c("num", "url"), type="inner")
+pitches <- subset(pitchFX, pitch_type == c("FF", "FC"))
+```
+
+This isn't an optimal method for querying data if you are planning on working with it frequently. For this reason, I often use **RMySQL** to grab chunks of data. This way I can manage my machine's working memory more efficiently. The SQL query below will also give you `pitches` object of interest (if you have multiple years in your database, you'll want to add criteria for the year of interest).
+
+```{r sql, eval=FALSE}
+pitches <- dbGetQuery(MLB, "SELECT * FROM atbat INNER JOIN pitch ON (atbat.num = pitch.num AND atbat.url = pitch.url) WHERE atbat.pitcher_name = 'Mariano Rivera' or atbat.pitcher_name = 'Phil Hughes'")
+```
+
+### Collecting XML data in general
+
+**pitchRx** has convenient functionality for extracting XML data from multiple files into appropriate data frame(s). One has to simply create the XML file names and specify XML nodes/attributes of interest in the function `urlsToDataFrame`. Keeping with the baseball theme, we can extract various statistics for batters entering a particular game.
+
+```{r urls, eval=FALSE}
+data(urls)
+dir <- gsub("players.xml", "batters/", 
+            urls$url_player[1000])
+doc <- htmlParse(dir)
+nodes <- getNodeSet(doc, "//a")
+values <- gsub(" ", "", 
+              sapply(nodes, xmlValue))
+ids <- values[grep("[0-9]+", values)]
+filenames <- paste(dir, ids, sep="")
+stats <- urlsToDataFrame(filenames, 
+  tables=list(Player=NULL), 
+  add.children=TRUE)
+```
+
+
+PITCHf/x Visualization
+--------------------
+
+### 2D animation
+
+Let's animate the `pitches` data frame created in the previous section on a series of 2D scatterplots. The viewer should notice that as the animation progresses, pitches coming closer to them (that is, imagine you are the umpire/catcher - watching the pitcher throw directly at you). In the animation below, the horizontal and vertical location of `pitches` is plotted every tenth of a second until they reach home plate (in real time). Since looking at animations in real time can be painful, the subsequent animation (with four panels) delays the time between each frame to a half a second.
+
+```{r load_pitches, echo=FALSE, dev="CairoPNG"}
+data(pitches)
+```
+
+```{r ani, fig.show="animate", interval=0.1, cache=TRUE, dev="CairoPNG", fig.width=10}
+animateFX(pitches, point.size=5, interval=0.1, layer=facet_grid(.~stand, labeller = label_both))
+```
+
+`animateFX` utilizes the [ggplot2](http://ggplot2.org/) layered grammar of graphics. This is useful for comparing and contrasting pitching styles (among other things). In the next animation, we use several layers at once to fix the aspect ratio, change the plotting theme and facet by pitcher. 
+
+```{r ani2, fig.show="animate", interval=0.5, cache=TRUE, fig.height=14, fig.width=14,dev="CairoPNG"}
+animateFX(pitches, point.size=5, interval=0.1, layer=list(facet_grid(pitcher_name~stand, labeller = label_both), coord_fixed(), theme_bw()))
+```
+
+### Interactive 3D plots
+
+**pitchRx** also makes use of **rgl** graphics. If I want a more revealing look as Mariano Rivera's pitches, I can subset the `pitches` data frame accordingly. Note that the plot below is interactive, so make sure you have javascript & [WebGL](http://get.webgl.org/) enabled (if you do, go ahead - click and drag)!
+
+```{r demo, eval=FALSE}
+Rivera <- subset(pitches, pitcher_name=="Mariano Rivera")
+interactiveFX(Rivera)
+```
+
+<iframe src="http://cpsievert.github.io/pitchRx/rgl1/" height="600" width="1200"></iframe>
+
+### Strikezone Densities
+
+I can also examine pitch locations at the moment they cross the plate. Unlike `animateFX`, `strikeFX` encompasses different geometries and **ggplot2** arithmetic.
+
+```{r strike, fig.height=14, fig.width=10, dev="CairoPNG"}
+facets <- facet_grid(pitcher_name~stand)
+strikeFX(pitches, geom="tile")+facets
+```
+
+`strikeFX` allows one to easily manipulate the density of interest through two parameters: `density1` and `density2`. If these densities are identical, the density is defined accordingly. This is useful for avoiding repeative subsetting of data frames. For example, say I want the density of 'Called Strikes'.
+
+```{r strike2, fig.height=14, fig.width=10, dev="CairoPNG"}
+strikeFX(pitches, geom="tile", density1=list(des="Called Strike"), density2=list(des="Called Strike"))+facets
+```
+
+If you specify two different densities, `strikeFX` will plot differenced bivariate density estimates. In this case, we are subtracting the "Ball" density from the previous "Called Strike" density.
+
+```{r strike3, fig.height=14, fig.width=10, dev="CairoPNG"}
+strikeFX(pitches, geom="hex", contour=TRUE, density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(pitcher_name~stand))
+```
+
+`strikeFX` also has the capability to plot tiled bar charts via the option `geom="subplot2d"`. Each grid (or subregion) of the plot below has a distribution of outcomes among Rivera's pitches to right handed batters. The three outcomes are "S" for strike, "X" for a ball hit into play and "B" for a ball. 
+
+```{r sub, echo=FALSE}
+Rivera <- subset(pitches, pitcher_name=="Mariano Rivera")
+```
+
+```{r strike4, fig.height=10, fig.width=8, dev="CairoPNG"}
+library(ggsubplot) #required for subplot2d option
+Rivera.R <- subset(Rivera, stand=="R")
+strikeFX(Rivera.R, geom="subplot2d", fill="type")
+```

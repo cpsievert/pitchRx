@@ -5,29 +5,31 @@
 #' Various bivariate plots with "px" on the horizontal axis and "pz" on the vertical axis.
 #'
 #' @param data PITCHf/x data to be visualized.
-#' @param geom plotting geometry. Multiple geometries can be plotted at once, but only considers: "point", "hex", "bin" and "contour". 
-#' @param point.size Size of points
-#' @param point.alpha ggplot2 alpha parameter
+#' @param geom plotting geometry. Current choices are: "point", "hex", "bin", "tile" and "subplot2d". 
+#' @param contour logical. Should contour lines be included?
+#' @param point.size Size of points (when geom="point")
+#' @param point.alpha plotting transparency parameter (when geom="point")
 #' @param color variable used to control coloring scheme.
+#' @param fill variable used to control subplot scheme (when geom="subplot2d")
+#' @param layer list of other ggplot2 (layered) modifications.
 #' @param density1 List defines a density estimate.
 #' @param density2 List defines a density estimate. If \code{density1 != density2}, the density estimates are automatically differenced.
-#' @param contour logical. Should contour lines be included?
 #' @param adjust logical. Should vertical locations be adjusted according to batter height?
-#' @param layer list of other ggplot2 (layered) modifications.
 #' @param limitz limits for horizontal and vertical axes. 
 #' @param parent is the function being called from a higher-level function? (experimental)
 #' @param ... extra options passed onto geom commands
 #' @return Returns a ggplot2 object.
 #' @export
+#' @importFrom plyr join
 #' @examples
 #' data(pitches)
 #' strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
 #' \dontrun{strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))}
 #' 
 
-strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color = "pitch_types", density1=list(), density2=list(), contour=FALSE, adjust=TRUE, layer = list(), limitz=c(-2.5, 2.5, 0, 5), parent=FALSE, ...){ 
+strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), density1=list(), density2=list(),  adjust=TRUE, limitz=c(-2.5, 2.5, 0, 5), parent=FALSE, ...){ 
   px=pz_adj=..density..=top=bottom=right=left=x=y=z=NULL #ugly hack to comply with R CMD check
-  if (any(!geom %in% c("point", "bin", "hex", "tile"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile'.")
+  if (any(!geom %in% c("point", "bin", "hex", "tile", "subplot2d"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile', , 'subplot2d'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -52,7 +54,7 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
     layers <- layer
   }
   facets <- getFacets(layer=layers)
-  if ("b_height" %in% names(FX)) { #plot strikezones (and adjust loactions) if heights are numeric
+  if ("b_height" %in% names(FX)) { #generate strikezone boundaries (and adjust loactions)
     boundaries <- getStrikezones(FX, facets, strikeFX = TRUE) 
     if (adjust) {
       FX$pz_adj <- boundaries[[1]] #adjusted vertical locations
@@ -70,6 +72,19 @@ strikeFX <- function(data, geom = "point", point.size=3, point.alpha=1/3, color 
   legendz <- theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
   xrange <- xlim(limitz[1:2])
   yrange <- ylim(limitz[3:4])
+  if (geom %in% "subplot2d") { #special handling for subplotting
+    if (!require(ggsubplot)) stop("The 'subplot2d' geom requires library(subplot2d)!")
+#     if (color == "") {
+#       subplot2d_mapping <- aes_string(x = "px", y="pz_adj")
+#     } else {
+#       subplot2d_mapping <- aes_string(x = "px", y="pz_adj", colour = color)
+#     }
+    return(ggplot(data=FX)+labelz+xrange+yrange+
+             geom_subplot2d(aes(x=px, y=pz_adj, 
+                    subplot = geom_bar(aes_string(x=fill, fill = fill))), ...)+
+             geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), 
+                        alpha=0, fill="pink", colour="black")+layers)
+  }
   if (geom %in% c("bin", "hex", "tile")) { #special handling for (2D) density geometries
     if (identical(density1, density2)) { #densities are not differenced
       FX1 <- subsetFX(FX, density1)

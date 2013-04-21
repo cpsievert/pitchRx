@@ -2,24 +2,33 @@
 \alias{strikeFX}
 \title{Visualize PITCHf/x strikezones}
 \usage{
-  strikeFX(data, geom = "point", point.size = 3,
-    point.alpha = 1/3, color = "pitch_types",
-    density1 = list(), density2 = list(), contour = FALSE,
-    adjust = TRUE, layer = list(),
+  strikeFX(data, geom = "point", contour = FALSE,
+    point.size = 3, point.alpha = 1/3,
+    color = "pitch_types", fill = "des", layer = list(),
+    density1 = list(), density2 = list(), adjust = TRUE,
     limitz = c(-2.5, 2.5, 0, 5), parent = FALSE, ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
 
-  \item{geom}{plotting geometry. Multiple geometries can be
-  plotted at once, but only considers: "point", "hex",
-  "bin" and "contour".}
+  \item{geom}{plotting geometry. Current choices are:
+  "point", "hex", "bin", "tile" and "subplot2d".}
 
-  \item{point.size}{Size of points}
+  \item{contour}{logical. Should contour lines be
+  included?}
 
-  \item{point.alpha}{ggplot2 alpha parameter}
+  \item{point.size}{Size of points (when geom="point")}
+
+  \item{point.alpha}{plotting transparency parameter (when
+  geom="point")}
 
   \item{color}{variable used to control coloring scheme.}
+
+  \item{fill}{variable used to control subplot scheme (when
+  geom="subplot2d")}
+
+  \item{layer}{list of other ggplot2 (layered)
+  modifications.}
 
   \item{density1}{List defines a density estimate.}
 
@@ -27,14 +36,8 @@
   \code{density1 != density2}, the density estimates are
   automatically differenced.}
 
-  \item{contour}{logical. Should contour lines be
-  included?}
-
   \item{adjust}{logical. Should vertical locations be
   adjusted according to batter height?}
-
-  \item{layer}{list of other ggplot2 (layered)
-  modifications.}
 
   \item{limitz}{limits for horizontal and vertical axes.}
 

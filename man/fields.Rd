@@ -4,7 +4,7 @@
 \title{Field names for Tables of interest in pitchRx package}
 \description{
   A list of sets of 'desired' field names (used to reduce
-  parsing time within \code{scrapePitchFX}).
+  parsing time within \code{scrapeFX}).
 }
 \author{
   Carson Sievert

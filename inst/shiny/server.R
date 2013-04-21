@@ -1,12 +1,12 @@
 library(shiny)
 if (!require(animation)) install.packages("animation", repos="http://streaming.stat.iastate.edu/CRAN/")
-library(animation)
+require(animation)
 if (!require(Cairo)) install.packages("Cairo", repos="http://streaming.stat.iastate.edu/CRAN/")
-library(Cairo)
-#if (!require(pitchRx)) install.packages("pitchRx", repos="http://streaming.stat.iastate.edu/CRAN/")
-library(devtools)
-install_github('pitchRx', 'cpsievert')
-library(pitchRx)
+require(Cairo)
+if (!require(pitchRx)) install.packages("pitchRx", repos="http://streaming.stat.iastate.edu/CRAN/")
+#library(devtools)
+#install_github('pitchRx', 'cpsievert')
+require(pitchRx)
 
 
 valid <- function(input, default) { 
