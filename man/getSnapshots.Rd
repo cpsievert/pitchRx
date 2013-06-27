@@ -15,9 +15,10 @@
   corresponds to different 'snapshots' of locations.
 }
 \description{
-  Pitch trajectories animated on a two-dimensional plot.
+  This function generates the x, y and z locations used in
+  \link{animateFX} and \link{interactiveFX}.
 }
-\details{
-  Details to go here.
+\references{
+  http://baseball.physics.illinois.edu/KaganPitchfx.pdf
 }
 

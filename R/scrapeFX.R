@@ -25,7 +25,9 @@
 #' rm(data12)
 #' # (4) Repeat (1)-(3) for 2011, 2010, 2009 & 2008}
 
-scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atbat = fields$atbat, pitch = fields$pitch)) { 
+scrapeFX <- function(start, end, tables = list(atbat = fields$atbat, pitch = fields$pitch)) { 
+  if (missing(start)) stop("Please provide a start date. Dates should be in 'yyyy-mm-dd' format. For example, '2012-06-07' represents June 7th, 2012.")
+  if (missing(end)) stop("Please provide an end date. Dates should be in 'yyyy-mm-dd' format. For example, '2012-06-07' represents June 7th, 2012.")
   start <- as.POSIXct(start)
   end <- as.POSIXct(end)
   if (is.null(names(tables))) stop("Please specify at least one XML node of interest.")
@@ -73,16 +75,16 @@ scrapeFX <- function(start = "2012-01-01", end = "2012-12-31", tables = list(atb
   return(data)
 }
 
-#' Update \code{urls} data frame
-#'
-#' This function scrapes "gameday_links" from the MLB website. These links are used to construct the urls needed to 
-#' obtain PITCHf/x data. It should only be called in \code{scrapeFX} when the user enters an end date later 
-#' than the most recent date present in \code{data(urls)}.
-#'
-#' @param last.date most recent date in \code{data(urls)}
-#' @param end any date more recent than last.date
-#' @return returns a data frame
-#' @export
+# Update \code{urls} data frame
+#
+# This function scrapes "gameday_links" from the MLB website. These links are used to construct the urls needed to 
+# obtain PITCHf/x data. It should only be called in \code{scrapeFX} when the user enters an end date later 
+# than the most recent date present in \code{data(urls)}.
+#
+# @param last.date most recent date in \code{data(urls)}
+# @param end any date more recent than last.date
+# @return returns a data frame
+# @export
 
 updateUrls <- function(last.date, end) {
     cat("updating urls", "\n")
@@ -115,12 +117,12 @@ updateUrls <- function(last.date, end) {
     return(urls) 
 }
 
-#' Update \code{players} data frame
-#'
-#' This function takes on (new) player urls and scrapes personal information on each player.
-#'
-#' @param new.urls new player urls added to the \code{urls} data frame
-#' @return returns new player information in a data frame
+# Update \code{players} data frame
+#
+# This function takes on (new) player urls and scrapes personal information on each player.
+#
+# @param new.urls new player urls added to the \code{urls} data frame
+# @return returns new player information in a data frame
 
 updatePlayers <- function(new.urls) {
   cat("updating players", "\n")
@@ -130,11 +132,10 @@ updatePlayers <- function(new.urls) {
   return(new.players)
 }
 
-#' Clean list of data frames (for scrapeFX)
-#' 
-#' @param ldf list of dataframes
-#' @return list of data frames
-
+# Clean list of data frames (for scrapeFX)
+# 
+# @param ldf list of dataframes
+# @return list of data frames
 
 cleanList <- function(ldf) {
   for (j in names(ldf)) {
@@ -152,11 +153,11 @@ cleanList <- function(ldf) {
   return(ldf)
 }
 
-#' Add columns with relevant "~/miniscoreboard.xml", "~/inning/inning_all.xml" and "~/player.xml" 
-#' file names to games table.
-#'
-#' @param df 'game' data frame with attributes from "~/miniscoreboard.xml" files.
-#' @return returns the original data frame with the proper url columns attached at the end.
+# Add columns with relevant "~/miniscoreboard.xml", "~/inning/inning_all.xml" and "~/player.xml" 
+# file names to games table.
+#
+# @param df 'game' data frame with attributes from "~/miniscoreboard.xml" files.
+# @return returns the original data frame with the proper url columns attached at the end.
 
 attachUrls <- function(df) {
   names(df) <- gsub("url", "url_scoreboard", names(df))
@@ -167,10 +168,10 @@ attachUrls <- function(df) {
   return(df)
 }
 
-#' Add columns with relevant pitch count to the 'pitch' data frame.
-#'
-#' @param df 'pitch' data frame with attributes from "~/inning/inning_all.xml" files.
-#' @return returns the original data frame with the proper pitch count columns attached at the end.
+# Add columns with relevant pitch count to the 'pitch' data frame.
+#
+# @param df 'pitch' data frame with attributes from "~/inning/inning_all.xml" files.
+# @return returns the original data frame with the proper pitch count columns attached at the end.
 
 addPitchCount <- function(df) {
   df$balls <- as.numeric(df$type == "B")

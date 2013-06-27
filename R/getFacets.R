@@ -1,10 +1,10 @@
-#' Extract faceting variables
-#' 
-#' Used within \code{pitchRx} plotting functions
-#' 
-#' @param layer ggplot2 layer(s) from the original plotting call
-#' @result character vector with variable names (if faceting is present). Otherwise, \code{NULL}
-#' 
+# Extract faceting variables
+# 
+# Used within \code{pitchRx} plotting functions
+# 
+# @param layer ggplot2 layer(s) from the original plotting call
+# @result character vector with variable names (if faceting is present). Otherwise, \code{NULL}
+# 
 getFacets <- function(layer){
   layers <- unlist(layer)
   if (length(layers) == 0) return(NULL)

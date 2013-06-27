@@ -1,3 +1,18 @@
+		CHANGES IN pitchRx VERSION 0.5
+
+MAJOR CHANGES
+
+   - point.size is no longer supported. Point size is now governed by distance from home plate (they will get larger as they progress toward home plate).
+
+NEW FEATURES
+
+   - avg.by allows one to average over PITCHf/x parameters for a given discrete variable (note that any faceting variables will be included in the index). That is, the average PITCHf/x parameters are plotted for every unique combination of facet and avg.by variable(s).
+
+MINOR CHANGES
+
+    - Default value for adjust option in strikeFX was changed to FALSE to avoid confusing the user by adjusting vertically locations without specifying so.
+
+
 		CHANGES IN pitchRx VERSION 0.4
 
 NEW FEATURES

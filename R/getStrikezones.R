@@ -1,13 +1,14 @@
-#' Calculate strikezone boundaries
-#' 
-#' Strikezone boundaries calculated according to Mike Fast's specifications
-#' 
-#' @param data PITCHf/x orginally entered into \code{animateFX}
-#' @param facets variables used for faceting (passed along from \code{layer})
-#' @param strikeFX logical parameter indicating whether the function is called from strikeFX
-#' @references \url{http://www.baseballprospectus.com/article.php?articleid=14572}
-#' @return Returns a list of boundaries for both right handed batters and left handed batters
-#' 
+# Calculate strikezone boundaries
+# 
+# Strikezone boundaries calculated according to Mike Fast's specifications
+# 
+# @param data PITCHf/x orginally entered into \code{animateFX}
+# @param facets variables used for faceting (passed along from \code{layer})
+# @param strikeFX logical parameter indicating whether the function is called from strikeFX
+# @references \url{http://www.baseballprospectus.com/article.php?articleid=14572}
+# @importFrom plyr join
+# @return Returns a list of boundaries for both right handed batters and left handed batters
+# 
 getStrikezones <- function(data, facets, strikeFX = FALSE) {
   heights=NULL #ugly hack to comply with R CMD check
   h <- ldply(str_split(as.character(data$b_height), "-"), function(x) { as.numeric(x) })
@@ -22,7 +23,7 @@ getStrikezones <- function(data, facets, strikeFX = FALSE) {
   bounds$right <- righty + lefty*0.81
   if (strikeFX) { #adjust vertical pitch locations
     joinby <- unique(c("stand", facets))
-    data2 <- plyr::join(data, bounds, by = joinby, type = "inner")
+    data2 <- join(data, bounds, by = joinby, type = "inner")
     data2$R <- as.numeric(data$stand == "R")
     data2$L <- as.numeric(data$stand == "L")
     data2$tops <- with(data2, R*(2.6 + heights*0.136) + L*(2 + heights*0.229))

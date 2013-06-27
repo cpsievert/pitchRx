@@ -39,17 +39,17 @@
   When \code{use.values = FALSE}, the length of
   \code{tables} is equal to the number of data frames
   returned and the values of \code{tables} are the fields
-  for each data frame. If a particular value is
-  \code{NULL}, the function will automatically determine
-  the most complete set of fields and fill in \code{NA}s
-  where information is missing. If \code{add.children =
-  TRUE}, it is recommended that \code{tables} values be
-  \code{NULL} since child attributes will also be
-  incorporated as fields (with the relevant node as the
-  suffix name).
+  for each data frame. If a particular value of
+  \code{tables} is \code{NULL}, the function will
+  automatically determine the most complete set of fields
+  and fill in \code{NA}s where information is missing. If
+  \code{add.children = TRUE}, \code{tables} values should
+  be \code{NULL} since child attributes will be used for
+  naming convention (with the relevant node as the suffix
+  name).
 
-  When \code{use.values = TRUE}, the values of
-  \code{tables} is ignored. The XML children of the
+  When \code{use.values = TRUE}, the value(s) of
+  \code{tables} are ignored. The XML children of the
   specified node are the fields. If the children are
   inconsistent, missing values are filled with \code{NA}s.
 }

@@ -5,8 +5,9 @@
   strikeFX(data, geom = "point", contour = FALSE,
     point.size = 3, point.alpha = 1/3,
     color = "pitch_types", fill = "des", layer = list(),
-    density1 = list(), density2 = list(), adjust = TRUE,
-    limitz = c(-2.5, 2.5, 0, 5), parent = FALSE, ...)
+    model, density1 = list(), density2 = list(),
+    adjust = FALSE, limitz = c(-2.5, 2.5, 0, 5),
+    parent = FALSE, ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
@@ -20,19 +21,33 @@
   \item{point.size}{Size of points (when geom="point")}
 
   \item{point.alpha}{plotting transparency parameter (when
-  geom="point")}
+  geom="point").}
 
-  \item{color}{variable used to control coloring scheme.}
+  \item{color}{variable used to define coloring scheme.}
 
-  \item{fill}{variable used to control subplot scheme (when
-  geom="subplot2d")}
+  \item{fill}{variable used to define subplot scheme (when
+  geom="subplot2d").}
 
   \item{layer}{list of other ggplot2 (layered)
   modifications.}
 
-  \item{density1}{List defines a density estimate.}
+  \item{model}{A function specifying a model which is used
+  to predict upon a grid defined by \code{limitz}. It is
+  recommended that one uses \link{mgcv::gam} to plot
+  response surface of a Generalized Additive Model (see
+  examples). It shouldn't be necessary to specify
+  \code{data} within the \code{model} function since it
+  will inherit from \code{strikeFX}. If this option is
+  used, the geometry must be either "hex", "tile" or "bin".
+  If a non-valid geometry is used, the geometry will be
+  forced to "tile".}
 
-  \item{density2}{List defines a density estimate. If
+  \item{density1}{List of length one that defines a density
+  estimate. The name should correspond to a variable in
+  \code{data}. The value should correspond to an (observed)
+  value of that variable.}
+
+  \item{density2}{Similar to \code{density1}. If
   \code{density1 != density2}, the density estimates are
   automatically differenced.}
 
@@ -50,15 +65,17 @@
   Returns a ggplot2 object.
 }
 \description{
-  Pitch locations as they crossed home plate.
-}
-\details{
-  Various bivariate plots with "px" on the horizontal axis
-  and "pz" on the vertical axis.
+  A suite of bivariate plots with "px" on the horizontal
+  axis and "pz" on the vertical axis.
 }
 \examples{
 data(pitches)
 strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
-\dontrun{strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))}
+\dontrun{
+strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))
+noswing <- subset(pitches, des \%in\% c("Ball", "Called Strike"))
+noswing$strike <- as.numeric(noswing$des \%in\% "Called Strike")
+strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), layer=facet_grid(.~stand))
+}
 }
 

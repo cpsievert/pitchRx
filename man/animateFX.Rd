@@ -2,31 +2,29 @@
 \alias{animateFX}
 \title{Animate PITCHf/x}
 \usage{
-  animateFX(data, color = "pitch_types", point.size = 3,
+  animateFX(data, color = "pitch_types", avg.by,
     point.alpha = 1/3, limitz = c(-3.5, 3.5, 0, 7),
-    flag = FALSE, interval = 0.01, sleep = 1e-12,
-    layer = list(), parent = FALSE, ...)
+    flag = FALSE, interval = 0.01, layer = list(),
+    parent = FALSE, ...)
 }
 \arguments{
   \item{data}{data frame with appropriately named PITCHf/x
   variables}
 
-  \item{point.size}{Size of points}
+  \item{color}{variable used to control coloring scheme.}
+
+  \item{avg.by}{variable used as an index for averaging
+  over PITCHf/x parameters}
 
   \item{point.alpha}{ggplot2 alpha parameter}
 
   \item{limitz}{limits for horizontal and vertical axes.}
-
-  \item{color}{variable used to control coloring scheme.}
 
   \item{flag}{indicate whether or not batter has decided to
   swing.}
 
   \item{interval}{time (in seconds) between plotting the
   pitch locations.}
-
-  \item{sleep}{passed along to Sys.sleep() to flush current
-  plot.}
 
   \item{layer}{list of ggplot2 layer modifications.}
 
@@ -42,20 +40,20 @@
   Pitch trajectories animated on a two-dimensional plot.
 }
 \details{
-  \code{animateFX} plots a series of "snapshots" with pitch
-  locations from the point of release - when the ball
-  leaves the pitcher's hand - until all of them reach home
-  plate. The graphic takes on the viewpoint of the umpire;
-  that is, the pitches are getting closer to the viewer
-  with time. This is relected with the increase in size of
-  the "balls" as the animation progresses. To reduce the
-  time and thinking required to produce plots,
-  \code{animateFX} makes several assumptions about the
-  opacity and size associated with each "snapshot" of pitch
-  locations.
+  \code{animateFX} plots a series of "snapshots" that
+  represent pitch trajectories from the point of release
+  until all of them reach home plate. The graphic takes on
+  the viewpoint of the umpire; that is, the pitches are
+  getting closer to the viewer with time. This is relected
+  with the increase in size of the "balls" as the animation
+  progresses.
 }
 \examples{
 data(pitches)
-\dontrun{animateFX(pitches, layer = facet_grid(pitcher_name~stand))}
+#generate animation and prompt browser to view the sequence of plots
+\dontrun{
+animation::saveHTML({ animateFX(pitches, layer = facet_grid(pitcher_name~stand)) })
+animation::saveHTML({ animateFX(pitches, avg.by="pitch_types", layer = facet_grid(pitcher_name~stand)) })
+}
 }
 

@@ -1,15 +1,13 @@
 #' Use rgl to visualize PITCHf/x
 #' 
 #' Three-dimensional plot of pitch trajectories.
-#' 
-#' Details go here.
 #'
 #' @param data data.frame with appropriately named PITCHf/x variables
-#' @param spheres Use rgl::spheres3d or rgl::plot3d?
+#' @param spheres Use \link{rgl::spheres3d} or \link{rgl::plot3d}?
 #' @param color variable used to control coloring scheme.
 #' @param interval the amount of time between 'snapshots'
 #' @param alpha color transparency
-#' @param print.legend print coloring legend in R console?
+#' @param show.legend print coloring legend in R console?
 #' @param ... other param passed onto rgl::spheres3d or rgl::plot3d
 #' @return rgl object is returned.
 #' @export
@@ -20,7 +18,7 @@
 #' \dontrun{interactiveFX(Rivera, interval=.05)}
 #' 
 
-interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01, alpha=1, print.legend=TRUE, ...){
+interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01, alpha=1, show.legend=TRUE, ...){
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
@@ -34,7 +32,7 @@ interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01
   complete <- data[complete.cases(data[,idx]),] #get rid of records with any missing parameter values
   snaps <- getSnapshots(complete, interval)
   nplots <- length(snaps[1,,1]) #Number of 'snapshots' required for EVERY pitch to reach home plate
-  if (!color %in% names(data) || is.null(color)) { #convert types to colors!
+  if (isTRUE(!color %in% names(data))) { #convert types to colors!
     warning(paste(color, "is the variable that defines coloring but it isn't in the dataset!"))
     full.pal <- rgb(0, 0, 0, alpha)
   } else {
@@ -44,10 +42,10 @@ interactiveFX <- function(data, spheres=TRUE, color="pitch_types", interval=0.01
     if (ncolors == 3) pal <- c(rgb(0, 0, 1), rgb(0, 1, 0), rgb(1, 0, 0))
     if (ncolors == 2) pal <- c(rgb(0, 0, 1), rgb(1, 0, 0))
     if (ncolors == 1) pal <- rgb(0, 0, 0)
-    if (print.legend) {
+    if (show.legend) {
       legend <- data.frame(unique(types), pal)
       names(legend) <- c(color, "colors")
-      print("Here is the coloring scheme for your plot. Use http://www.colorhexa.com/ to translate color codes.")
+      cat("Here is the coloring scheme for your plot. Use http://www.colorhexa.com/ to translate color codes.", "/n")
       print(legend)
     }
     full.pal <- factor(types)

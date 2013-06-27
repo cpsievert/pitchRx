@@ -10,19 +10,19 @@ License: MIT
 Suggests:
     shiny,
     knitr,
-    animation,
-    rgl,
     ggsubplot
 Depends:
     R (>= 2.15.1),
-    MASS,
     XML,
     ggplot2 (>= 0.9.3),
     plyr,
     reshape,
+    animation,
     lubridate,
     stringr,
-    hexbin
+    MASS,
+    hexbin,
+    rgl
 LazyData: true
 Collate:
     'animateFX.R'
@@ -39,3 +39,5 @@ Collate:
     'players.R'
     'help.R'
 VignetteBuilder: knitr
+URL: http://cpsievert.github.com/pitchRx/demo
+BugReports: http://github.com/cpsievert/pitchRx/issues

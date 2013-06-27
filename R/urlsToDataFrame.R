@@ -7,13 +7,12 @@
 #' character vector that defines the field names for the respective data frame. These field names should match XML attributes or tags.
 #' 
 #' When \code{use.values = FALSE}, the length of \code{tables} is equal to the number of data frames returned and 
-#' the values of \code{tables} are the fields for each data frame. If a particular value is \code{NULL}, 
+#' the values of \code{tables} are the fields for each data frame. If a particular value of \code{tables} is \code{NULL}, 
 #' the function will automatically determine the most complete set of fields and fill in \code{NA}s where 
-#' information is missing. If \code{add.children = TRUE}, it is recommended that \code{tables} values be 
-#' \code{NULL} since child attributes will also be incorporated as fields (with the relevant node as 
-#' the suffix name). 
+#' information is missing. If \code{add.children = TRUE}, \code{tables} values should be \code{NULL} since 
+#' child attributes will be used for naming convention (with the relevant node as the suffix name). 
 #' 
-#' When \code{use.values = TRUE}, the values of \code{tables} is ignored. The XML children of the specified node
+#' When \code{use.values = TRUE}, the value(s) of \code{tables} are ignored. The XML children of the specified node
 #' are the fields. If the children are inconsistent, missing values are filled with \code{NA}s.
 #' 
 #' @param urls set of urls for parsing
@@ -75,13 +74,10 @@ urlsToDataFrame <- function(urls, tables = list(), add.children = FALSE, use.val
   }
 }
 
-#' Turns a list of XML documents into a single data frame.
-#' 
-#' This function will determine the most complete amount of fields among all 
-#' XML documents and fill NAs where information is missing.
-#'
-#' @param docs XML documents
-#' @return returns a data frame
+# Turns a list of XML documents into a single data frame.
+# 
+# This function will determine the most complete amount of fields among all 
+# XML documents and fill NAs where information is missing.
 
 docsToDFs <- function(docs) {
   frames <- llply(docs, function(x) { xmlToDataFrame(x) }) #should I add better functionality to handle children better?
@@ -99,17 +95,17 @@ docsToDFs <- function(docs) {
   data <- ldply(dfs, identity)
 }
 
-#' Turn XML documents into a Data Frames
-#' 
-#' This function adds NAs to missing attributes.
-#'
-#' @param docs XML documents
-#' @param node XML node of interest
-#' @param fields "Comlpete" set of field names for the data frame
-#' @param urls character vector of URLs used to build data frame
-#' @param add.children logical parameter specifying whether to scrape the XML children of the node(s) specified in \code{tables}.
-#' @param use.values logical parameter specifying whether to extract XML attributes or values of the node(s).
-#' @return Returns a data frame.
+# Turn XML documents into a Data Frames
+# 
+# This function adds NAs to missing attributes.
+#
+# @param docs XML documents
+# @param node XML node of interest
+# @param fields "Comlpete" set of field names for the data frame
+# @param urls character vector of URLs used to build data frame
+# @param add.children logical parameter specifying whether to scrape the XML children of the node(s) specified in \code{tables}.
+# @param use.values logical parameter specifying whether to extract XML attributes or values of the node(s).
+# @return Returns a data frame.
 
 docsToDataFrame <- function(docs, node, fields, urls, add.children = FALSE, use.values = FALSE) {
   nodes <- llply(docs, function(x) { 
@@ -126,9 +122,9 @@ docsToDataFrame <- function(docs, node, fields, urls, add.children = FALSE, use.
     children <- llply(nodes, function(x) {
       llply(x, function(y) {
         child <- xmlChildren(y)
-        if (node == "Player"){ #The children "faced" and "atbats" (of "Player") are obsolete since they can be derived from the Pitch F/X data
-          child[c(-grep("faced", names(child)),-grep("atbats", names(child)))]
-        }
+        #if (node == "Player"){ #The children "faced" and "atbats" (of "Player") are obsolete since they can be derived from the Pitch F/X data
+        #  child[c(-grep("faced", names(child)),-grep("atbats", names(child)))]
+        #}
       })
     })
     attrs <- llply(children, function(x) {
@@ -174,13 +170,13 @@ docsToDataFrame <- function(docs, node, fields, urls, add.children = FALSE, use.
   }
 }
 
-#' "Adjust" attributes to match the entire set
-#' 
-#' This function adds NAs to missing attributes.
-#'
-#' @param info XML attributes from a particular node.
-#' @param tags "complete" set of attribute names.
-#' @return returns all present info matching the tags criteria
+# "Adjust" attributes to match the entire set
+# 
+# This function adds NAs to missing attributes.
+#
+# @param info XML attributes from a particular node.
+# @param tags "complete" set of attribute names.
+# @return returns all present info matching the tags criteria
 
 adjust <- function(info, tags){ #Adds NAs wherever a tag is missing
   x <- names(info)
@@ -198,10 +194,10 @@ adjust <- function(info, tags){ #Adds NAs wherever a tag is missing
   return(a)
 }
 
-#' Assign each pitch an atbat ID
-#'
-#' @param nodes XML nodes from a set of URLs. These nodes should be from the "atbat" node.
-#' @return returns a vector contains an atbat ID for each pitch thrown
+# Assign each pitch an atbat ID
+#
+# @param nodes XML nodes from a set of URLs. These nodes should be from the "atbat" node.
+# @return returns a vector contains an atbat ID for each pitch thrown
 
 createAtbatID <- function(nodes) {
   p.per.ab <- llply(nodes, function(x) { 
@@ -215,10 +211,10 @@ createAtbatID <- function(nodes) {
   return(unlist(atbat.records, use.names=FALSE))
 }
 
-#' Create columns to match an atbat with a inning (and side of that inning)
-#'
-#' @param atbats data frame with attributes from the atbat node
-#' @return returns the original data frame with two additional columns
+# Create columns to match an atbat with a inning (and side of that inning)
+#
+# @param atbats data frame with attributes from the atbat node
+# @return returns the original data frame with two additional columns
 
 createInnings <- function(atbats) {
   atbats <- atbats[order(atbats[,"url"]),]

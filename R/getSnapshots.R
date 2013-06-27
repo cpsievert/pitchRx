@@ -1,8 +1,8 @@
 #' Produce time sequenced pitch locations from PITCHf/x parameters
 #' 
-#' Pitch trajectories animated on a two-dimensional plot.
+#' This function generates the x, y and z locations used in \link{animateFX} and \link{interactiveFX}. 
 #' 
-#' Details to go here.
+#' @references http://baseball.physics.illinois.edu/KaganPitchfx.pdf
 #' 
 #' @param data The nine PITCHf/x parameters used to determine the location of a pitch at a given time.
 #' @param interval the amount of time between 'snapshots'
@@ -12,8 +12,6 @@
 getSnapshots <- function(data, interval = 0.01) {
   idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
   parameters <- data[, idx]
-  for (i in idx)
-    parameters[,i] <- as.numeric(parameters[,i]) #Coerce the pitchFX parameters to numerics
   times <- with(parameters[,c("y0", "vy0", "ay")], (-1*vy0-sqrt(vy0^2 - 2*ay*(y0 - 1.417)))/ay) #Figure out how long it takes each pitch to reach home plate
   nplots <- ceiling(max(times/interval)) + 1 #Number of 'snapshots' required for EVERY pitch to reach home plate
   npitches <- dim(data)[1] #Number of pitches (within each plot)
