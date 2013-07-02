@@ -1,10 +1,12 @@
 \docType{data}
 \name{fields}
 \alias{fields}
-\title{Field names for Tables of interest in pitchRx package}
+\title{Field names for tables obtained by pitchRx::scrapeFX}
 \description{
-  A list of sets of 'desired' field names (used to reduce
-  parsing time within \code{scrapeFX}).
+  A list of character vectors that specify the desired
+  subset variables of the atbat, pitch, game and player
+  tables. These vectors can be used to reduce parsing time
+  of number of columns returned by \code{scrapeFX}.
 }
 \author{
   Carson Sievert

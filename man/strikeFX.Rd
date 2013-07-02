@@ -33,14 +33,13 @@
 
   \item{model}{A function specifying a model which is used
   to predict upon a grid defined by \code{limitz}. It is
-  recommended that one uses \link{mgcv::gam} to plot
-  response surface of a Generalized Additive Model (see
-  examples). It shouldn't be necessary to specify
-  \code{data} within the \code{model} function since it
-  will inherit from \code{strikeFX}. If this option is
-  used, the geometry must be either "hex", "tile" or "bin".
-  If a non-valid geometry is used, the geometry will be
-  forced to "tile".}
+  recommended that one uses \link{gam} to plot response
+  surface of a Generalized Additive Model (see examples).
+  It shouldn't be necessary to specify \code{data} within
+  the \code{model} function since it will inherit from
+  \code{strikeFX}. If this option is used, the geometry
+  must be either "hex", "tile" or "bin". If a non-valid
+  geometry is used, the geometry will be forced to "tile".}
 
   \item{density1}{List of length one that defines a density
   estimate. The name should correspond to a variable in
@@ -76,6 +75,10 @@ strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(
 noswing <- subset(pitches, des \%in\% c("Ball", "Called Strike"))
 noswing$strike <- as.numeric(noswing$des \%in\% "Called Strike")
 strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), layer=facet_grid(.~stand))
+#If sample size is an issue, try increasing the binwidths
+strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), layer=facet_grid(.~stand), binwidth=c(.5, .5))
+strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')),
+         density1=list(top_inning="Y"), density2=list(top_inning="N"), layer=facet_grid(.~stand), binwidth=c(.5, .5))
 }
 }
 

@@ -2,16 +2,21 @@
 
 MAJOR CHANGES
 
-   - point.size is no longer supported. Point size is now governed by distance from home plate (they will get larger as they progress toward home plate).
+   - point.size is no longer supported in animateFX. Point size is now governed by distance from home plate (they will get larger as they progress toward home plate).
+
+   - Default values for the start and end options of scrapeFX were removed. The user must specify dates.
+
+   - Default value for adjust option in strikeFX was changed to FALSE to avoid confusing the user by adjusting vertically locations without specifying so.
 
 NEW FEATURES
 
-   - avg.by allows one to average over PITCHf/x parameters for a given discrete variable (note that any faceting variables will be included in the index). That is, the average PITCHf/x parameters are plotted for every unique combination of facet and avg.by variable(s).
+   - the model option allows one to create probabilistic strike-zone densities as opposed a "raw" strike-zone density. See the strikeFX example page for an example using mgcv::gam.
 
-MINOR CHANGES
+   - the avg.by option allows one to average over PITCHf/x parameters for a given discrete variable (note that any faceting variables will be included in the index). That is, the average PITCHf/x parameters are plotted for every unique combination of facet and avg.by variable(s).
 
-    - Default value for adjust option in strikeFX was changed to FALSE to avoid confusing the user by adjusting vertically locations without specifying so.
+DOCUMENTATION
 
+    - Documentation of non-exported functions was removed.
 
 		CHANGES IN pitchRx VERSION 0.4
 

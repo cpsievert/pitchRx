@@ -11,7 +11,7 @@
 #' @param fill variable used to define subplot scheme (when geom="subplot2d").
 #' @param layer list of other ggplot2 (layered) modifications.
 #' @param model A function specifying a model which is used to predict upon a grid defined by \code{limitz}.
-#' It is recommended that one uses \link{mgcv::gam} to plot response surface of a Generalized Additive Model (see examples). 
+#' It is recommended that one uses \link{gam} to plot response surface of a Generalized Additive Model (see examples). 
 #' It shouldn't be necessary to specify \code{data} within the \code{model} function since it will inherit from \code{strikeFX}. 
 #' If this option is used, the geometry must be either "hex", "tile" or "bin". If a non-valid geometry is used, the geometry will be forced to "tile".
 #' @param density1 List of length one that defines a density estimate. The name should correspond to a variable in \code{data}. The value should correspond to an (observed) value of that variable.
@@ -31,10 +31,14 @@
 #' noswing <- subset(pitches, des %in% c("Ball", "Called Strike"))
 #' noswing$strike <- as.numeric(noswing$des %in% "Called Strike")
 #' strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), layer=facet_grid(.~stand))
+#' #If sample size is an issue, try increasing the binwidths
+#' strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), layer=facet_grid(.~stand), binwidth=c(.5, .5))
+#' strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), 
+#'          density1=list(top_inning="Y"), density2=list(top_inning="N"), layer=facet_grid(.~stand), binwidth=c(.5, .5))
 #' }
 #' 
 
-strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), model, density1=list(), density2=list(),  adjust=FALSE, limitz=c(-2.5, 2.5, 0, 5), parent=FALSE, ...){ 
+strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), model, density1=list(), density2=list(), adjust=FALSE, limitz=c(-2.5, 2.5, 0, 5), parent=FALSE, ...){ 
   px=pz_adj=..density..=top=bottom=right=left=x=y=z=NULL #ugly hack to comply with R CMD check
   if (any(!geom %in% c("point", "bin", "hex", "tile", "subplot2d"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile', 'subplot2d'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
@@ -78,19 +82,36 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
   xrange <- xlim(limitz[1:2])
   yrange <- ylim(limitz[3:4])
   if (!missing(model)) {
-    require(mgcv)
+    FX1 <- subsetFX(FX, density1)
     form <- as.list(substitute(model))
-    x.grid <- seq(limitz[1], limitz[2], .05) #how to add option for grid granularity?
-    y.grid <- seq(limitz[3], limitz[4], .05) #how to add option for grid granularity?
+    x.grid <- seq(limitz[1], limitz[2], 0.05) #how to add option for grid granularity?
+    y.grid <- seq(limitz[3], limitz[4], 0.05) #how to add option for grid granularity?
     grid <- expand.grid(px=x.grid, pz=y.grid)
-    if (!is.null(facets)) {
-      stuff <- dlply(FX, facets, function(x) { fitModel(x, form, grid) } )
-      densities <- ldply(stuff)
-    } else {
-      densities <- fitModel(FX, form, grid)
+    if (identical(density1, density2)) { #densities are not differenced
+      if (!is.null(facets)) {
+        stuff <- dlply(FX1, facets, function(x) { fitModel(x, form, grid) } )
+        densities <- ldply(stuff)
+      } else {
+        densities <- fitModel(FX1, form, grid)
+      }
+      p <- plotDensity(densities, boundaries, contour, geom, ...)
+      return(p+labelz+xrange+yrange+layers)
+    } else {  #densities are differenced
+      FX2 <- subsetFX(FX, density2)
+      if (!is.null(facets)) {
+        stuff <- dlply(FX1, facets, function(x) { fitModel(x, form, grid) } )
+        stuff2 <- dlply(FX2, facets, function(x) { fitModel(x, form, grid) } )
+        densities <- ldply(stuff)
+        densities2 <- ldply(stuff2)
+      } else {
+        densities <- fitModel(FX1, form, grid)
+        densities2 <- fitModel(FX2, form, grid)
+      }
+      diff <- densities[-grep("z", names(densities))]
+      diff$z <- densities$z - densities2$z
+      t2 <- plotDensity(diff, boundaries, contour, geom, ...)
+      return(t2+scale_fill_gradient2(midpoint=0)+labelz+xrange+yrange+layers)
     }
-    p <- plotDensity(densities, boundaries, contour, geom)
-    return(p+labelz+xrange+yrange+layers)
   }
   if (geom %in% "subplot2d") { #special handling for subplotting
     if (!require(ggsubplot)) {
@@ -114,13 +135,13 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       if (contour) t <- t + geom_density2d()
       t <- t + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")
       return(t+layers)
-    } else { #densities are differenced
+    } else { #densities are differenced (note that diffDensity handles the subsetting)
       if (!is.null(facets)) {
         stuff <- dlply(FX, facets, function(x) { diffDensity(x, density1, density2, limz=limitz) } )
         densities <- ldply(stuff)
       } else densities <- diffDensity(FX, density1, density2, limz=limitz)
     }
-    t2 <- plotDensity(densities, boundaries, contour, geom)
+    t2 <- plotDensity(densities, boundaries, contour, geom, ...)
     return(t2+scale_fill_gradient2(midpoint=0)+labelz+xrange+yrange+layers)
   }
   if (geom %in% "point") {
@@ -137,7 +158,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
   }
 }
 
-#fit a model and return the predicted values for a 2D grid
+#fit a model and return the predicted values for a (possibly differenced) 2D grid
 fitModel <- function(dat, expr, grid) {
   fun <- as.character(expr[[1]])
   expr[[1]] <- NULL
@@ -150,6 +171,7 @@ fitModel <- function(dat, expr, grid) {
 
 #Plot a 2D density with pre-computed heights
 plotDensity <- function(dens, bounds, contour, geom, ...){
+  px=pz_adj=..density..=top=bottom=right=left=x=y=z=NULL #ugly hack to comply with R CMD check
   common <- intersect(names(dens), names(bounds[[2]]))
   if (length(common) == 0) { #Artifically create a variable (stand) if none exists (required for joining and thus drawing strikezones)
     nhalf <- dim(dens)[1]/2
@@ -161,9 +183,11 @@ plotDensity <- function(dens, bounds, contour, geom, ...){
   }
   dens.df <- join(dens, bounds[[2]], type="inner") #defaults to join "by" all common variables
   p <- ggplot(data=dens.df)
-  if (!geom %in% c("bin", "tile", "hex")) p <- p + stat_summary2d(aes(x=x,y=y,z=z), ...) 
-  if (geom %in% c("bin", "tile")) p <- p + stat_summary2d(aes(x=x,y=y,z=z), ...) 
-  if (geom %in% "hex") p <- p + stat_summary_hex(aes(x=x,y=y,z=z), ...)
+  if (geom %in% "hex") {
+    p <- p + stat_summary_hex(aes(x=x,y=y,z=z), ...)
+  } else {
+    p <- p + stat_summary2d(aes(x=x,y=y,z=z), ...) 
+  }
   if (contour) p <- p + stat_contour(aes(x=x,y=y,z=z)) #passing binwidth here throws error
   p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20")
   return(p)
