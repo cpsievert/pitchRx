@@ -5,6 +5,8 @@ pitchRx
 
 To install the developmental version on github use: `library(devtools); install_github("pitchRx", "cpsievert"); library(pitchRx)`
 
-It is also available on [CRAN](http://cran.r-project.org/web/packages/pitchRx/). 
+To install the latest [CRAN version](http://cran.r-project.org/web/packages/pitchRx/): `install.packages(pitchRx); library('pitchRx')`
 
-For more information, please visit the demo page [here](http://cpsievert.github.com/pitchRx/demo/)
+For a quick intro to `pitchRx`, visit the [demo page](http://cpsievert.github.com/pitchRx/demo/).
+
+Stay tuned for more documentation...

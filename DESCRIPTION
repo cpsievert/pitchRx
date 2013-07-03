@@ -1,11 +1,11 @@
 Package: pitchRx
 Title: Tools for Collecting and Visualizing Major League Baseball
-    PITCHf/x Data
+    PITCHfx Data
 Version: 0.5
 Author: Carson Sievert <sievert@iastate.edu>
 Maintainer: Carson Sievert <sievert@iastate.edu>
 Description: Tools for Collecting and Visualizing Major League Baseball
-    PITCHf/x Data
+    PITCHfx Data
 License: MIT
 Depends:
     R (>= 2.15.1),

@@ -27,14 +27,18 @@
 #' data(pitches)
 #' strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
 #' \dontrun{
-#' strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))
+#' strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), 
+#'          layer=facet_grid(.~stand))
 #' noswing <- subset(pitches, des %in% c("Ball", "Called Strike"))
 #' noswing$strike <- as.numeric(noswing$des %in% "Called Strike")
-#' strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), layer=facet_grid(.~stand))
+#' strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), 
+#'          layer=facet_grid(.~stand))
 #' #If sample size is an issue, try increasing the binwidths
-#' strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), layer=facet_grid(.~stand), binwidth=c(.5, .5))
 #' strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), 
-#'          density1=list(top_inning="Y"), density2=list(top_inning="N"), layer=facet_grid(.~stand), binwidth=c(.5, .5))
+#'          layer=facet_grid(.~stand), binwidth=c(.5, .5))
+#' strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), 
+#'          density1=list(top_inning="Y"), density2=list(top_inning="N"), layer=facet_grid(.~stand), 
+#'          binwidth=c(.5, .5))
 #' }
 #' 
 
