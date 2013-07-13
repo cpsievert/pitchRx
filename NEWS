@@ -1,3 +1,11 @@
+		CHANGES IN pitchRx VERSION 0.6
+
+MINOR FIXES
+
+	- When passing a model to strikeFX, a white strike-zone is now drawn (if it isn't a differenced density)
+
+	- In animateFX, if the color variable is a factor, the original ordering of levels will be preserved.
+
 		CHANGES IN pitchRx VERSION 0.5
 
 MAJOR CHANGES

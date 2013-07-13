@@ -99,6 +99,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
         densities <- fitModel(FX1, form, grid)
       }
       p <- plotDensity(densities, boundaries, contour, geom, ...)
+      p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")
       return(p+labelz+xrange+yrange+layers)
     } else {  #densities are differenced
       FX2 <- subsetFX(FX, density2)
@@ -114,6 +115,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       diff <- densities[-grep("z", names(densities))]
       diff$z <- densities$z - densities2$z
       t2 <- plotDensity(diff, boundaries, contour, geom, ...)
+      t2 <- t2 + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20")
       return(t2+scale_fill_gradient2(midpoint=0)+labelz+xrange+yrange+layers)
     }
   }
@@ -193,7 +195,6 @@ plotDensity <- function(dens, bounds, contour, geom, ...){
     p <- p + stat_summary2d(aes(x=x,y=y,z=z), ...) 
   }
   if (contour) p <- p + stat_contour(aes(x=x,y=y,z=z)) #passing binwidth here throws error
-  p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20")
   return(p)
 }
 

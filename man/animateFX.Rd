@@ -50,7 +50,7 @@
 }
 \examples{
 data(pitches)
-#generate animation and prompt browser to view the sequence of plots
+#generate animation and prompt default web browser to view the sequence of plots
 \dontrun{
 animation::saveHTML({ animateFX(pitches, layer = facet_grid(pitcher_name~stand)) })
 animation::saveHTML({ animateFX(pitches, avg.by="pitch_types",

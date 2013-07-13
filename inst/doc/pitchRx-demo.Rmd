@@ -119,7 +119,7 @@ interactiveFX(Rivera)
 
 Strike-zones capture pitch locations at the moment they cross the plate. `strikeFX`'s default functionality is to plot the relevant *raw density*. Here is the density of called strikes thrown by Rivera and Hughes in 2011 (for both right and left-handed batters).
 
-```{r strike, fig.height=14, fig.width=10, dev="CairoPNG"}
+```{r strike, fig.height=7, fig.width=10, dev="CairoPNG"}
 strikes <- subset(pitches, des == "Called Strike")
 strikeFX(strikes, geom="tile", layer=facet_grid(.~stand))
 ```
@@ -132,7 +132,7 @@ strikeFX(pitches, geom="tile", density1=list(des="Called Strike"), density2=list
 
 If you specify two different densities, `strikeFX` will plot differenced densities. In this case, we are subtracting the "Ball" density from the previous "Called Strike" density.
 
-```{r strike3, fig.height=14, fig.width=10, dev="CairoPNG"}
+```{r strike3, fig.height=7, fig.width=10, dev="CairoPNG"}
 strikeFX(pitches, geom="tile", density1=list(des="Called Strike"), density2=list(des="Ball"), layer=facet_grid(.~stand))
 ```
 
@@ -152,7 +152,7 @@ strikeFX(Rivera.R, geom="subplot2d", fill="type")
 
 Perhaps more interesting than raw strike-zone densities are probabilistic densities. These densities represent the probability of a certain event happening at a given location. A popular method for fitting such models is Generalized Additive Models. Here we use the **mgcv** library to fit such a model (which automatically chooses a proper tuning parameter via cross-validation).
 
-```{r mgcv, fig.height=14, fig.width=10, dev="CairoPNG"}
+```{r mgcv, fig.height=7, fig.width=10, dev="CairoPNG"}
 noswing <- subset(pitches, des %in% c("Ball", "Called Strike"))
 noswing$strike <- as.numeric(noswing$des %in% "Called Strike")
 strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), layer=facet_grid(.~stand))
