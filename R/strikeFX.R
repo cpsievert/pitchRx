@@ -16,19 +16,22 @@
 #' If this option is used, the geometry must be either "hex", "tile" or "bin". If a non-valid geometry is used, the geometry will be forced to "tile".
 #' @param density1 List of length one that defines a density estimate. The name should correspond to a variable in \code{data}. The value should correspond to an (observed) value of that variable.
 #' @param density2 Similar to \code{density1}. If \code{density1 != density2}, the density estimates are automatically differenced.
-#' @param adjust logical. Should vertical locations be adjusted according to batter height?
 #' @param limitz limits for horizontal and vertical axes. 
+#' @param adjust logical. Should vertical locations be adjusted according to batter height?
+#' @param draw_zones logical. Should strikezones be included?
 #' @param parent is the function being called from a higher-level function? (experimental)
 #' @param ... extra options passed onto geom commands
 #' @return Returns a ggplot2 object.
 #' @export
-#' @importFrom plyr join
+#' @import mgcv
+#' @import plyr
+#' @importFrom MASS kde2d
 #' @examples
 #' data(pitches)
 #' strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
 #' \dontrun{
 #' strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), 
-#'          layer=facet_grid(.~stand))
+#'          draw_zones=FALSE, contour=TRUE, layer=facet_grid(.~stand))
 #' noswing <- subset(pitches, des %in% c("Ball", "Called Strike"))
 #' noswing$strike <- as.numeric(noswing$des %in% "Called Strike")
 #' strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), 
@@ -42,7 +45,7 @@
 #' }
 #' 
 
-strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), model, density1=list(), density2=list(), adjust=FALSE, limitz=c(-2.5, 2.5, 0, 5), parent=FALSE, ...){ 
+strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), model, density1=list(), density2=list(), limitz=c(-2.5, 2.5, 0, 5), adjust=FALSE, draw_zones=TRUE, parent=FALSE, ...){ 
   px=pz_adj=..density..=top=bottom=right=left=x=y=z=NULL #ugly hack to comply with R CMD check
   if (any(!geom %in% c("point", "bin", "hex", "tile", "subplot2d"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile', 'subplot2d'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
@@ -85,6 +88,13 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
   legendz <- theme(legend.position = c(0.25,0.05), legend.direction = "horizontal")
   xrange <- xlim(limitz[1:2])
   yrange <- ylim(limitz[3:4])
+  if (draw_zones) {
+    white_zone <- geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")
+    black_zone <- geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20")
+  } else {
+    white_zone <- NULL
+    black_zone <- NULL
+  }
   if (!missing(model)) {
     FX1 <- subsetFX(FX, density1)
     form <- as.list(substitute(model))
@@ -99,7 +109,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
         densities <- fitModel(FX1, form, grid)
       }
       p <- plotDensity(densities, boundaries, contour, geom, ...)
-      p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")
+      p <- p + white_zone
       return(p+labelz+xrange+yrange+layers)
     } else {  #densities are differenced
       FX2 <- subsetFX(FX, density2)
@@ -115,7 +125,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       diff <- densities[-grep("z", names(densities))]
       diff$z <- densities$z - densities2$z
       t2 <- plotDensity(diff, boundaries, contour, geom, ...)
-      t2 <- t2 + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="grey20")
+      t2 <- t2 + black_zone
       return(t2+scale_fill_gradient2(midpoint=0)+labelz+xrange+yrange+layers)
     }
   }
@@ -124,11 +134,11 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       message("The 'subplot2d' geom requires library(subplot2d)!")
       return()
     }
+    require(ggsubplot)
     return(ggplot(data=FX)+labelz+xrange+yrange+
              geom_subplot2d(aes(x=px, y=pz_adj, 
                     subplot = geom_bar(aes_string(x=fill, fill = fill))), ...)+
-             geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), 
-                        alpha=0, fill="pink", colour="black")+layers)
+             black_zone+layers)
   }
   if (geom %in% c("bin", "hex", "tile")) { #special handling for (2D) density geometries
     if (identical(density1, density2)) { #densities are not differenced
@@ -139,7 +149,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       if (geom %in% "tile") t <- t + stat_density2d(geom="tile", aes(fill = ..density..), contour = FALSE)
       #Contours and strikezones are drawn last
       if (contour) t <- t + geom_density2d()
-      t <- t + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="white")
+      t <- t + white_zone
       return(t+layers)
     } else { #densities are differenced (note that diffDensity handles the subsetting)
       if (!is.null(facets)) {
@@ -148,11 +158,12 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       } else densities <- diffDensity(FX, density1, density2, limz=limitz)
     }
     t2 <- plotDensity(densities, boundaries, contour, geom, ...)
+    t2 <- t2 + black_zone
     return(t2+scale_fill_gradient2(midpoint=0)+labelz+xrange+yrange+layers)
   }
   if (geom %in% "point") {
     p <- ggplot(data=FX, aes(ymax=top, ymin=bottom, xmax=right, xmin=left)) + legendz + labelz + xrange + yrange + scale_size(guide = "none") + scale_alpha(guide="none")
-    p <- p + geom_rect(mapping=aes(ymax = top, ymin = bottom, xmax = right, xmin = left), alpha=0, fill="pink", colour="black") #draw strikezones
+    p <- p + black_zone
     if (color == "") {
       point_mapping <- aes_string(x = "px", y="pz_adj")
     } else {

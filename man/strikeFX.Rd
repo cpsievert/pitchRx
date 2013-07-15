@@ -6,8 +6,8 @@
     point.size = 3, point.alpha = 1/3,
     color = "pitch_types", fill = "des", layer = list(),
     model, density1 = list(), density2 = list(),
-    adjust = FALSE, limitz = c(-2.5, 2.5, 0, 5),
-    parent = FALSE, ...)
+    limitz = c(-2.5, 2.5, 0, 5), adjust = FALSE,
+    draw_zones = TRUE, parent = FALSE, ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
@@ -50,10 +50,13 @@
   \code{density1 != density2}, the density estimates are
   automatically differenced.}
 
+  \item{limitz}{limits for horizontal and vertical axes.}
+
   \item{adjust}{logical. Should vertical locations be
   adjusted according to batter height?}
 
-  \item{limitz}{limits for horizontal and vertical axes.}
+  \item{draw_zones}{logical. Should strikezones be
+  included?}
 
   \item{parent}{is the function being called from a
   higher-level function? (experimental)}
@@ -72,7 +75,7 @@ data(pitches)
 strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
 \dontrun{
 strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"),
-         layer=facet_grid(.~stand))
+         draw_zones=FALSE, contour=TRUE, layer=facet_grid(.~stand))
 noswing <- subset(pitches, des \%in\% c("Ball", "Called Strike"))
 noswing$strike <- as.numeric(noswing$des \%in\% "Called Strike")
 strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')),

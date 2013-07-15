@@ -11,15 +11,19 @@
 #' @seealso \link{urlsToDataFrame}
 #' @return Returns a list containing a data frame specific to each element in \code{tables}. The default setting returns two data frames. The larger one contains data "PITCHfx parameters" for each pitch. The smaller one contains data relevant to each atbat.
 #' @export
+#' @importFrom lubridate days
+#' @importFrom stringr str_extract_all
 #' @examples
-#' \dontrun{Collect PITCHf/x data for May 1st, 2012
+#' \dontrun{
+#' #Collect PITCHf/x data for May 1st, 2012
 #' dat <- scrapeFX(start = "2012-05-01", end = "2012-05-01")
 #' #Join tables for data analysis
-#' pitchFX <- join(dat$pitch, dat$atbat, by = c("num", "url"), type = "inner")}
+#' pitches <- plyr::join(dat$pitch, dat$atbat, by = c("num", "url"), type = "inner")
+#' }
 #' 
 #' \dontrun{Algorithm for obtaining all available PITCHfx data** 
 #' # (1) Collect PITCHfx data from 2012
-#' data12 <- scrapeFX()
+#' data12 <- scrapeFX(start="2012-01-01", end="2013-01-01")
 #' # (2) Write data12$pitch and data12$atbat to a database
 #' # (3) Remove 2012 data from working space
 #' rm(data12)
@@ -30,12 +34,13 @@ scrapeFX <- function(start, end, tables = list(atbat = fields$atbat, pitch = fie
   if (missing(end)) stop("Please provide an end date. Dates should be in 'yyyy-mm-dd' format. For example, '2012-06-07' represents June 7th, 2012.")
   start <- as.POSIXct(start)
   end <- as.POSIXct(end)
+  start.year <- as.numeric(substr(start, 0, 4))
   if (is.null(names(tables))) stop("Please specify at least one XML node of interest.")
-  if (year(start) < 2005) {
+  if (start.year < 2005) {
     warning("Not only is pitchFX data not avaliable before 2008, data on each game isn't consistent until 2005")
     start <- as.POSIXct("2005-01-01")
   }
-  if (year(start) < 2008) warning("pitchFX data wasn't recorded consistently until 2008. Do you want to consider a later start date?")
+  if (start.year < 2008) warning("pitchFX data wasn't recorded consistently until 2008. Do you want to consider a later start date?")
   if (end > as.POSIXct(Sys.Date())) warning("Sorry, I can't scrape data on the future!")
   scrape.env <- environment()
   data(fields, package="pitchRx", envir=scrape.env)
@@ -90,9 +95,11 @@ updateUrls <- function(last.date, end) {
     cat("updating urls", "\n")
     diff <- as.numeric(end - last.date)
     dates <- last.date + c(0:diff) * days(1)
-    years <- year(dates)
-    mnths <- formatC(month(dates), width = 2, flag = "0")
-    dys <- formatC(day(dates), width = 2, flag = "0")
+    years <- substr(dates, 0, 4)
+    months <- substr(dates, 6, 7)
+    days <- substr(dates, 9, 10)
+    mnths <- formatC(months, width = 2, flag = "0")
+    dys <- formatC(days, width = 2, flag = "0")
     branches <- as.list(paste("http://gd2.mlb.com/components/game/mlb/year_", years, "/month_", mnths, "/day_", dys, "/", sep = ""))
     game.branches <- NULL
     for (i in branches) {
@@ -107,9 +114,9 @@ updateUrls <- function(last.date, end) {
     url.player <- paste(game.branches, "players.xml", sep = "")
     url.scoreboard <- gsub("gid_[0-9]+_[0-9]+_[0-9]+_[a-z]+_[a-z]+_[0-9]/", "miniscoreboard.xml", game.branches)
     #Generate date from game id
-    split.urls <- str_split(url, "/")
+    split.urls <- strsplit(url, "/")
     gids <- sapply(split.urls, function(x) { x[10] })
-    date <- sapply(str_split(gids, "_"), function(x) { paste(x[2], x[3], x[4], sep = "-") })
+    date <- sapply(strsplit(gids, "_"), function(x) { paste(x[2], x[3], x[4], sep = "-") })
     urls <- data.frame(date = date, url_scoreboard = url.scoreboard, url = url, url_player = url.player)
     if (length(grep("NA", date) > 0)) {#Some days don't have games (even in the middle of season). In this case, "NA/NA/NA" are produced, which causes errors when urls is subsetted
       urls <- urls[-grep("NA", date),]
@@ -164,7 +171,7 @@ attachUrls <- function(df) {
   branch <- gsub("miniscoreboard.xml", "", df$url_scoreboard) #common branch among urls
   df$url <- paste(branch, paste("gid_", df$gameday_link, sep = ""), "/inning/inning_all.xml", sep = "") #files with pitchf/x info
   df$url_player <- gsub("/inning/inning_all.xml", "/players.xml", df$url) #files with player information and statistics
-  df$date <- sapply(str_split(df$gameday_link, "_"), function(x) { paste(x[1], x[2], x[3], sep = "-") })
+  df$date <- sapply(strsplit(df$gameday_link, "_"), function(x) { paste(x[1], x[2], x[3], sep = "-") })
   return(df)
 }
 

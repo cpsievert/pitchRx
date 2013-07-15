@@ -1,5 +1,13 @@
 		CHANGES IN pitchRx VERSION 0.6
 
+MAJOR CHANGES
+
+   - Better namespace handling. The package no longer depends, but instead imports the following packages: MASS, rgl, mgcv, hexbin, lubridate, stringr, plyr, reshape.
+
+NEW FEATURES
+
+	- avg. by option now available for interactiveFX
+
 MINOR FIXES
 
 	- When passing a model to strikeFX, a white strike-zone is now drawn (if it isn't a differenced density)

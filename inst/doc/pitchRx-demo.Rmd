@@ -143,7 +143,6 @@ Rivera <- subset(pitches, pitcher_name=="Mariano Rivera")
 ```
 
 ```{r strike4, fig.height=10, fig.width=8, dev="CairoPNG"}
-library(ggsubplot) #required for subplot2d option
 Rivera.R <- subset(Rivera, stand=="R")
 strikeFX(Rivera.R, geom="subplot2d", fill="type")
 ```

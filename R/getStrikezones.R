@@ -11,7 +11,7 @@
 # 
 getStrikezones <- function(data, facets, strikeFX = FALSE) {
   heights=NULL #ugly hack to comply with R CMD check
-  h <- ldply(str_split(as.character(data$b_height), "-"), function(x) { as.numeric(x) })
+  h <- ldply(strsplit(as.character(data$b_height), "-"), function(x) { as.numeric(x) })
   h[,2] <- h[,2]/12
   data$heights <- h[,1] + h[,2]
   bounds <- ddply(data, c("stand", facets), summarize, height=mean(heights))

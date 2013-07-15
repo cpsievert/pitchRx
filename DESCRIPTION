@@ -9,16 +9,17 @@ Description: Tools for Collecting and Visualizing Major League Baseball
 License: MIT
 Depends:
     R (>= 2.15.1),
-    MASS,
     XML,
-    ggplot2 (>= 0.9.3),
-    plyr,
-    reshape,
+    ggplot2 (>= 0.9.3)
+Imports:
+    MASS,
+    rgl,
+    mgcv,
+    hexbin,
     lubridate,
     stringr,
-    hexbin,
-    mgcv,
-    rgl
+    plyr,
+    reshape
 Suggests:
     knitr,
     animation,

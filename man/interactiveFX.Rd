@@ -3,8 +3,8 @@
 \title{Use rgl to visualize PITCHf/x}
 \usage{
   interactiveFX(data, spheres = TRUE,
-    color = "pitch_types", interval = 0.01, alpha = 1,
-    show.legend = TRUE, ...)
+    color = "pitch_types", avg.by, interval = 0.01,
+    alpha = 1, show.legend = TRUE, ...)
 }
 \arguments{
   \item{data}{data.frame with appropriately named PITCHf/x
@@ -13,6 +13,9 @@
   \item{spheres}{Use \link{spheres3d} or \link{plot3d}?}
 
   \item{color}{variable used to control coloring scheme.}
+
+  \item{avg.by}{variable used as an index for averaging
+  over PITCHf/x parameters}
 
   \item{interval}{the amount of time between 'snapshots'}
 
@@ -32,6 +35,9 @@
 \examples{
 data(pitches)
 Rivera <- subset(pitches, pitcher_name=="Mariano Rivera")
-\dontrun{interactiveFX(Rivera, interval=.05)}
+\dontrun{
+ interactiveFX(Rivera, interval=.05)
+ interactiveFX(Rivera, avg.by="pitch_types")
+ }
 }
 

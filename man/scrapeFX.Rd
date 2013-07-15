@@ -33,14 +33,16 @@
   parameter if other data is desired.
 }
 \examples{
-\dontrun{Collect PITCHf/x data for May 1st, 2012
+\dontrun{
+#Collect PITCHf/x data for May 1st, 2012
 dat <- scrapeFX(start = "2012-05-01", end = "2012-05-01")
 #Join tables for data analysis
-pitchFX <- join(dat$pitch, dat$atbat, by = c("num", "url"), type = "inner")}
+pitches <- plyr::join(dat$pitch, dat$atbat, by = c("num", "url"), type = "inner")
+}
 
 \dontrun{Algorithm for obtaining all available PITCHfx data**
 # (1) Collect PITCHfx data from 2012
-data12 <- scrapeFX()
+data12 <- scrapeFX(start="2012-01-01", end="2013-01-01")
 # (2) Write data12$pitch and data12$atbat to a database
 # (3) Remove 2012 data from working space
 rm(data12)
