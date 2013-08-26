@@ -51,6 +51,7 @@ urlsToDataFrame <- function(urls, tables = list(), add.children = FALSE, use.val
       url.vector <- c(url.vector, i) #Keep urls that have content
     }
   }
+  if (is.null(docs)) return(NULL) #prevent errors if no data was scraped
   if (use.values == TRUE) return(docsToDFs(docs))
   ctr <- 1
   frames <- NULL
