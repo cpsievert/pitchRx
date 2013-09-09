@@ -1,13 +1,9 @@
+options(rgl.useNULL=TRUE)
 library(shiny)
-if (!require(animation)) install.packages("animation", repos="http://streaming.stat.iastate.edu/CRAN/")
-require(animation)
-if (!require(Cairo)) install.packages("Cairo", repos="http://streaming.stat.iastate.edu/CRAN/")
-require(Cairo)
-if (!require(pitchRx)) install.packages("pitchRx", repos="http://streaming.stat.iastate.edu/CRAN/")
-#library(devtools)
-#install_github('pitchRx', 'cpsievert')
-require(pitchRx)
-
+library(animation)
+library(Cairo)
+library(pitchRx)
+library(shinyRGL)
 
 valid <- function(input, default) { 
   if (is.null(input)) return(FALSE)
@@ -17,20 +13,20 @@ valid <- function(input, default) {
 
 
 shinyServer(function(input, output) {
-
-  getSample <- reactive(function() {
+  
+  getSample <- reactive({
     data(pitches, package = "pitchRx")
     get('pitches')
   })
   
-  getLocal <- reactive(function() {
+  getLocal <- reactive({
     if (!is.null(input$file)) {
       path <- input$file$datapath 
       read.csv(path)
     } else NULL
   })
   
-  getData <- reactive(function() {
+  getData <- reactive({
     if (input$dataSource == "local") {
       data <- getLocal()
     } else {
@@ -38,33 +34,33 @@ shinyServer(function(input, output) {
     }
   })
   
-  getNames <- reactive(function() {
+  getNames <- reactive({
     data <- getData()
     vars <- names(data)
     names(vars) <- vars
   })
   
-  output$pointColor <- reactiveUI(function() {
+  output$pointColor <- renderUI({
     n <- getNames()
     selectInput("pointColor", "Choose a 'color' variable:", 
                 choices=c("pitch_types"="pitch_types", "None"="None", n))
   })
   
-  output$denVar1 <- reactiveUI(function() {
+  output$denVar1 <- renderUI({
     if (input$geom %in% c("hex", "tile", "bin")){
       n <- getNames()
       selectInput("denVar1", "Choose a variable:", choices=c("None"="None", n))
     } else NULL
   })
   
-  output$denVar2 <- reactiveUI(function() {
+  output$denVar2 <- renderUI({
     if (input$geom %in% c("hex", "tile", "bin")){
       n <- getNames()
       selectInput("denVar2", "Choose a variable:", choices=c("None"="None", n))
     } else NULL
   })
   
-  output$vals1 <- reactiveUI(function() {
+  output$vals1 <- renderUI({
     if (!is.null(input$denVar1)) {
       if (input$denVar1 != "None") {
         data <- getData()
@@ -75,7 +71,7 @@ shinyServer(function(input, output) {
     } else NULL
   })
   
-  output$vals2 <- reactiveUI(function() {
+  output$vals2 <- renderUI({
     if (!is.null(input$denVar1)) {
       if (input$denVar2 != "None") {
         data <- getData()
@@ -86,21 +82,28 @@ shinyServer(function(input, output) {
     } else NULL
   })
   
-#   output$customX <- reactiveUI(function() {
-#     if (input$visMethod == "custom"){
-#       n <- getNames()
-#       selectInput("customX", "Choose an 'x' variable:", choices=c("None"="None", n))
-#     } else NULL
-#   })
-#   
-#   output$customY <- reactiveUI(function() {
-#     if (input$visMethod == "custom"){
-#       n <- getNames()
-#       selectInput("customY", "Choose a 'y' variable:", choices=c("None"="None", n))
-#     } else NULL
-#   })
+  output$pitcher <- renderUI({
+    dat <- getData()
+    n <- grep("pitcher_name", names(dat))
+    if (length(n) > 0) {
+      nms <- unique(dat[,n])
+      selectInput("pitcher", "Select pitcher of interest", choices = nms)
+    } else NULL
+  })
   
-  plotFX <- reactive(function() {
+  output$myWebGL <- renderWebGL({
+    dat <- getData()
+    #for subset to work, must upload column named "pitcher_name"
+    if (!is.null(input$pitcher)) dat <- subset(dat, pitcher_name == input$pitcher)
+    if (input$avgby){
+      interactiveFX(dat, avg.by="pitch_types", alpha=input$alpha, interval=input$interval, spheres=input$spheres)
+    } else {
+      interactiveFX(dat, alpha=input$alpha, interval=input$interval, spheres=input$spheres)
+    }
+  })
+  
+  
+  plotFX <- reactive({
     data <- getData()
     #Build facetting call
     facet1 <- input$facet1
@@ -121,24 +124,17 @@ shinyServer(function(input, output) {
     if (input$coord.equal) {
       coord_equal <- coord_equal()
     } else coord_equal <- NULL
-#     if (input$visMethod == "custom") {
-#       custom_map <- aes_string(x=input$customX, y=input$customY)
-#       print(ggplot(data, custom_map)+geom_point()+xlim(input$xmin, input$xmax)+ylim(input$ymin, input$ymax)) 
-#     }
-    if (input$visMethod == "animate") {
+    
+    if (input$tabs == "animate") {
       oopt <- ani.options(interval = 0.01, ani.dev = CairoPNG, 
-                         title = "My pitchRx Animation", 
-                         description = "Generated from <a href='http://cpsievert.github.com/home.html'>Carson Sievert</a>'s PITCHf/x <a href='https://gist.github.com/4440099'>visualization tool</a>")
+                          title = "My pitchRx Animation", 
+                          description = "Generated from <a href='http://cpsievert.github.com/home.html'>Carson Sievert</a>'s PITCHf/x <a href='https://gist.github.com/4440099'>visualization tool</a>")
       ani.start()
       print(animateFX(data, point.size=input$point_size, 
                       point.alpha=input$point_alpha, 
                       layer=list(facet_layer, coord_equal), parent=TRUE))
       ani.stop()
       ani.options(oopt)
-    }
-    if (input$visMethod == "interactive") {
-      interactiveFX(data, interval=input$interval, color=input$pointColor, alpha=input$point_alpha)
-      browseURL(paste("file://", writeWebGL(dir=file.path(tempdir(), "webGL"), width=500, height=500),sep=""))
     }
     #Set binwidths for hex and bins
     #contours require special handling within each geometry
@@ -161,16 +157,16 @@ shinyServer(function(input, output) {
       contours <- input$tile_contour
       a <- input$tile_adjust
     }
-    if (input$visMethod == "strike") {
+    if (input$tabs == "2D Scatterplot") {
       den1 <- list()
       den2 <- list()
       if (valid(input$denVar1, "None") && !is.null(input$vals1)) {
-          den1 <- list(input$vals1)
-          names(den1) <- input$denVar1
+        den1 <- list(input$vals1)
+        names(den1) <- input$denVar1
       }
       if (valid(input$denVar2, "None") && !is.null(input$vals1)) {
-          den2 <- list(input$vals2)
-          names(den2) <- input$denVar2
+        den2 <- list(input$vals2)
+        names(den2) <- input$denVar2
       }
       if (!is.null(input$pointColor)) {
         pointColor <- input$pointColor
@@ -199,5 +195,5 @@ shinyServer(function(input, output) {
     },
     contentType = 'image/png'
   )
-    
+  
 })
