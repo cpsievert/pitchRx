@@ -11,7 +11,7 @@
 #' @seealso \link{urlsToDataFrame}
 #' @return Returns a list containing a data frame specific to each element in \code{tables}. The default setting returns two data frames. The larger one contains data "PITCHfx parameters" for each pitch. The smaller one contains data relevant to each atbat.
 #' @export
-#' @importFrm plyr join
+#' @import plyr
 #' @importFrom lubridate days
 #' @importFrom stringr str_extract_all
 #' @examples

@@ -5,9 +5,9 @@
   strikeFX(data, geom = "point", contour = FALSE,
     point.size = 3, point.alpha = 1/3,
     color = "pitch_types", fill = "des", layer = list(),
-    model, density1 = list(), density2 = list(),
-    limitz = c(-2.5, 2.5, 0, 5), adjust = FALSE,
-    draw_zones = TRUE, parent = FALSE, ...)
+    model, model.save = TRUE, density1 = list(),
+    density2 = list(), limitz = c(-2.5, 2.5, 0, 5),
+    adjust = FALSE, draw_zones = TRUE, parent = FALSE, ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
@@ -35,11 +35,15 @@
   to predict upon a grid defined by \code{limitz}. It is
   recommended that one uses \link{gam} to plot response
   surface of a Generalized Additive Model (see examples).
-  It shouldn't be necessary to specify \code{data} within
-  the \code{model} function since it will inherit from
-  \code{strikeFX}. If this option is used, the geometry
-  must be either "hex", "tile" or "bin". If a non-valid
-  geometry is used, the geometry will be forced to "tile".}
+  Note that a seperate model fit will be provided for each
+  unique plot when using a facetting scheme. If this option
+  is used, the geometry must be either "hex", "tile" or
+  "bin". If a non-valid geometry is used, the geometry will
+  be forced to "tile".}
+
+  \item{model.save}{logical. Save the fitted \code{model}?
+  If TRUE, the relevant model object is \link{assign}ed to
+  the global environment}
 
   \item{density1}{List of length one that defines a density
   estimate. The name should correspond to a variable in
@@ -80,6 +84,11 @@ noswing <- subset(pitches, des \%in\% c("Ball", "Called Strike"))
 noswing$strike <- as.numeric(noswing$des \%in\% "Called Strike")
 strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')),
          layer=facet_grid(.~stand))
+ #By default strikeFX saves fitted models in current directory
+ #Here we obtain files in current directory containing 'model'.
+model.files <- list.files(pattern="model")
+model1 <- readRDS(model.files[1]) #bring model object into workspace
+summary(model1)
 #If sample size is an issue, try increasing the binwidths
 strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')),
          layer=facet_grid(.~stand), binwidth=c(.5, .5))

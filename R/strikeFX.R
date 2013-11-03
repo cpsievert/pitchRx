@@ -12,8 +12,9 @@
 #' @param layer list of other ggplot2 (layered) modifications.
 #' @param model A function specifying a model which is used to predict upon a grid defined by \code{limitz}.
 #' It is recommended that one uses \link{gam} to plot response surface of a Generalized Additive Model (see examples). 
-#' It shouldn't be necessary to specify \code{data} within the \code{model} function since it will inherit from \code{strikeFX}. 
+#' Note that a seperate model fit will be provided for each unique plot when using a facetting scheme.
 #' If this option is used, the geometry must be either "hex", "tile" or "bin". If a non-valid geometry is used, the geometry will be forced to "tile".
+#' @param model.save logical. Save the fitted \code{model}? If TRUE, the relevant model object is \link{assign}ed to the global environment
 #' @param density1 List of length one that defines a density estimate. The name should correspond to a variable in \code{data}. The value should correspond to an (observed) value of that variable.
 #' @param density2 Similar to \code{density1}. If \code{density1 != density2}, the density estimates are automatically differenced.
 #' @param limitz limits for horizontal and vertical axes. 
@@ -36,6 +37,11 @@
 #' noswing$strike <- as.numeric(noswing$des %in% "Called Strike")
 #' strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), 
 #'          layer=facet_grid(.~stand))
+#'  #By default strikeFX saves fitted models in current directory
+#'  #Here we obtain files in current directory containing 'model'. 
+#' model.files <- list.files(pattern="model") 
+#' model1 <- readRDS(model.files[1]) #bring model object into workspace
+#' summary(model1)
 #' #If sample size is an issue, try increasing the binwidths
 #' strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')), 
 #'          layer=facet_grid(.~stand), binwidth=c(.5, .5))
@@ -45,7 +51,7 @@
 #' }
 #' 
 
-strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), model, density1=list(), density2=list(), limitz=c(-2.5, 2.5, 0, 5), adjust=FALSE, draw_zones=TRUE, parent=FALSE, ...){ 
+strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), model, model.save=TRUE, density1=list(), density2=list(), limitz=c(-2.5, 2.5, 0, 5), adjust=FALSE, draw_zones=TRUE, parent=FALSE, ...){ 
   px=pz_adj=..density..=top=bottom=right=left=x=y=z=NULL #ugly hack to comply with R CMD check
   if (any(!geom %in% c("point", "bin", "hex", "tile", "subplot2d"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile', 'subplot2d'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
@@ -96,37 +102,43 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
     black_zone <- NULL
   }
   if (!missing(model)) {
-    FX1 <- subsetFX(FX, density1)
-    form <- as.list(substitute(model))
-    x.grid <- seq(limitz[1], limitz[2], 0.05) #how to add option for grid granularity?
-    y.grid <- seq(limitz[3], limitz[4], 0.05) #how to add option for grid granularity?
-    grid <- expand.grid(px=x.grid, pz=y.grid)
-    if (identical(density1, density2)) { #densities are not differenced
-      if (!is.null(facets)) {
-        stuff <- dlply(FX1, facets, function(x) { fitModel(x, form, grid) } )
-        densities <- ldply(stuff)
-      } else {
-        densities <- fitModel(FX1, form, grid)
+    classy <- tryCatch(class(model), error = function(e) NULL)
+    isfit <- !is.null(classy)
+    if (isfit) {
+      stop("fits coming soon!")
+    } else {
+      FX1 <- subsetFX(FX, density1)
+      form <- as.list(substitute(model))
+      x.grid <- seq(limitz[1], limitz[2], 0.05) #how to add option for grid granularity?
+      y.grid <- seq(limitz[3], limitz[4], 0.05) #how to add option for grid granularity?
+      grid <- expand.grid(px=x.grid, pz=y.grid)
+      if (identical(density1, density2)) { #densities are not differenced
+        if (!is.null(facets)) {
+          stuff <- dlply(FX1, facets, function(x) { fitModel(x, form, grid, model.save) } )
+          densities <- ldply(stuff)
+        } else {
+          densities <- fitModel(FX1, form, grid, model.save)
+        }
+        p <- plotDensity(densities, boundaries, contour, geom, ...)
+        p <- p + white_zone
+        return(p+labelz+xrange+yrange+layers)
+      } else {  #densities are differenced
+        FX2 <- subsetFX(FX, density2)
+        if (!is.null(facets)) {
+          stuff <- dlply(FX1, facets, function(x) { fitModel(x, form, grid, model.save) } )
+          stuff2 <- dlply(FX2, facets, function(x) { fitModel(x, form, grid, model.save) } )
+          densities <- ldply(stuff)
+          densities2 <- ldply(stuff2)
+        } else {
+          densities <- fitModel(FX1, form, grid, model.save)
+          densities2 <- fitModel(FX2, form, grid, model.save)
+        }
+        diff <- densities[-grep("z", names(densities))]
+        diff$z <- densities$z - densities2$z
+        t2 <- plotDensity(diff, boundaries, contour, geom, ...)
+        t2 <- t2 + black_zone
+        return(t2+scale_fill_gradient2(midpoint=0)+labelz+xrange+yrange+layers)
       }
-      p <- plotDensity(densities, boundaries, contour, geom, ...)
-      p <- p + white_zone
-      return(p+labelz+xrange+yrange+layers)
-    } else {  #densities are differenced
-      FX2 <- subsetFX(FX, density2)
-      if (!is.null(facets)) {
-        stuff <- dlply(FX1, facets, function(x) { fitModel(x, form, grid) } )
-        stuff2 <- dlply(FX2, facets, function(x) { fitModel(x, form, grid) } )
-        densities <- ldply(stuff)
-        densities2 <- ldply(stuff2)
-      } else {
-        densities <- fitModel(FX1, form, grid)
-        densities2 <- fitModel(FX2, form, grid)
-      }
-      diff <- densities[-grep("z", names(densities))]
-      diff$z <- densities$z - densities2$z
-      t2 <- plotDensity(diff, boundaries, contour, geom, ...)
-      t2 <- t2 + black_zone
-      return(t2+scale_fill_gradient2(midpoint=0)+labelz+xrange+yrange+layers)
     }
   }
   if (geom %in% "subplot2d") { #special handling for subplotting
@@ -176,14 +188,20 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
 }
 
 #fit a model and return the predicted values for a (possibly differenced) 2D grid
-fitModel <- function(dat, expr, grid) {
+fitModel <- function(dat, expr, grid, model.save=TRUE) {
   fun <- as.character(expr[[1]])
   expr[[1]] <- NULL
   expr$data <- dat #overwrite data argument
   fit <- do.call(fun, expr)
+  if (model.save){
+    suffix <- gsub(":| ", "-", format(Sys.time(), "%m %d %X")) #month-day-hour-minute-second
+    filename <- paste0("model-", suffix, ".rds")
+    saveRDS(fit, file=filename)
+    message(paste0("Saved model fit as: ", filename))
+    Sys.sleep(1) #ensure we get unique filenames
+  }
   pred.grid <- predict(fit, grid, type="response")
-  grid.df <- data.frame(x=grid[,1], y=grid[,2], z=pred.grid)
-  grid.df
+  data.frame(x=grid[,1], y=grid[,2], z=pred.grid)
 }
 
 #Plot a 2D density with pre-computed heights

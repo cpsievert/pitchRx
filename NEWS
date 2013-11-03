@@ -1,4 +1,12 @@
-		CHANGES IN pitchRx VERSION 0.6
+  	CHANGES IN pitchRx VERSION 0.7
+
+MAJOR CHANGES
+
+   - Markdown vignette was removed since R2SWF was removed from CRAN and there doesn't seem to be a great alternative currently. The vignette may re-appear in future versions, but you can still go to the demo page - http://cpsievert.github.io/pitchRx/demo/
+
+  - When using the model option in strikeFX, all fitted models are saved as R objects to a file connection in the working directory. See the strikeFX help page for an example of how to read such objects into the workspace.
+
+    CHANGES IN pitchRx VERSION 0.6
 
 MAJOR CHANGES
 

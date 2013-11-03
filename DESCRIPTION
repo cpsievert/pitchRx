@@ -1,7 +1,7 @@
 Package: pitchRx
 Title: Tools for Collecting and Visualizing Major League Baseball
     PITCHfx Data
-Version: 0.6
+Version: 0.7
 Author: Carson Sievert <sievert@iastate.edu>
 Maintainer: Carson Sievert <sievert@iastate.edu>
 Description: Tools for Collecting and Visualizing Major League Baseball
@@ -25,7 +25,7 @@ Suggests:
     animation,
     shiny,
     ggsubplot
-Date: 2013-07-01
+Date: 2013-11-03
 LazyData: true
 Collate:
     'animateFX.R'
@@ -41,6 +41,5 @@ Collate:
     'urls.R'
     'players.R'
     'help.R'
-VignetteBuilder: knitr
 URL: http://cpsievert.github.com/pitchRx/demo
 BugReports: http://github.com/cpsievert/pitchRx/issues
