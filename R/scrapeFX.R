@@ -11,6 +11,7 @@
 #' @seealso \link{urlsToDataFrame}
 #' @return Returns a list containing a data frame specific to each element in \code{tables}. The default setting returns two data frames. The larger one contains data "PITCHfx parameters" for each pitch. The smaller one contains data relevant to each atbat.
 #' @export
+#' @import XML
 #' @import plyr
 #' @importFrom lubridate days
 #' @importFrom stringr str_extract_all
@@ -78,6 +79,7 @@ scrapeFX <- function(start, end, tables = list(atbat = fields$atbat, pitch = fie
     data$atbat <- join(data$atbat, players, by = "id", type = "inner")
     names(data$atbat) <- gsub("id", "pitcher", names(data$atbat))
     names(data$atbat) <- gsub("full_name", "pitcher_name", names(data$atbat))
+    names(data$atbat) <- gsub("des", "atbat_des", names(data$atbat))
   }
   return(data)
 }

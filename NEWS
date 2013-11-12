@@ -4,7 +4,13 @@ MAJOR CHANGES
 
    - Markdown vignette was removed since R2SWF was removed from CRAN and there doesn't seem to be a great alternative currently. The vignette may re-appear in future versions, but you can still go to the demo page - http://cpsievert.github.io/pitchRx/demo/
 
-  - When using the model option in strikeFX, all fitted models are saved as R objects to a file connection in the working directory. See the strikeFX help page for an example of how to read such objects into the workspace.
+  - The model option of strikeFX is now restricted to "gam" objects (see ?mgcv::gamObject). One can now pass either a fitted gam object or a function call to mgcv::gam or mgcv::bam. When passing a function call, strikeFX will automatically save the model object to the working directory. It's important to note that any variables used in a ggplot2 facet layer or in the density1/density2 options MUST BE INCLUDED as factors in the model. 
+
+MINOR FIXES
+
+  - In the pitches dataset, the variables "px", "pz", "x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az" are now numeric variables.
+
+  - scrapeFX changes the "des" field in the "atbat" tables to "atbat_des" to avoid conflicts with the "des" field in the "pitch" table.
 
     CHANGES IN pitchRx VERSION 0.6
 
@@ -14,7 +20,7 @@ MAJOR CHANGES
 
 NEW FEATURES
 
-	- avg. by option now available for interactiveFX
+	- avg.by option now available for interactiveFX
 
 MINOR FIXES
 

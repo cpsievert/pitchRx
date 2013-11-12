@@ -31,27 +31,26 @@
   \item{layer}{list of other ggplot2 (layered)
   modifications.}
 
-  \item{model}{A function specifying a model which is used
-  to predict upon a grid defined by \code{limitz}. It is
-  recommended that one uses \link{gam} to plot response
-  surface of a Generalized Additive Model (see examples).
-  Note that a seperate model fit will be provided for each
-  unique plot when using a facetting scheme. If this option
-  is used, the geometry must be either "hex", "tile" or
-  "bin". If a non-valid geometry is used, the geometry will
-  be forced to "tile".}
+  \item{model}{Either a \link{gamObject} or a call to fit a
+  model via \link{gam} or \link{bam}. Note that the
+  horizontal and vertical location of the pitch MUST be
+  included as covariates named "px" and "pz", respectively.
+  Relevant factor variables must also be included as
+  covariates in order to produce facetted or differenced
+  plot(s). If this option is used, the geometry must be
+  either "hex", "tile" or "bin". If a non-valid geometry is
+  used, the geometry will be forced to "tile".}
 
   \item{model.save}{logical. Save the fitted \code{model}?
   If TRUE, the relevant model object is \link{assign}ed to
   the global environment}
 
-  \item{density1}{List of length one that defines a density
-  estimate. The name should correspond to a variable in
-  \code{data}. The value should correspond to an (observed)
-  value of that variable.}
+  \item{density1}{List of length one. The name should
+  correspond to a variable in \code{data}. The value should
+  correspond to an (observed) value of that variable.}
 
   \item{density2}{Similar to \code{density1}. If
-  \code{density1 != density2}, the density estimates are
+  \code{density1 != density2}, the relevant estimates are
   automatically differenced.}
 
   \item{limitz}{limits for horizontal and vertical axes.}
@@ -76,25 +75,22 @@
 }
 \examples{
 data(pitches)
-strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
+p <- strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
+p+theme(aspect.ratio=1)
 \dontrun{
 strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"),
          draw_zones=FALSE, contour=TRUE, layer=facet_grid(.~stand))
 noswing <- subset(pitches, des \%in\% c("Ball", "Called Strike"))
 noswing$strike <- as.numeric(noswing$des \%in\% "Called Strike")
-strikeFX(noswing, model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')),
-         layer=facet_grid(.~stand))
- #By default strikeFX saves fitted models in current directory
- #Here we obtain files in current directory containing 'model'.
-model.files <- list.files(pattern="model")
-model1 <- readRDS(model.files[1]) #bring model object into workspace
-summary(model1)
+m1 <- mgcv::bam(strike ~ s(px, pz, by=factor(stand)) +
+               factor(stand), data=noswing, family = binomial(link='logit'))
+strikeFX(noswing, model=m1, layer=facet_grid(.~stand))
 #If sample size is an issue, try increasing the binwidths
-strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')),
-         layer=facet_grid(.~stand), binwidth=c(.5, .5))
-strikeFX(noswing, geom="bin", model=gam(strike ~ s(px)+s(pz), family = binomial(link='logit')),
-         density1=list(top_inning="Y"), density2=list(top_inning="N"), layer=facet_grid(.~stand),
-         binwidth=c(.5, .5))
+strikeFX(noswing, model=m1, layer=facet_grid(.~stand), binwidth=c(.5,.5))
+m2 <- mgcv::bam(strike ~ s(px, pz, by=factor(stand)) + s(px, pz, by=factor(top_inning)) +
+           factor(stand) + factor(top_inning), data=noswing, family = binomial(link='logit'))
+strikeFX(noswing, geom="bin", model=m2, density1=list(top_inning="Y"),
+         density2=list(top_inning="N"), layer=facet_grid(.~stand), binwidth=c(.5, .5))
 }
 }
 
