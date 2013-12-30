@@ -13,7 +13,7 @@
   \item{data}{PITCHf/x data to be visualized.}
 
   \item{geom}{plotting geometry. Current choices are:
-  "point", "hex", "bin", "tile" and "subplot2d".}
+  "point", "hex", "bin" and "tile"}
 
   \item{contour}{logical. Should contour lines be
   included?}

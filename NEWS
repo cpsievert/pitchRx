@@ -1,10 +1,26 @@
-  	CHANGES IN pitchRx VERSION 0.7
+  	CHANGES IN pitchRx VERSION 0.8
+
+MAJOR CHANGES
+
+MINOR FIXES
+
+  - data(urls) now updated to include all urls from 2013.
+
+  - Better handling of model option in strikeFX (fixed a couple bugs). Also, added messages to let user know about conditioning.
+
+  - geom="ggsubplot" is working again now that CRAN is happy with the ggsubplot package.
+
+  - The default value for the limitz opiton for strikeFX was changed from c(-2.5, 2.5, 0, 5) to limitz=c(-2, 2, 0.5, 4.5). This eliminates some un-interesting white-space in many cases.
+
+    CHANGES IN pitchRx VERSION 0.7
 
 MAJOR CHANGES
 
    - Markdown vignette was removed since R2SWF was removed from CRAN and there doesn't seem to be a great alternative currently. The vignette may re-appear in future versions, but you can still go to the demo page - http://cpsievert.github.io/pitchRx/demo/
 
   - The model option of strikeFX is now restricted to "gam" objects (see ?mgcv::gamObject). One can now pass either a fitted gam object or a function call to mgcv::gam or mgcv::bam. When passing a function call, strikeFX will automatically save the model object to the working directory. It's important to note that any variables used in a ggplot2 facet layer or in the density1/density2 options MUST BE INCLUDED as factors in the model. 
+
+  - geom="ggsubplot" is no longer a valid geometry option since the ggsubplot package was archived on CRAN. 
 
 MINOR FIXES
 
