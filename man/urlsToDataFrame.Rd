@@ -24,10 +24,12 @@
   Otherwise, it returns a list of data frames.
 }
 \description{
-  This function takes on a list of XML files (ie, urls) and
-  shapes them into a data frame or list of data frames
+  \textbf{This function is deprecated as of version 1.0}
 }
 \details{
+  This function takes on a list of XML files (ie, urls) and
+  shapes them into a data frame or list of data frames
+
   \code{urlsToDataFrame} coerces either XML attributes or
   XML values into a data frame. The XML nodes (aka, tags)
   of interest need to be specified as the name(s) of the

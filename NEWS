@@ -1,10 +1,16 @@
-  	CHANGES IN pitchRx VERSION 0.8
+  	CHANGES IN pitchRx VERSION 1.0
 
 MAJOR CHANGES
 
-MINOR FIXES
+  - scrapeFX() is now deprecated. Please use the scrape() function instead. The function is built upon the R package XML2R. This change will have many benefits including: 
 
-  - data(urls) now updated to include all urls from 2013.
+    (1) More flexibility in scraping ability. Essentially anything on the Gameday website is fair game with scrape() - see help page for details. 
+    (2) One may now scrape for particular game(s) of interest using the gids option.
+    (2) "Average" users should still find it simple to use.
+    (4) Better management of variable types.
+    (5) No longer a good use for the memory hog data(urls) or data(fields). Instead, Gameday IDs - data(gids) - will help drive the construction of urls.
+
+MINOR FIXES
 
   - Better handling of model option in strikeFX (fixed a couple bugs). Also, added messages to let user know about conditioning.
 

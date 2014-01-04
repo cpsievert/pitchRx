@@ -6,7 +6,7 @@
     point.size = 3, point.alpha = 1/3,
     color = "pitch_types", fill = "des", layer = list(),
     model, model.save = TRUE, density1 = list(),
-    density2 = list(), limitz = c(-2.5, 2.5, 0, 5),
+    density2 = list(), limitz = c(-2, 2, 0.5, 4.5),
     adjust = FALSE, draw_zones = TRUE, parent = FALSE, ...)
 }
 \arguments{
@@ -80,11 +80,14 @@ p+theme(aspect.ratio=1)
 \dontrun{
 strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"),
          draw_zones=FALSE, contour=TRUE, layer=facet_grid(.~stand))
+
 noswing <- subset(pitches, des \%in\% c("Ball", "Called Strike"))
 noswing$strike <- as.numeric(noswing$des \%in\% "Called Strike")
-m1 <- mgcv::bam(strike ~ s(px, pz, by=factor(stand)) +
+library(mgcv)
+m1 <- bam(strike ~ s(px, pz, by=factor(stand)) +
                factor(stand), data=noswing, family = binomial(link='logit'))
 strikeFX(noswing, model=m1, layer=facet_grid(.~stand))
+
 #If sample size is an issue, try increasing the binwidths
 strikeFX(noswing, model=m1, layer=facet_grid(.~stand), binwidth=c(.5,.5))
 m2 <- mgcv::bam(strike ~ s(px, pz, by=factor(stand)) + s(px, pz, by=factor(top_inning)) +

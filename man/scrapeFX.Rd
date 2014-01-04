@@ -22,11 +22,13 @@
   relevant to each atbat.
 }
 \description{
+  \textbf{This function is deprecated as of version 1.0}
+}
+\details{
   This function is a wrapper around \link{urlsToDataFrame}
   which increases convenience for scraping PITCHf/x
   directly from XML files.
-}
-\details{
+
   Data should be collected on a yearly (or shorter) basis.
   By default, records from the 'pitch' and 'atbat' level
   are collected. One should manipulate the \code{tables}
