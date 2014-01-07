@@ -3,8 +3,8 @@
 \alias{pitches}
 \title{Sample PITCHf/x Data Set}
 \description{
-  Every four-seam and cutting fastball thrown by Mariano
-  Rivera and Phil Hughes during the 2011 season.
+Every four-seam and cutting fastball thrown by Mariano
+Rivera and Phil Hughes during the 2011 season.
 }
 \examples{
 #This can reproduce data(pitches), but it takes a while...
@@ -17,7 +17,6 @@ pitches <- subset(pitchFX, pitch_type \%in\% c("FF", "FC"))
 }
 }
 \author{
-  Carson Sievert
+Carson Sievert
 }
-\keyword{datasets}
 

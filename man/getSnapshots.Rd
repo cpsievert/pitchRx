@@ -2,7 +2,7 @@
 \alias{getSnapshots}
 \title{Produce time sequenced pitch locations from PITCHf/x parameters}
 \usage{
-  getSnapshots(data, interval = 0.01)
+getSnapshots(data, interval = 0.01)
 }
 \arguments{
   \item{data}{The nine PITCHf/x parameters used to
@@ -11,14 +11,14 @@
   \item{interval}{the amount of time between 'snapshots'}
 }
 \value{
-  Return a three dimensinal array. The third dimension
-  corresponds to different 'snapshots' of locations.
+Return a three dimensinal array. The third dimension
+corresponds to different 'snapshots' of locations.
 }
 \description{
-  This function generates the x, y and z locations used in
-  \link{animateFX} and \link{interactiveFX}.
+This function generates the x, y and z locations used in
+\link{animateFX} and \link{interactiveFX}.
 }
 \references{
-  http://baseball.physics.illinois.edu/KaganPitchfx.pdf
+http://baseball.physics.illinois.edu/KaganPitchfx.pdf
 }
 

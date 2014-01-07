@@ -2,12 +2,11 @@
 \alias{strikeFX}
 \title{Visualize PITCHf/x strikezones}
 \usage{
-  strikeFX(data, geom = "point", contour = FALSE,
-    point.size = 3, point.alpha = 1/3,
-    color = "pitch_types", fill = "des", layer = list(),
-    model, model.save = TRUE, density1 = list(),
-    density2 = list(), limitz = c(-2, 2, 0.5, 4.5),
-    adjust = FALSE, draw_zones = TRUE, parent = FALSE, ...)
+strikeFX(data, geom = "point", contour = FALSE, point.size = 3,
+  point.alpha = 1/3, color = "pitch_types", fill = "des",
+  layer = list(), model, model.save = TRUE, density1 = list(),
+  density2 = list(), limitz = c(-2, 2, 0.5, 4.5), adjust = FALSE,
+  draw_zones = TRUE, parent = FALSE, ...)
 }
 \arguments{
   \item{data}{PITCHf/x data to be visualized.}
@@ -67,11 +66,11 @@
   \item{...}{extra options passed onto geom commands}
 }
 \value{
-  Returns a ggplot2 object.
+Returns a ggplot2 object.
 }
 \description{
-  A suite of bivariate plots with "px" on the horizontal
-  axis and "pz" on the vertical axis.
+A suite of bivariate plots with "px" on the horizontal axis
+and "pz" on the vertical axis.
 }
 \examples{
 data(pitches)

@@ -1,0 +1,38 @@
+\name{makeUrls}
+\alias{makeUrls}
+\title{Construct Gameday urls based on some parameters.}
+\usage{
+makeUrls(start, end, gids = "infer")
+}
+\arguments{
+  \item{start}{date "yyyy-mm-dd" to commence scraping.}
+
+  \item{end}{date "yyyy-mm-dd" to terminate scraping.}
+
+  \item{gids}{The default value "infer" suggests
+  gameday_links should be derived and appended
+  appropriately (based on values of \code{start} and
+  \code{end}). Otherwise, a character vector with
+  gameday_links can be supplied.}
+}
+\value{
+Returns a character.
+}
+\description{
+This is a convenience function (used by \link{scrape})
+which constructs urls with the common Gameday root
+\url{http://gd2.mlb.com/components/game/mlb/}.
+}
+\examples{
+# XML file names with pitch-by-pitch level data
+prefix <- makeUrls(start="2011-04-04", end="2011-04-04")
+paste0(prefix, "/inning/inning_all.xml")
+# XML file names with hit location data
+paste0(prefix, "/inning/inning_hit.xml")
+# XML file names with game-by-game level data
+paste0(makeUrls(start="2011-04-04", end="2011-04-04", gids=""), "/miniscoreboard.xml")
+# Use gids option instead
+data(gids)
+identical(prefix, makeUrls(gids=gids[grep("2011_04_04", gids)]))
+}
+

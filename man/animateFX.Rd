@@ -2,10 +2,9 @@
 \alias{animateFX}
 \title{Animate PITCHf/x}
 \usage{
-  animateFX(data, color = "pitch_types", avg.by,
-    point.alpha = 1/3, limitz = c(-3.5, 3.5, 0, 7),
-    flag = FALSE, interval = 0.01, layer = list(),
-    parent = FALSE, ...)
+animateFX(data, color = "pitch_types", avg.by, point.alpha = 1/3,
+  limitz = c(-3.5, 3.5, 0, 7), flag = FALSE, interval = 0.01,
+  layer = list(), parent = FALSE, ...)
 }
 \arguments{
   \item{data}{data frame with appropriately named PITCHf/x
@@ -34,19 +33,19 @@
   \item{...}{extra options passed onto geom commands}
 }
 \value{
-  Returns a series of ggplot2 objects.
+Returns a series of ggplot2 objects.
 }
 \description{
-  Pitch trajectories animated on a two-dimensional plot.
+Pitch trajectories animated on a two-dimensional plot.
 }
 \details{
-  \code{animateFX} plots a series of "snapshots" that
-  represent pitch trajectories from the point of release
-  until all of them reach home plate. The graphic takes on
-  the viewpoint of the umpire; that is, the pitches are
-  getting closer to the viewer with time. This is relected
-  with the increase in size of the "balls" as the animation
-  progresses.
+\code{animateFX} plots a series of "snapshots" that
+represent pitch trajectories from the point of release
+until all of them reach home plate. The graphic takes on
+the viewpoint of the umpire; that is, the pitches are
+getting closer to the viewer with time. This is relected
+with the increase in size of the "balls" as the animation
+progresses.
 }
 \examples{
 data(pitches)

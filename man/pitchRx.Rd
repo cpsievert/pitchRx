@@ -4,12 +4,12 @@
 \alias{pitchRx-package}
 \title{PITCHf/x package}
 \description{
-  PITCHf/x package
+PITCHf/x package
 }
 \author{
-  Carson Sievert
+Carson Sievert
 }
 \seealso{
-  \url{http://cpsievert.github.com/pitchRx/demo}
+\url{http://cpsievert.github.com/pitchRx/demo}
 }
 

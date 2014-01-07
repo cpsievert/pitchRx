@@ -1,9 +1,11 @@
 Package: pitchRx
-Title: Tools for Scraping XML Data and Visualizing Major League Baseball PITCHf/x
+Title: Tools for Scraping XML Data and Visualizing Major League Baseball
+    PITCHf/x
 Version: 1.0
 Author: Carson Sievert <sievert@iastate.edu>
 Maintainer: Carson Sievert <sievert@iastate.edu>
-Description: Tools for Scraping XML Data and Visualizing Major League Baseball PITCHf/x
+Description: Tools for Scraping XML Data and Visualizing Major League Baseball
+    PITCHf/x
 License: MIT + file LICENSE
 Depends:
     R (>= 2.15.1),
@@ -25,18 +27,5 @@ Suggests:
     testthat (>= 0.7.1.99)
 Date: 2013-11-13
 LazyData: true
-Collate:
-    'scrape.R'
-    'animateFX.R'
-    'strikeFX.R'
-    'interactiveFX.R'
-    'getSnapshots.R'
-    'getStrikezones.R'
-    'getFacets.R'
-    'deprecated.R'
-    'gids.R'
-    'pitches.R'
-    'players.R'
-    'help.R'
 URL: http://cpsievert.github.com/pitchRx/demo
 BugReports: http://github.com/cpsievert/pitchRx/issues
