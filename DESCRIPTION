@@ -1,24 +1,23 @@
 Package: pitchRx
-Title: Tools for Collecting and Visualizing Major League Baseball
-    PITCHfx Data
+Title: Tools for Scraping XML Data and Visualizing Major League Baseball PITCHf/x
 Version: 1.0
 Author: Carson Sievert <sievert@iastate.edu>
 Maintainer: Carson Sievert <sievert@iastate.edu>
-Description: Tools for Collecting and Visualizing Major League Baseball
-    PITCHfx Data
+Description: Tools for Scraping XML Data and Visualizing Major League Baseball PITCHf/x
 License: MIT + file LICENSE
 Depends:
     R (>= 2.15.1),
     ggplot2 (>= 0.9.3)
 Imports:
     XML2R,
+    plyr,
     MASS,
     hexbin,
+    rgl,
+    mgcv,
     lubridate
 Suggests:
     knitr,
-    rgl,
-    mgcv,
     parallel,
     animation,
     shiny,

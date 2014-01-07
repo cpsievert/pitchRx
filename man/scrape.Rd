@@ -56,6 +56,10 @@ dat <- scrape(start = "2012-05-01", end = "2012-05-01",
 data(gids)
 dat <- scrape(gids=gids[grep("2012_05_01", gids)], suffix=files)
 
+#scrape data from Minnesota Twins 2011 season
+twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
+dat <- scrape(gids=twins11, suffix=files)
+
 }
 }
 \seealso{

@@ -1,6 +1,6 @@
 #' Scrape Major League Baseball's PITCHf/x Data
 #'
-#' \textbf{This function is deprecated as of version 1.0}
+#' This function is deprecated as of version 1.0
 #'
 #' This function is a wrapper around \link{urlsToDataFrame} which increases convenience for scraping PITCHf/x directly from XML files.
 #'
@@ -29,14 +29,14 @@
 #' rm(data12)
 #' # (4) Repeat (1)-(3) for 2011, 2010, 2009 & 2008}
 
-scrapeFX <- function(start, end, tables = list(atbat = fields$atbat, pitch = fields$pitch)) { 
+scrapeFX <- function(start, end, tables = list()) { 
   message("scrapeFX is deprecated as of version 1.0. Please see ?scrapeGames.")
   return(NULL)
 }
 
 #' Parse XML files into data frame(s)
 #' 
-#' \textbf{This function is deprecated as of version 1.0}
+#' This function is deprecated as of version 1.0
 #' 
 #' This function takes on a list of XML files (ie, urls) and shapes them into a data frame or list of data frames
 #' 

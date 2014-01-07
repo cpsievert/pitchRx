@@ -2,8 +2,7 @@
 \alias{scrapeFX}
 \title{Scrape Major League Baseball's PITCHf/x Data}
 \usage{
-  scrapeFX(start, end,
-    tables = list(atbat = fields$atbat, pitch = fields$pitch))
+  scrapeFX(start, end, tables = list())
 }
 \arguments{
   \item{start}{date "yyyy-mm-dd" to commence scraping of
@@ -22,7 +21,7 @@
   relevant to each atbat.
 }
 \description{
-  \textbf{This function is deprecated as of version 1.0}
+  This function is deprecated as of version 1.0
 }
 \details{
   This function is a wrapper around \link{urlsToDataFrame}

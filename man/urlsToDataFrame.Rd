@@ -24,7 +24,7 @@
   Otherwise, it returns a list of data frames.
 }
 \description{
-  \textbf{This function is deprecated as of version 1.0}
+  This function is deprecated as of version 1.0
 }
 \details{
   This function takes on a list of XML files (ie, urls) and
