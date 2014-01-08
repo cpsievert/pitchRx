@@ -5,7 +5,7 @@
 #' 
 #' If values for \code{start} and \code{end} are supplied, then only relevant directories will be considered. For example,
 #' if \code{start="2011-04-04"} and \code{end="2011-04-05"}, then only files under the \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/}
-#' and \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_05/} will be considered. When \code{start} and \end{end} are supplied and \code{gids = "infer"},
+#' and \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_05/} will be considered. When \code{start} and \code{end} are supplied and \code{gids = "infer"},
 #' \code{scrape} will append relevant gameday_links to urls. For example, \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/}
 #' would be one of many games played on April 4th 2011.
 #' 

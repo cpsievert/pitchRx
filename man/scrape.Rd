@@ -36,7 +36,7 @@ example, if \code{start="2011-04-04"} and
 \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/}
 and
 \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_05/}
-will be considered. When \code{start} and \end{end} are
+will be considered. When \code{start} and \code{end} are
 supplied and \code{gids = "infer"}, \code{scrape} will
 append relevant gameday_links to urls. For example,
 \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/}
