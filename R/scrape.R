@@ -3,7 +3,7 @@
 #' Function for obtaining PITCHf/x and other related Gameday Data. In theory, this function is able 
 #' to extract data from any XML file under the "home" Gameday directory -- \url{http://gd2.mlb.com/components/game/mlb/}.
 #' 
-#' If values for \code{start} and \end{end} are supplied, then only relevant directories will be considered. For example,
+#' If values for \code{start} and \code{end} are supplied, then only relevant directories will be considered. For example,
 #' if \code{start="2011-04-04"} and \code{end="2011-04-05"}, then only files under the \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/}
 #' and \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_05/} will be considered. When \code{start} and \end{end} are supplied and \code{gids = "infer"},
 #' \code{scrape} will append relevant gameday_links to urls. For example, \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/}
@@ -45,9 +45,9 @@
 #' dat3 <- scrape(start = "2012-05-01", end = "2012-05-01", 
 #'                    suffix = files)
 #' 
-#' #scrape data from Minnesota Twins 2011 season
+#' #scrape PITCHf/x from Minnesota Twins 2011 season
 #' twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
-#' dat <- scrape(gids=twins11, suffix = files)
+#' dat <- scrape(game.ids=twins11)
 #' 
 #' }
 #' 
