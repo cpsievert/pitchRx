@@ -2,13 +2,17 @@
 
 MAJOR CHANGES
 
-  - scrapeFX() is now deprecated. Please use the scrape() function instead. The function is built upon the R package XML2R. This change will have many benefits including: 
+  - scrapeFX() is now deprecated. Please use the scrape() function instead. The function is built upon the R package XML2R. 
 
-    (1) More flexibility in scraping ability. Essentially anything on the Gameday website is fair game with scrape() - see help page for details. 
-    (2) One may now scrape for particular game(s) of interest using the gids option.
-    (2) "Average" users should still find it simple to use.
-    (4) Better management of variable types.
-    (5) No longer a good use for the memory hog data(urls) or data(fields). Instead, Gameday IDs - data(gids) - will help drive the construction of urls.
+MAJOR IMPROVEMENTS
+
+    (1) Much, much easier to maintain and add support for new file types. scrape() currently supports four types of files: inning_all.xml, inning_hit.xml, miniscoreboard.xml, and players.xml. 
+    (2) One may now scrape for particular game(s) of interest using the game.ids option.
+    (3) Faster run-time and better memory management.
+    (4) The new function makeUrls() and the unified XML2R framework make building custom scrapers much easier.
+    (5) The memory hogs data(urls) or data(fields) are no longer included. Instead, Gameday IDs - data(gids) - will help drive the construction of urls.
+    (6) "Average" users should still find scrape() very easy to use.
+    (7) Better management of variable types of returned data.
 
 MINOR FIXES
 
