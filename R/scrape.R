@@ -11,20 +11,19 @@
 #' 
 #' This function has special handling for files ending with:
 #' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/players.xml}{players.xml},
-#' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}{miniscoreboard.xml} and
-#' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/inning/inning_all.xml}{inning/inning_all.xml}. 
-#' For other files, this function essentially just calls \code{XML2R::XML2Obs} then \code{XML2R::collapse} after constructing the proper file names. 
-#' As a result, information in the structure of the data may be lost. If this is the case, the user should see 
-#' utilities from the \code{XML2R} package
+#' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}{miniscoreboard.xml},
+#' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/inning/inning_all.xml}{inning/inning_all.xml}, and
+#'  \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/inning/inning_hit.xml}{inning/inning_hit.xml}
 #' 
 #' 
 #' @param start date "yyyy-mm-dd" to commence scraping.
 #' @param end date "yyyy-mm-dd" to terminate scraping.
 #' @param game.ids character vector of gameday_links. If this option is used, \code{start} and \code{end} are ignored. 
 #' See \code{data(gids)} for examples.
-#' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are: "inning_all.xml", "inning_hit.xml", ""
+#' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are: 
+#' 'players.xml', 'miniscoreboard.xml', 'inning_all.xml', 'inning_hit.xml'
 #' @param ... options passed onto \code{XML2R::XML2Obs}
-#' @seealso \link{XML2R::XML2Obs}
+#' @seealso \code{XML2R::XML2Obs}
 #' @return Returns a list of tables.
 #' @export
 #' @import XML2R
@@ -37,13 +36,23 @@
 #' 
 #' # OR, equivalently, use the gids option
 #' data(gids)
-#' dat2 <- scrape(gids=gids[grep("2012_05_01", gids)])
+#' dat2 <- scrape(game.ids=gids[grep("2012_05_01", gids)])
+#' 
+#' #Create SQLite database and copy game table using dplyr
+#' library(dplyr)
+#' my_db <- src_sqlite("my_db.sqlite3", create=T)
+#' copy_to(my_db, dat2$game, temporary = FALSE)
+#' games <- 
+#' games
+#' 
+#' 
 #'                    
 #' # Collect PITCHf/x and other supporting information which scrape() will format nicely
 #' files <- c("inning/inning_all.xml", "inning/inning_hit.xml",
 #'              "miniscoreboard.xml", "players.xml")
 #' dat3 <- scrape(start = "2012-05-01", end = "2012-05-01", 
 #'                    suffix = files)
+#'                    
 #' 
 #' #scrape PITCHf/x from Minnesota Twins 2011 season
 #' twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
@@ -53,7 +62,13 @@
 #' 
 
 scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", ...) { 
-  #check for valid inputs
+  #check for required packages if writing to database
+#   if (RSQLite) {
+#     # Is RSQLite.extfuns needed?
+#     ok <- require(DBI) && require(RSQLite) #& require(RSQLite.extfuns)
+#     if (!ok) stop("You will need to install the following packages to automatically write to SQLite database: 'DBI' and 'RSQLite'")
+#   }
+  #check for valid file inputs
   valid.suffix <- c("inning/inning_all.xml", "inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
   if (!all(suffix %in% valid.suffix)) {
     warning("Currently supported file suffix are: 'inning/inning_all.xml', 'inning/inning_hit.xml', 'miniscoreboard.xml', and 'players.xml'")
@@ -65,20 +80,27 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", ...) 
     if (!all(grepl("gid_", game.ids))) warning("Any Game IDs supplied to the gids option should be of the form gid_YYYY_MM_DD_xxxmlb_zzzmlb_1")
     gameDir <- makeUrls(gids=game.ids)
   }
-  
-  #initiate master list of tables
-  master.list <- list(NULL) 
+
   #scrape scoreboards first since the "game" node clashes with other files
   if (any(grepl("miniscoreboard.xml", suffix))) {
     dayDir <- unique(gsub("/gid_.*", "", gameDir))
     scoreboards <- paste0(dayDir, "/miniscoreboard.xml")
     obs <- XML2Obs(scoreboards, as.equiv=TRUE, url.map=FALSE)
-    # Only attributes of "game" element is kept since everything else isn't inherently useful.
-    tables <- collapse(obs) #two tables
-    game <- format.game(tables[["games//game"]])
+    nms <- names(obs)
+    #simplify names
+    nms <- gsub("^games//game//game_media//media$", "media", nms)
+    nms <- gsub("^games//game$", "game", nms)
+    obs <- setNames(obs, nms)
+    #"games" observations are not informative -- no longer need them
+    game.idx <- grep("^games$", nms)
+    if (length(game.idx) > 0) obs <- obs[-game.idx] 
+    tables <- collapse_obs(obs) #two tables
+    #format turns matrix into data frame
+    game <- format.game(tables[["game"]])
     game$url_scoreboard <- game$url
     game$url <- paste0(gsub("miniscoreboard.xml", "", game$url), "gid_", game$gameday_link, "/inning/inning_all.xml")
-    master.list[["game"]] <- game
+    tables[["game"]] <- game
+    #write to database then remove tables?
   }
   
   #scrape player files next since the "game" node clashes with inning_all.xml
@@ -86,72 +108,84 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", ...) 
     player.files <- paste0(gameDir, "/players.xml")
     #selects all the child nodes of the game element (info in game node can be linked back to scoreboards)
     obs <- XML2Obs(player.files, as.equiv=TRUE, url.map=FALSE)
-    obs <- add_key(obs, parent="game//team", key.name="key_name", quiet=TRUE)
-    tables <- collapse(obs) 
-    #In order to easily identify which team a player/coach was on, we merge info on team level with player/coach level
-    #Note 'id' field on team level conflicts with 'id' field on player level (it isn't really needed anyway)
-    team <- tables[["game//team"]]
-    id <- grep("id", colnames(team))
-    if (length(id) > 0) team <- team[, -id] 
-    player <- merged(x=tables[["game//team//player"]], y=team, by=c("url", "key_name"))
-    coach <- merged(x=tables[["game//team//coach"]], y=team, by=c("url", "key_name"))
-    #no longer need 'key_name'
-    player <- player[, -grep("key_name", names(player), fixed=TRUE)]
-    coach <- coach[, -grep("key_name", names(coach), fixed=TRUE)]
-    master.list[["player"]] <- format.player(player)
-    master.list[["coach"]] <- format.coach(coach)
-    master.list[["umpire"]] <- format.umpire(tables[["game//umpires//umpire"]])
+    #recycle information on the team level (there are two per file)
+    obs <- add_key(obs, parent="game//team", recycle="id", key.name="name_abbrev", quiet=TRUE)
+    obs <- add_key(obs, parent="game//team", recycle="type", quiet=TRUE)
+    obs <- add_key(obs, parent="game//team", recycle="name", quiet=TRUE)
+    nms <- names(obs)
+    #simplify names
+    nms <- gsub("^game//team//player$", "player", nms)
+    nms <- gsub("^game//team//coach$", "coach", nms)
+    nms <- gsub("^game//umpires//umpire$", "umpire", nms)
+    obs <- setNames(obs, nms)
+    #no longer need the 'game' and 'game//team' observations
+    game.idx <- grep("game", nms)
+    if (length(game.idx) > 0) obs <- obs[-game.idx]
+    if (exists("tables")){
+      tables <- c(tables, collapse_obs(obs))
+    } else {
+      tables <- collapse_obs(obs)
+    }
+    tables[["player"]] <- format.player(tables[["player"]])
+    tables[["coach"]] <- format.coach(tables[["coach"]])
+    tables[["umpire"]] <- format.umpire(tables[["umpire"]])
+    #write to database then remove tables?
   }
   
   #Now scrape the inning/inning_hit.xml files
   if (any(grepl("inning/inning_hit.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_hit.xml")
     obs <- XML2Obs(inning.files, as.equiv=TRUE, url.map=FALSE)
-    hip <- collapse(obs)
-    master.list[["hip"]] <- format.hip(hip)
+    if (exists("tables")){
+      tables <- c(tables, list(hip=collapse_obs(obs))) #only one table
+    } else {
+      tables <- collapse_obs(obs)
+    }
+    tables[["hip"]] <- format.hip(tables[["hip"]])
+    #write to database then remove tables?
   }
   
   #Now scrape the inning/inning_all.xml files
   if (any(grepl("inning/inning_all.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_all.xml")
-    obs <- XML2Obs(inning.files, as.equiv=FALSE, url.map=FALSE)
+    obs <- XML2Obs(inning.files, as.equiv=TRUE, url.map=FALSE)
     nms <- names(obs)
-    #extract the url prefix from observation names (will need this later when generating keys)
-    #idea from http://stackoverflow.com/questions/2192316/extract-a-regular-expression-match-in-r-version-2-10
-    exprs <- regexpr("url[0-9]+", nms)
-    urlz <- substr(nms, exprs, exprs + attr(exprs, "match.length")-1)
-    #"equivalent" levels of observations to be used for renaming
-    action.eq <- c("game//inning//top//action", "game//inning//bottom//action")
-    atbat.eq <- c("game//inning//top//atbat", "game//inning//bottom//atbat")
-    pitch.eq <- c("game//inning//top//atbat//pitch", "game//inning//bottom//atbat//pitch")
-    po.eq <- c("game//inning//top//atbat//po", "game//inning//bottom//atbat//po")
-    runner.eq <- c("game//inning//top//atbat//runner", "game//inning//bottom//atbat//runner")
-    #Ignore the urls when renaming observations
-    names(obs) <- gsub("url[0-9]+//", "", nms)
-    #use namez arg here to speed things up?
-    obs <- re_name(obs, equiv=action.eq, diff.name="top_inning", quiet=TRUE)
-    obs <- re_name(obs, equiv=atbat.eq, diff.name="top_inning", quiet=TRUE)
-    obs <- re_name(obs, equiv=pitch.eq, diff.name="top_inning", quiet=TRUE)
-    obs <- re_name(obs, equiv=po.eq, diff.name="top_inning", quiet=TRUE)
-    obs <- re_name(obs, equiv=runner.eq, diff.name="top_inning", quiet=TRUE)
-    #have to generate keys for each game individually (otherwise keys will keep incrementing - and we dont want inning=143!!!)
-    obswkey <- NULL
-    for (i in unique(urlz)){
-      current.obs <- obs[urlz == i]
-      #warnings will thrown for non inning_all.xml files, but that's OK
-      current.obs <- suppressWarnings(add_key(current.obs, parent="game//inning", key.name = "inning", quiet=TRUE))
-      current.obs <- suppressWarnings(add_key(current.obs, parent="game//inning//atbat", key.name = "num", quiet=TRUE))
-      obswkey <- c(obswkey, current.obs)
+    obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch", 
+                                "game//inning//bottom//atbat//pitch"), diff.name="top_inning", quiet=TRUE) 
+    obs <- re_name(obs, equiv=c("game//inning//top//atbat//runner", 
+                                "game//inning//bottom//atbat//runner"), diff.name="top_inning", quiet=TRUE)   
+    obs <- re_name(obs, equiv=c("game//inning//top//atbat//po", 
+                                "game//inning//bottom//atbat//po"), diff.name="top_inning", quiet=TRUE) 
+    obs <- re_name(obs, equiv=c("game//inning//top//atbat", 
+                                "game//inning//bottom//atbat"), diff.name="top_inning", quiet=TRUE) 
+    obs <- re_name(obs, equiv=c("game//inning//top//action", 
+                                 "game//inning//bottom//action"), diff.name="top_inning", quiet=TRUE) 
+    obs <- add_key(obs, parent="game//inning", recycle="num", key.name="inning", quiet=TRUE) 
+    obs <- add_key(obs, parent="game//inning", recycle="next", quiet=TRUE)
+    obs <- add_key(obs, parent="game//inning//atbat", recycle="num", quiet=TRUE)
+    #no longer need the 'game' and 'game//team' observations
+    nms <- names(obs)
+    rm.idx <- c(grep("^game$", nms), grep("^game//inning$", nms))
+    if (length(rm.idx) > 0) obs <- obs[-rm.idx]
+    if (exists("tables")){
+      tables <- c(tables, collapse_obs(obs))
+    } else {
+      tables <- collapse_obs(obs)
     }
     #Free up some memory
     rm(obs)
-    #poor attempt to vectorize key generation
-    #obs <- tapply(obs, INDEX=urlz, add_key, parent="game//inning", key.name = "inning")
-    #obs <- tapply(obs, INDEX=urlz, function(x) add_key(x, parent="game//inning//atbat", key.name = "num"))
-    tables <- collapse(obswkey)
-    pitch <- appendPitchCount(tables[[grep("pitch", names(tables), fixed=TRUE)]])
-    atbat <- tables[["game//inning//atbat"]] #grep would have several matches here
-    
+    #simplify table names
+    tab.nms <- names(tables)
+    tab.nms <- gsub("^game//inning//action$", "action", tab.nms)
+    tab.nms <- gsub("^game//inning//atbat$", "atbat", tab.nms)
+    tab.nms <- gsub("^game//inning//atbat//po$", "po", tab.nms)
+    tab.nms <- gsub("^game//inning//atbat//runner$", "runner", tab.nms)
+    tab.nms <- gsub("^game//inning//atbat//pitch$", "pitch", tab.nms)
+    tables <- setNames(tables, tab.nms)
+
+    #generate a "count" column from "b" (balls) & "s" (strikes)
+    pitch <- appendPitchCount(tables[["pitch"]])
+    atbat <- tables[["atbat"]]
     #Add batter name to 'atbats'
     scrape.env <- environment() #avoids bringing data objects into global environment
     data(players, package="pitchRx", envir=scrape.env)
@@ -160,34 +194,22 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", ...) 
     atbat <- merged(x=atbat, y=players, by = "id")
     colnames(atbat) <- gsub("id", "batter", colnames(atbat))
     colnames(atbat) <- gsub("full_name", "batter_name", colnames(atbat))
-    
     #Add pitcher name to 'atbats'
     colnames(atbat) <- gsub("pitcher", "id", colnames(atbat))
     atbat <- merged(x=atbat, y=players, by = "id")
     colnames(atbat) <- gsub("id", "pitcher", colnames(atbat))
     colnames(atbat) <- gsub("full_name", "pitcher_name", colnames(atbat))
     colnames(atbat) <- gsub("des", "atbat_des", colnames(atbat))
-    
     #Note that we can ignore "game" and "game//inning"
-    master.list[["action"]] <- format.action(tables[[grep("action", names(tables), fixed=TRUE)]])
-    master.list[["po"]] <- format.po(tables[[grep("po", names(tables), fixed=TRUE)]])
-    master.list[["runner"]] <- format.runner(tables[[grep("runner", names(tables), fixed=TRUE)]])
-    master.list[["atbat"]] <- format.atbat(atbat)
-    master.list[["pitch"]] <- format.pitch(pitch)
+    tables[["action"]] <- format.action(tables[["action"]])
+    tables[["po"]] <- format.po(tables[["po"]])
+    tables[["runner"]] <- format.runner(tables[["runner"]])
+    tables[["atbat"]] <- format.atbat(atbat)
+    tables[["pitch"]] <- format.pitch(pitch)
+    #write to database then remove tables?
   }
-#   #Scrape any left-over files in a general way (good idea?)
-#   if (length(file.names) > 0) {
-#     obs <- XML2Obs(file.names, ...)
-#     tables <- collapse(obs)
-#     un <- unique(names(obs))
-#     if (length(un) == 2) {
-#       master.list[[un[1]]] <- tables
-#     } else {
-#       master.list <- append(master.list, tables)
-#     }
-#   }
-  #return non-null elements of master.list
-  return(master.list[-(which(sapply(master.list, is.null), arr.ind=TRUE))]) 
+  #only if NOT writing to database?
+  return(tables)
 }
 
 #' Construct Gameday urls based on some parameters.
@@ -254,7 +276,7 @@ updateGids <- function(last.date, end) {
   scoreboards <- paste0(makeUrls(start=last.date, end=end, gids=""), "/miniscoreboard.xml")
   obs <- XML2Obs(scoreboards, xpath="//game[@gameday_link]")
   obs2 <- suppressMessages(rename(obs, names(obs)))
-  dat <- XML2R::collapse(obs2)
+  dat <- XML2R::collapse_obs(obs2)
   gids <- dat[,"gameday_link"]
   return(gids[!is.na(gids)])
 }

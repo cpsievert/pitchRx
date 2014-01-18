@@ -15,7 +15,8 @@ scrape(start, end, game.ids, suffix = "inning/inning_all.xml", ...)
 
   \item{suffix}{character vector with suffix of the XML
   files to be parsed. Currently supported options are:
-  "inning_all.xml", "inning_hit.xml", ""}
+  'players.xml', 'miniscoreboard.xml', 'inning_all.xml',
+  'inning_hit.xml'}
 
   \item{...}{options passed onto \code{XML2R::XML2Obs}}
 }
@@ -44,15 +45,10 @@ would be one of many games played on April 4th 2011.
 
 This function has special handling for files ending with:
 \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/players.xml}{players.xml},
-\href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}{miniscoreboard.xml}
+\href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}{miniscoreboard.xml},
+\href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/inning/inning_all.xml}{inning/inning_all.xml},
 and
-\href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/inning/inning_all.xml}{inning/inning_all.xml}.
-For other files, this function essentially just calls
-\code{XML2R::XML2Obs} then \code{XML2R::collapse} after
-constructing the proper file names. As a result,
-information in the structure of the data may be lost. If
-this is the case, the user should see utilities from the
-\code{XML2R} package
+\href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/inning/inning_hit.xml}{inning/inning_hit.xml}
 }
 \examples{
 \dontrun{
@@ -63,11 +59,21 @@ dat <- scrape(start = "2013-08-01", end = "2013-08-01")
 data(gids)
 dat2 <- scrape(gids=gids[grep("2012_05_01", gids)])
 
+#Create SQLite database and copy game table using dplyr
+library(dplyr)
+my_db <- src_sqlite("my_db.sqlite3", create=T)
+copy_to(my_db, dat2$game, temporary = FALSE)
+games <-
+games
+
+
+
 # Collect PITCHf/x and other supporting information which scrape() will format nicely
 files <- c("inning/inning_all.xml", "inning/inning_hit.xml",
              "miniscoreboard.xml", "players.xml")
 dat3 <- scrape(start = "2012-05-01", end = "2012-05-01",
                    suffix = files)
+
 
 #scrape PITCHf/x from Minnesota Twins 2011 season
 twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
@@ -76,6 +82,6 @@ dat <- scrape(game.ids=twins11)
 }
 }
 \seealso{
-\link{XML2R::XML2Obs}
+\code{XML2R::XML2Obs}
 }
 

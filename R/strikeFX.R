@@ -30,9 +30,18 @@
 #' @importFrom MASS kde2d
 #' @examples
 #' data(pitches)
-#' p <- strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
-#' p+theme(aspect.ratio=1)
+#' 
+#' strikeFX(pitches)
 #' \dontrun{
+#' strikeFX(pitches, layer=facet_grid(.~stand))
+#'  #silly example on how to modify default settings and add layers
+#'  strikeFX(pitches, color="", layer=facet_grid(s~stand))+
+#'  geom_point(aes(x=px, y=pz, shape=pitch_types))+ #you could add color here
+#'  geom_text(aes(x=px+0.5, y=pz, label=b)) 
+#'  
+#'  p <- strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
+#'  p+theme(aspect.ratio=1)
+#' 
 #' strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), 
 #'          draw_zones=FALSE, contour=TRUE, layer=facet_grid(.~stand))
 #'          

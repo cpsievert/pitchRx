@@ -11,7 +11,7 @@ Depends:
     R (>= 2.15.1),
     ggplot2 (>= 0.9.3)
 Imports:
-    XML2R,
+    XML2R (>= 0.0.4),
     plyr,
     MASS,
     hexbin,
@@ -19,6 +19,9 @@ Imports:
     mgcv,
     lubridate
 Suggests:
+    RSQLite,
+    DBI,
+    dplyr,
     knitr,
     parallel,
     animation,
@@ -27,5 +30,5 @@ Suggests:
     testthat (>= 0.7.1.99)
 Date: 2013-11-13
 LazyData: true
-URL: http://cpsievert.github.com/pitchRx/demo
+URL: http://cpsievert.github.com/pitchRx
 BugReports: http://github.com/cpsievert/pitchRx/issues
