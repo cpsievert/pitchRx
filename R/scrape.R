@@ -33,7 +33,6 @@
 #' \dontrun{
 #' # Collect PITCHf/x (and other data from inning_all.xml files) from May 1st, 2012
 #' dat <- scrape(start = "2013-08-01", end = "2013-08-01")
-#' 
 #' # OR, equivalently, use the gids option
 #' data(gids)
 #' dat2 <- scrape(game.ids=gids[grep("2012_05_01", gids)])
@@ -41,19 +40,24 @@
 #' #Create SQLite database and copy game table using dplyr
 #' library(dplyr)
 #' my_db <- src_sqlite("my_db.sqlite3", create=T)
-#' copy_to(my_db, dat2$game, temporary = FALSE)
-#' games <- 
-#' games
+#' copy_to(my_db, dat2$pitch, name="pitches", temporary = FALSE)
+#' copy_to(my_db, dat2$atbat, name="atbats", temporary = FALSE)
+#' copy_to(my_db, dat2$action, name="actions", temporary = FALSE)
+#' copy_to(my_db, dat2$po, name="pos", temporary = FALSE)
+#' copy_to(my_db, dat2$runner, name="runners", temporary = FALSE)
+#' 
+#' #simple example of a common query
+#' pit <- inner_join(tbl(my_db, "pitches"), tbl(my_db, "atbats"))
+#' pit$query #analyze query (do you really want all these columns?)
+#' pitchfx <- collect(pit) #submit query and bring data into R
 #' 
 #' 
-#'                    
 #' # Collect PITCHf/x and other supporting information which scrape() will format nicely
 #' files <- c("inning/inning_all.xml", "inning/inning_hit.xml",
 #'              "miniscoreboard.xml", "players.xml")
 #' dat3 <- scrape(start = "2012-05-01", end = "2012-05-01", 
 #'                    suffix = files)
 #'                    
-#' 
 #' #scrape PITCHf/x from Minnesota Twins 2011 season
 #' twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
 #' dat <- scrape(game.ids=twins11)
