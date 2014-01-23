@@ -2,7 +2,7 @@
 \alias{scrape}
 \title{Scrape Major League Baseball's Gameday Data}
 \usage{
-scrape(start, end, game.ids, suffix = "inning/inning_all.xml", ...)
+scrape(start, end, game.ids, suffix = "inning/inning_all.xml", connect)
 }
 \arguments{
   \item{start}{date "yyyy-mm-dd" to commence scraping.}
@@ -11,39 +11,48 @@ scrape(start, end, game.ids, suffix = "inning/inning_all.xml", ...)
 
   \item{game.ids}{character vector of gameday_links. If
   this option is used, \code{start} and \code{end} are
-  ignored. See \code{data(gids)} for examples.}
+  ignored. See \code{data(gids, package="pitchRx")} for
+  examples.}
 
   \item{suffix}{character vector with suffix of the XML
   files to be parsed. Currently supported options are:
   'players.xml', 'miniscoreboard.xml', 'inning_all.xml',
-  'inning_hit.xml'}
+  'inning_hit.xml'.}
 
-  \item{...}{options passed onto \code{XML2R::XML2Obs}}
+  \item{connect}{A database connection object. The class of
+  the object should be "MySQLConnection" or
+  "SQLiteConnection". If a valid connection is supplied,
+  tables will be copied to the database, which will result
+  in better memory management. If a connection is supplied,
+  but the connection fails for some reason, csv files will
+  be written to the working directory.}
 }
 \value{
-Returns a list of tables.
+Returns a list of data frames.
 }
 \description{
 Function for obtaining PITCHf/x and other related Gameday
-Data. In theory, this function is able to extract data from
-any XML file under the "home" Gameday directory --
-\url{http://gd2.mlb.com/components/game/mlb/}.
-}
-\details{
-If values for \code{start} and \code{end} are supplied,
-then only relevant directories will be considered. For
-example, if \code{start="2011-04-04"} and
-\code{end="2011-04-05"}, then only files under the
+Data. If values for \code{start} and \code{end} are
+supplied, then only relevant directories will be
+considered. For example, if \code{start="2011-04-04"} and
+\code{end="2011-04-05"}, then files under the
 \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/}
 and
 \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_05/}
-will be considered. When \code{start} and \code{end} are
-supplied and \code{gids = "infer"}, \code{scrape} will
-append relevant gameday_links to urls. For example,
+homepages will be considered. When \code{start} and
+\code{end} are supplied, \code{scrape} will automatically
+find and append necessary gameday_links to urls. For
+example,
 \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/}
 would be one of many games played on April 4th 2011.
+}
+\details{
+On the other hand, the \code{game.ids} argument allows one
+to query specific games rather than all games within a
+window of dates.
 
-This function has special handling for files ending with:
+This function (currently) has special handling for files
+ending with:
 \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/players.xml}{players.xml},
 \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}{miniscoreboard.xml},
 \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/inning/inning_all.xml}{inning/inning_all.xml},
@@ -58,14 +67,10 @@ dat <- scrape(start = "2013-08-01", end = "2013-08-01")
 data(gids)
 dat2 <- scrape(game.ids=gids[grep("2012_05_01", gids)])
 
-#Create SQLite database and copy game table using dplyr
+#Create SQLite database, then collect and store data in that database
 library(dplyr)
 my_db <- src_sqlite("my_db.sqlite3", create=T)
-copy_to(my_db, dat2$pitch, name="pitches", temporary = FALSE)
-copy_to(my_db, dat2$atbat, name="atbats", temporary = FALSE)
-copy_to(my_db, dat2$action, name="actions", temporary = FALSE)
-copy_to(my_db, dat2$po, name="pos", temporary = FALSE)
-copy_to(my_db, dat2$runner, name="runners", temporary = FALSE)
+scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con)
 
 #simple example of a common query
 pit <- inner_join(tbl(my_db, "pitches"), tbl(my_db, "atbats"))

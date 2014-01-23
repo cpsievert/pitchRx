@@ -2,25 +2,30 @@
 
 MAJOR CHANGES
 
-  - scrapeFX() is now deprecated. Please use the scrape() function instead. The function is built upon the R package XML2R. 
+  - scrapeFX() is now deprecated. Please use the scrape() function instead. The function is built upon the R package XML2R. This will lead to many improvements:
 
 MAJOR IMPROVEMENTS
 
-    (1) Much, much easier to maintain and add support for new file types. scrape() currently supports four types of files: inning_all.xml, inning_hit.xml, miniscoreboard.xml, and players.xml. 
-    (2) One may now scrape for particular game(s) of interest using the game.ids option.
-    (3) Faster run-time and better memory management.
+    (1) Easily write tables to a remote database using scrape()'s connect argument. This will lead to both better memory management and faster run-time.
+    (2) Much, much easier to maintain and add support for new file types. scrape() currently supports four types of files: inning_all.xml, inning_hit.xml, miniscoreboard.xml, and players.xml. 
+    (3) Query particular game(s) of interest using the game.ids option.
     (4) The new function makeUrls() and the unified XML2R framework make building custom scrapers much easier.
     (5) The memory hogs data(urls) or data(fields) are no longer included. Instead, Gameday IDs - data(gids) - will help drive the construction of urls.
     (6) "Average" users should still find scrape() very easy to use.
-    (7) Better management of variable types of returned data.
+    (7) Better management of variable types.
+
+MINOR CHANGES
+
+  - The variable "top_inning" in the "atbat" table was changed to "inning_side" and will now contain values of "top" or "bottom" (instead of "Y" or "N").
+
+  - The default value for the limitz opiton for strikeFX was changed from c(-2.5, 2.5, 0, 5) to limitz=c(-2, 2, 0.5, 4.5). This eliminates some un-interesting white-space in many cases.
+
+  - geom="ggsubplot" is working again now that CRAN is happy with the ggsubplot package.
 
 MINOR FIXES
 
   - Better handling of model option in strikeFX (fixed a couple bugs). Also, added messages to let user know about conditioning.
 
-  - geom="ggsubplot" is working again now that CRAN is happy with the ggsubplot package.
-
-  - The default value for the limitz opiton for strikeFX was changed from c(-2.5, 2.5, 0, 5) to limitz=c(-2, 2, 0.5, 4.5). This eliminates some un-interesting white-space in many cases.
 
     CHANGES IN pitchRx VERSION 0.7
 

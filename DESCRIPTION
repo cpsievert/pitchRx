@@ -19,11 +19,12 @@ Imports:
     mgcv,
     lubridate
 Suggests:
-    RSQLite,
     DBI,
     dplyr,
-    knitr,
+    RSQLite,
+    RSQLite.extfuns,
     parallel,
+    knitr,
     animation,
     shiny,
     ggsubplot,
