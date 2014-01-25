@@ -86,7 +86,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     #DBI::dbWriteTable method only works for these two classes
     valid.conn <- c("MySQLConnection", "SQLiteConnection")
     if (!class(connect) %in% valid.conn) warning("You need either a MySQLConnection or SQLiteConnection.")
-#SMART PREVENTION OF APPENDING DATA TWICE MIGHT GET MESSY (HOW DO I CHECK EVERY TYPE OF FILE IN A NICE WAY???)
+#SMART PREVENTION OF APPENDING SAME DATA MIGHT GET MESSY (HOW DO I CHECK EVERY TYPE OF FILE IN A NICE WAY???)
 #     DBTables <- dbListTables(connect)
 #     #should I try tables until this is non-empty?
 #     existing.urls <- gsub("/inning/inning_all.xml", "", 
@@ -114,10 +114,8 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     #Coerce matrices to data frames; turn appropriate variables into numerics
     tables[["game"]] <- format.game(tables[["game"]])
     tables[["media"]] <- data.frame(tables[["media"]])
-    #Try to write to database, 
     if (!missing(connect)) {
-#       game.success <- export(connect, value=game, name="games")
-#       media.success <- export(connect, value=media, name="medias")
+      #Try to write tables to database, if that fails, write to csv. Then clear up memory
       for (i in names(tables)) export(connect, name=i, value=tables[[i]])
       rm(obs)
       rm(tables)
@@ -154,10 +152,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     tables[["coach"]] <- format.coach(tables[["coach"]])
     tables[["umpire"]] <- format.umpire(tables[["umpire"]])
     if (!missing(connect)) {
-      #Try to write to database, if that fails, write csv. Then clear up memory
-#       player.success <- export(connect, value=tables[["player"]], name="players")
-#       umpire.success <- export(connect, value=tables[["umpires"]], name="umpires")
-#       coach.success <- export(connect, value=tables[["coaches"]], name="coaches")
+      #Try to write tables to database, if that fails, write to csv. Then clear up memory
       for (i in names(tables)) export(connect, name=i, value=tables[[i]])
       rm(obs)
       rm(tables)
@@ -191,7 +186,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   if (any(grepl("inning/inning_all.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_all.xml")
     #cap the number of files to be parsed at once (helps avoid exhausting memory)
-    cap <- 50
+    cap <- 100
     n.files <- length(inning.files)
     n.loops <- ceiling(n.files/cap)
     for (i in seq_len(n.loops)) {
@@ -209,7 +204,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       obs <- re_name(obs, equiv=c("game//inning//top//action", 
                                   "game//inning//bottom//action"), diff.name="inning_side", quiet=TRUE) 
       obs <- add_key(obs, parent="game//inning", recycle="num", key.name="inning", quiet=TRUE) 
-      obs <- add_key(obs, parent="game//inning", recycle="next", quiet=TRUE)
+      obs <- add_key(obs, parent="game//inning", recycle="next", key.name="inning_next", quiet=TRUE)
       #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
       names(obs) <- sub("^game//inning//action$", "game//inning//atbat//action", names(obs))
       obs <- add_key(obs, parent="game//inning//atbat", recycle="num", quiet=TRUE)
@@ -238,16 +233,16 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       scrape.env <- environment() #avoids bringing data objects into global environment
       data(players, package="pitchRx", envir=scrape.env)
       players$id <- as.character(players$id)
-      colnames(tables[["atbat"]]) <- gsub("batter", "id", colnames(tables[["atbat"]]))
+      colnames(tables[["atbat"]]) <- sub("^batter$", "id", colnames(tables[["atbat"]]))
       tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id")
-      colnames(tables[["atbat"]]) <- gsub("id", "batter", colnames(tables[["atbat"]]))
-      colnames(tables[["atbat"]]) <- gsub("full_name", "batter_name", colnames(tables[["atbat"]]))
+      colnames(tables[["atbat"]]) <- sub("^id$", "batter", colnames(tables[["atbat"]]))
+      colnames(tables[["atbat"]]) <- sub("^full_name$", "batter_name", colnames(tables[["atbat"]]))
       #Add pitcher name to 'atbats'
-      colnames(tables[["atbat"]]) <- gsub("pitcher", "id", colnames(tables[["atbat"]]))
+      colnames(tables[["atbat"]]) <- sub("^pitcher$", "id", colnames(tables[["atbat"]]))
       tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id")
-      colnames(tables[["atbat"]]) <- gsub("id", "pitcher", colnames(tables[["atbat"]]))
-      colnames(tables[["atbat"]]) <- gsub("full_name", "pitcher_name", colnames(tables[["atbat"]]))
-      colnames(tables[["atbat"]]) <- gsub("des", "atbat_des", colnames(tables[["atbat"]]))
+      colnames(tables[["atbat"]]) <- sub("^id$", "pitcher", colnames(tables[["atbat"]]))
+      colnames(tables[["atbat"]]) <- sub("^full_name$", "pitcher_name", colnames(tables[["atbat"]]))
+      colnames(tables[["atbat"]]) <- sub("^des", "atbat_des", colnames(tables[["atbat"]]))
       
       #Note that we can ignore "game" and "game//inning"
       tables[["action"]] <- format.action(tables[["action"]])
@@ -257,7 +252,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       #generate a "count" column from "b" (balls) & "s" (strikes)
       tables[["pitch"]] <- format.pitch(appendPitchCount(tables[["pitch"]]))
       if (!missing(connect)) {
-        #Try to write tables to database, if that fails, write csv. Then clear up memory
+        #Try to write tables to database, if that fails, write to csv. Then clear up memory
         for (i in names(tables)) export(connect, name=i, value=tables[[i]])
         rm(tables)
         message("Collecting garbage")
@@ -328,9 +323,24 @@ makeUrls <- function(start, end, gids="infer") {
 
 #Try to append table to an existing database and return FALSE if error
 export <- function(connect, name, value) {
-  #NOTE TO SELF: find complete list of fields and force tables to have that set (it's easier to append a smaller df to larger table -- fill with NAs b4 appending!)
-  #plyr::try_default(DBI::dbListFields(connect, name), default=FALSE, quiet=TRUE)
-  #res <- dbSendQuery(my_db$con, paste("SELECT * FROM", name, "LIMIT 1"))
+  env2 <- environment()
+  data(fields, package="pitchRx", envir=env2)
+  #Try to find fields in an existing table
+  prior.fields <- plyr::try_default(DBI::dbListFields(connect, name), default=NULL, quiet=TRUE)
+  current.fields <- names(value)
+  master.fields <- fields[[name]]
+  if (!is.null(prior.fields)) {
+    idx <- !master.fields %in% prior.fields
+    if (any(idx)) warning(paste("The", name, "table in your database has fewer fields than the suggested set of fields! You might want to try adding these fields to this table:", paste(master.fields[idx], collaspe=", ")))
+    new.fields <- prior.fields[!prior.fields %in% current.fields]  
+  } else {
+    new.fields <- master.fields[!master.fields %in% current.fields]    
+  }
+  #add any missing fields to value b4 trying to write to database
+  if (length(new.fields) > 0) {
+    new.mat <- matrix(rep(NA, length(new.fields)), nrow=1)
+    value <- cbind(value, `colnames<-`(new.mat, new.fields))
+  }
   success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, 
                                                  append=TRUE, overwrite=FALSE, row.names=FALSE), 
                                default=FALSE, quiet=TRUE)
@@ -341,7 +351,6 @@ export <- function(connect, name, value) {
     message(paste("Failed to copy", name, "table to database connection. Writing", file.name, "instead."))
     write.csv(value, file=file.name, row.names=FALSE)
   }
-  #rm(value, inherits=TRUE)
   return(success)
 }
 

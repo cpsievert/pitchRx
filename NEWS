@@ -10,7 +10,7 @@ MAJOR IMPROVEMENTS
     (2) Much, much easier to maintain and add support for new file types. scrape() currently supports four types of files: inning_all.xml, inning_hit.xml, miniscoreboard.xml, and players.xml. 
     (3) Query particular game(s) of interest using the game.ids option.
     (4) The new function makeUrls() and the unified XML2R framework make building custom scrapers much easier.
-    (5) The memory hogs data(urls) or data(fields) are no longer included. Instead, Gameday IDs - data(gids) - will help drive the construction of urls.
+    (5) The memory hog data(urls) is no longer included. Instead, Gameday IDs - data(gids) - will help drive the construction of urls. Also, data(fields) are now used a "master" list of fields to when writing tables to database.
     (6) "Average" users should still find scrape() very easy to use.
     (7) Better management of variable types.
 
