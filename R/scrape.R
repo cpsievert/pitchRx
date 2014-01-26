@@ -27,7 +27,6 @@
 #' @export
 #' @import XML2R
 #' @importFrom lubridate days
-#' @importFrom plyr try_default
 #' @examples
 #' \dontrun{
 #' # Collect PITCHf/x (and other data from inning_all.xml files) from May 1st, 2012
