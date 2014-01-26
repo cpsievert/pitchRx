@@ -70,7 +70,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
                    pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
                                  "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
                                  "Fastball", "Unknown", "Forkball"))
-    data <- join(data, types, by = "pitch_type", type="inner")
+    data <- plyr::join(data, types, by = "pitch_type", type="inner")
   } 
   if (!"b_height" %in% names(data)) {
     warning("pitchRx assumes the height of each batter is recorded as 'b_height'. Since there is no such column, we will assume each batter has a height of 6'2''")
@@ -97,7 +97,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
   } else {
     FX$pz_adj <- FX$pz # "adjusted" vert locations
   }
-  FX <- join(FX, boundaries[[2]], by="stand", type="inner")
+  FX <- plyr::join(FX, boundaries[[2]], by="stand", type="inner")
   for (i in locations) FX[,i] <- as.numeric(FX[,i])
   #Recycled plot formats
   labelz <- labs(x = "Horizontal Pitch Location", y = "Height from Ground")
@@ -288,7 +288,7 @@ plotDensity <- function(dens, bounds, contour, geom, ...){
       dens$stand <- c(rep("R", nhalf), rep("L", nhalf), "L")
     }
   }
-  dens.df <- suppressMessages(join(dens, bounds[[2]], type="inner")) #defaults to join "by" all common variables
+  dens.df <- suppressMessages(plyr::join(dens, bounds[[2]], type="inner")) #defaults to join "by" all common variables
   p <- ggplot(data=dens.df)
   if (geom %in% "hex") {
     p <- p + stat_summary_hex(aes(x=px, y=pz, z=z), ...)

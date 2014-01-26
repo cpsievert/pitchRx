@@ -19,6 +19,7 @@
 #' @param parent is the function being called from a higher-level function? (experimental)
 #' @param ... extra options passed onto geom commands
 #' @return Returns a series of ggplot2 objects.
+#' @import plyr
 #' @export
 #' @examples
 #' data(pitches)
@@ -41,7 +42,7 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
                      "Fastball", "Unknown", "Forkball")
     types <- data.frame(pitch_type=factor(pitch.type, levels=sort(pitch.type)),
                         pitch_types=factor(pitch.types, levels=sort(pitch.types)))
-    data <- join(data, types, by = "pitch_type", type="inner")
+    data <- plyr::join(data, types, by = "pitch_type", type="inner")
   } 
   if (!"b_height" %in% names(data)) {
     warning("pitchRx assumes the height of each batter is recorded as 'b_height'. Since there is no such column, we will assume each batter has a height of 6'2''")
@@ -66,7 +67,7 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
   color.exists <- isTRUE(color %in% c(names(data), "pitch_types"))
   if (!missing(avg.by)) { #Average PITCHf/x parameters for every unique combination of facet and avg.by variable(s)
     index <- c(facets, avg.by) 
-    reordered <- ddply(complete, index, numcolwise(mean))
+    reordered <- plyr::ddply(complete, index, numcolwise(mean))
     if (color.exists) {
       if (avg.by != color) {
         warning("You can't average by one variable and color by another!")
@@ -77,7 +78,7 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
     }
   } else {
     if (color.exists) { #Special aesthetic handling if coloring exists (Less prevalent cases are plotted last.)
-      reordered <- ddply(complete, facets, function(x) { #Does this do anything if facets is NULL?
+      reordered <- plyr::ddply(complete, facets, function(x) { #Does this do anything if facets is NULL?
         x[, color] <- reorder(x[, color], x[, color], length)
         x[rev(order(x[, color])), ]
       })
@@ -94,7 +95,7 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
   other <- reordered[, !(names(reordered) %in% idx)] #Keep 'other' variables for faceting/coloring
   boundaries <- getStrikezones(data, facets, strikeFX = FALSE) #Strikezone boundaries
   joinby <- unique(c("stand", facets))
-  other <- join(other, boundaries, by=joinby, type="inner")
+  other <- plyr::join(other, boundaries, by=joinby, type="inner")
   xrange <- xlim(limitz[1:2])
   yrange <- ylim(limitz[3:4])
   ctr <- 1 #Used to check whether or not batter has decided to swing
