@@ -342,15 +342,19 @@ export <- function(connect, name, value) {
     idx <- !master.fields %in% prior.fields
     if (any(idx)) warning(paste("The", name, "table in your database has fewer fields than the suggested set of fields! You might want to try adding these fields to this table:", paste(master.fields[idx], collaspe=", ")))
     new.fields <- prior.fields[!prior.fields %in% current.fields]
+    types <- NULL
   } else {
     new.fields <- master.fields[!master.fields %in% current.fields]
+    types <- fields[[name]]
   }
   #add any missing fields to value b4 trying to write to database
   if (length(new.fields) > 0) {
     new.mat <- matrix(rep(NA, length(new.fields)), nrow=1)
     value <- cbind(value, `colnames<-`(new.mat, new.fields))
+    #must have columns ordered same way
+    value <- value[master.fields]
   }
-  success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value,
+  success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, field.types=types,
                                                  append=TRUE, overwrite=FALSE, row.names=FALSE),
                                default=FALSE, quiet=TRUE)
   if (success) {
