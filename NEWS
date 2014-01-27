@@ -8,8 +8,8 @@ MAJOR IMPROVEMENTS
 
     (1) Easily write tables to a remote database using scrape()'s connect argument. This will lead to both better memory management and faster run-time.
     (2) Query particular game(s) of interest using the game.ids option.
-    (3) Much, much easier to maintain and add support for new file types. scrape() currently supports four types of files: inning_all.xml, inning_hit.xml, miniscoreboard.xml, and players.xml. 
-    (4) pitchRx will serve as a nice example of using the XML2R framework to build web scrapers. One example is the bbscrapeR package -- https://github.com/cpsievert/bbscrapeR
+    (3) Much, much easier to maintain and add support for new file types. scrape() currently supports four types of files: inning/inning_all.xml, inning/inning_hit.xml, miniscoreboard.xml, and players.xml. 
+    (4) pitchRx will serve as a nice example of using the XML2R framework to build web scrapers. Another example is the bbscrapeR package -- https://github.com/cpsievert/bbscrapeR
     (5) The memory hog data(urls) is no longer included. Instead, Gameday IDs - data(gids) - will help drive the construction of urls. Also, data(fields) are now used as the "master" list of fields to when writing tables to database.
     (6) "Average" users should still find scrape() very easy to use.
     (7) Better management of variable types.
