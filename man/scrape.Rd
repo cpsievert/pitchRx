@@ -40,19 +40,21 @@ with:
 \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/players.xml}{players.xml},
 or
 \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}{miniscoreboard.xml}.
-It's worth noting that inning/inning_all.xml is the file
-which contains PITCHf/x data, but the other files can
-complement this data depending on the goal for analysis.
-Any collection file names may be passed to the
+It's worth noting that PITCHf/x is contained in files
+ending with "inning/inning_all.xml", but the other files
+can complement this data depending on the goal for
+analysis. Any collection of file names may be passed to the
 \code{suffix} argument, and \code{scrape} will retrieve
 data from a (possibly large number) of files based on
-either a window of dates or a set of \code{game.ids}.
-}
-\details{
-If collecting data in bulk, it is strongly recommended that
+either a window of dates or a set of \code{game.ids}. If
+collecting data in bulk, it is strongly recommended that
 one establishes a database connection and supplies the
 connection to the \code{connect} argument. See the examples
 section for a simple example of how to do so.
+}
+\note{
+This function was adapted from \code{scrapeFX} which is
+deprecated as of version 1.0
 }
 \examples{
 \dontrun{
@@ -87,6 +89,7 @@ dat3 <- scrape(start = "2012-05-01", end = "2012-05-01", suffix = files)
 }
 }
 \seealso{
-\code{XML2R::XML2Obs}
+If you want to add support for more file types, the
+\code{XML2R} package is a good place to start.
 }
 

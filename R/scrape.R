@@ -5,16 +5,15 @@
 #' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/inning/inning_hit.xml}{inning/inning_hit.xml},
 #' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/players.xml}{players.xml}, or
 #' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}{miniscoreboard.xml}.
-#' It's worth noting that inning/inning_all.xml is the file which contains PITCHf/x data, but the other files can complement this data depending on the goal for analysis.
-#' Any collection file names may be passed to the \code{suffix} argument, and \code{scrape} will retrieve data from a (possibly large number)
+#' It's worth noting that PITCHf/x is contained in files ending with "inning/inning_all.xml", but the other files can complement this data depending on the goal for analysis.
+#' Any collection of file names may be passed to the \code{suffix} argument, and \code{scrape} will retrieve data from a (possibly large number)
 #' of files based on either a window of dates or a set of \code{game.ids}.
-#' 
 #' If collecting data in bulk, it is strongly recommended that one establishes a database connection and supplies the
 #' connection to the \code{connect} argument. See the examples section for a simple example of how to do so.
 #' 
-#' 
-#' @param start date "yyyy-mm-dd" to commence scraping.
-#' @param end date "yyyy-mm-dd" to terminate scraping.
+#' @note This function was adapted from \code{scrapeFX} which is deprecated as of version 1.0
+#' @param start character string specifying a date "yyyy-mm-dd" to commence scraping.
+#' @param end character string specifying a date "yyyy-mm-dd" to terminate scraping.
 #' @param game.ids character vector of gameday_links. If this option is used, \code{start} and \code{end} are ignored. 
 #' See \code{data(gids, package="pitchRx")} for examples.
 #' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are: 
@@ -22,7 +21,7 @@
 #' @param connect A database connection object. The class of the object should be "MySQLConnection" or "SQLiteConnection".
 #' If a valid connection is supplied, tables will be copied to the database, which will result in better memory management.
 #' If a connection is supplied, but the connection fails for some reason, csv files will be written to the working directory.
-#' @seealso \code{XML2R::XML2Obs}
+#' @seealso If you want to add support for more file types, the \code{XML2R} package is a good place to start.
 #' @return Returns a list of data frames (or nothing if writing to a database).
 #' @export
 #' @import XML2R
