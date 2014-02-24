@@ -2,12 +2,14 @@
 \alias{scrape}
 \title{Scrape Major League Baseball's Gameday Data}
 \usage{
-scrape(start, end, game.ids, suffix = "inning/inning_all.xml", connect)
+scrape(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...)
 }
 \arguments{
-  \item{start}{date "yyyy-mm-dd" to commence scraping.}
+  \item{start}{character string specifying a date
+  "yyyy-mm-dd" to commence scraping.}
 
-  \item{end}{date "yyyy-mm-dd" to terminate scraping.}
+  \item{end}{character string specifying a date
+  "yyyy-mm-dd" to terminate scraping.}
 
   \item{game.ids}{character vector of gameday_links. If
   this option is used, \code{start} and \code{end} are
@@ -26,6 +28,10 @@ scrape(start, end, game.ids, suffix = "inning/inning_all.xml", connect)
   in better memory management. If a connection is supplied,
   but the connection fails for some reason, csv files will
   be written to the working directory.}
+
+  \item{...}{arguments passed onto \code{XML2R::XML2Obs}.
+  Among other things, this can be used to switch on
+  asynchronous downloads.}
 }
 \value{
 Returns a list of data frames (or nothing if writing to a
@@ -58,34 +64,31 @@ deprecated as of version 1.0
 }
 \examples{
 \dontrun{
-# Collect PITCHf/x (and other data from inning_all.xml files) from May 1st, 2012
-dat <- scrape(start = "2013-08-01", end = "2013-08-01")
-# OR, equivalently, use the game.ids argument
-data(gids, package="pitchRx")
-dat2 <- scrape(game.ids=gids[grep("2012_05_01", gids)])
+# Collect PITCHf/x (and other data from inning_all.xml files) from
+# all games played on August 1st, 2013 (using asynchronous downloads)
+dat <- scrape(start = "2013-08-01", end = "2013-08-01", async = TRUE)
 
-#scrape PITCHf/x from Minnesota Twins 2011 season
+# Scrape PITCHf/x from Minnesota Twins 2011 season
+data(gids, package="pitchRx")
 twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
 dat <- scrape(game.ids=twins11)
 
-#Create SQLite database, then collect and store data in that database
+# Create SQLite database, then collect and store data in that database
 library(dplyr)
 my_db <- src_sqlite("my_db.sqlite3", create=T)
 scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con)
 
-#simple example to demonstrate database query using dplyr
-#note that 'num' and 'url' together make a key that allows us to join these tables
+# Collect other data complementary to PITCHf/x and store in database
+files <- c("inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
+scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con, suffix = files)
+
+# Simple example to demonstrate database query using dplyr
+# Note that 'num' and 'url' together make a key that allows us to join these tables
 locations <- select(tbl(my_db, "pitches"), px, pz, des, num, url)
 names <- select(tbl(my_db, "atbats"), pitcher_name, batter_name, num, url)
 que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"))
 que$query #refine sql query if you'd like
 pitchfx <- collect(que) #submit query and bring data into R
-
-# Collect PITCHf/x and other complementary data
-files <- c("inning/inning_all.xml", "inning/inning_hit.xml",
-             "miniscoreboard.xml", "players.xml")
-dat3 <- scrape(start = "2012-05-01", end = "2012-05-01", suffix = files)
-
 }
 }
 \seealso{

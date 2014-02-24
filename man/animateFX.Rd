@@ -33,7 +33,8 @@ animateFX(data, color = "pitch_types", avg.by, point.alpha = 1/3,
   \item{...}{extra options passed onto geom commands}
 }
 \value{
-Returns a series of ggplot2 objects.
+Returns a series of objects of the class used by package
+ggplot2 to represent plots.
 }
 \description{
 Pitch trajectories animated on a two-dimensional plot.

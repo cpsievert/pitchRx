@@ -21,6 +21,7 @@
 #' @param connect A database connection object. The class of the object should be "MySQLConnection" or "SQLiteConnection".
 #' If a valid connection is supplied, tables will be copied to the database, which will result in better memory management.
 #' If a connection is supplied, but the connection fails for some reason, csv files will be written to the working directory.
+#' @param ... arguments passed onto \code{XML2R::XML2Obs}. Among other things, this can be used to switch on asynchronous downloads. 
 #' @seealso If you want to add support for more file types, the \code{XML2R} package is a good place to start.
 #' @return Returns a list of data frames (or nothing if writing to a database).
 #' @export
@@ -28,38 +29,35 @@
 #' @importFrom lubridate days
 #' @examples
 #' \dontrun{
-#' # Collect PITCHf/x (and other data from inning_all.xml files) from May 1st, 2012
-#' dat <- scrape(start = "2013-08-01", end = "2013-08-01")
-#' # OR, equivalently, use the game.ids argument
-#' data(gids, package="pitchRx")
-#' dat2 <- scrape(game.ids=gids[grep("2012_05_01", gids)])
+#' # Collect PITCHf/x (and other data from inning_all.xml files) from 
+#' # all games played on August 1st, 2013 (using asynchronous downloads)
+#' dat <- scrape(start = "2013-08-01", end = "2013-08-01", async = TRUE)
 #' 
-#' #scrape PITCHf/x from Minnesota Twins 2011 season
+#' # Scrape PITCHf/x from Minnesota Twins 2011 season
+#' data(gids, package="pitchRx")
 #' twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
 #' dat <- scrape(game.ids=twins11)
 #' 
-#' #Create SQLite database, then collect and store data in that database
+#' # Create SQLite database, then collect and store data in that database
 #' library(dplyr)
 #' my_db <- src_sqlite("my_db.sqlite3", create=T)
 #' scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con)
 #' 
-#' #simple example to demonstrate database query using dplyr
-#' #note that 'num' and 'url' together make a key that allows us to join these tables
+#' # Collect other data complementary to PITCHf/x and store in database
+#' files <- c("inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
+#' scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con, suffix = files)
+#' 
+#' # Simple example to demonstrate database query using dplyr
+#' # Note that 'num' and 'url' together make a key that allows us to join these tables
 #' locations <- select(tbl(my_db, "pitches"), px, pz, des, num, url)
 #' names <- select(tbl(my_db, "atbats"), pitcher_name, batter_name, num, url)
 #' que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"))
 #' que$query #refine sql query if you'd like
 #' pitchfx <- collect(que) #submit query and bring data into R
-#' 
-#' # Collect PITCHf/x and other complementary data
-#' files <- c("inning/inning_all.xml", "inning/inning_hit.xml",
-#'              "miniscoreboard.xml", "players.xml")
-#' dat3 <- scrape(start = "2012-05-01", end = "2012-05-01", suffix = files)
-#' 
 #' }
 #' 
 
-scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", connect) { 
+scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...) { 
   #check for valid file inputs
   valid.suffix <- c("inning/inning_all.xml", "inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
   if (!all(suffix %in% valid.suffix)) {
@@ -118,7 +116,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   if (any(grepl("players.xml", suffix))) {
     player.files <- paste0(gameDir, "/players.xml")
     #selects all the child nodes of the game element (info in game node can be linked back to scoreboards)
-    obs <- XML2Obs(player.files, as.equiv=TRUE, url.map=FALSE)
+    obs <- XML2Obs(player.files, as.equiv=TRUE, url.map=FALSE, ...)
     #recycle information on the team level (there are two per file)
     obs <- add_key(obs, parent="game//team", recycle="id", key.name="name_abbrev", quiet=TRUE)
     obs <- add_key(obs, parent="game//team", recycle="type", quiet=TRUE)
@@ -152,7 +150,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   #Now scrape the inning/inning_hit.xml files
   if (any(grepl("inning/inning_hit.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_hit.xml")
-    obs <- XML2Obs(inning.files, as.equiv=TRUE, url.map=FALSE)
+    obs <- XML2Obs(inning.files, as.equiv=TRUE, url.map=FALSE, ...)
     if (exists("tables")){
       tables <- c(tables, collapse_obs2(obs)) #only one table
     } else {
@@ -182,7 +180,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       #grab subset of files to be parsed
       inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
       inning.filez <- inning.filez[!is.na(inning.filez)]
-      obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE)
+      obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE, ...)
       obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch", 
                                   "game//inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE) 
       obs <- re_name(obs, equiv=c("game//inning//top//atbat//runner", 
@@ -266,7 +264,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 #' @param gids The default value "infer" suggests gameday_links should be derived 
 #' and appended appropriately (based on values of \code{start} and \code{end}). 
 #' Otherwise, a character vector with gameday_links can be supplied.
-#' @return Returns a character.
+#' @return Returns a character vector.
 #' @export
 #' @examples
 #' 

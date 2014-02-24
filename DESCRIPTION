@@ -1,6 +1,6 @@
 Package: pitchRx
 Title: Tools for Harnessing MLBAM Gameday data and Visualizing PITCHf/x
-Version: 1.0
+Version: 1.1
 Author: Carson Sievert <sievert@iastate.edu>
 Maintainer: Carson Sievert <sievert@iastate.edu>
 Description: With pitchRx, one can easily obtain Major League Baseball Advanced

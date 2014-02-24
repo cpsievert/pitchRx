@@ -11,7 +11,7 @@ getSnapshots(data, interval = 0.01)
   \item{interval}{the amount of time between 'snapshots'}
 }
 \value{
-Return a three dimensinal array. The third dimension
+Return a three dimensional array. The third dimension
 corresponds to different 'snapshots' of locations.
 }
 \description{

@@ -1,0 +1,33 @@
+citHeader("To cite pitchRx in publications use:")
+
+meta <- packageDescription("pitchRx")
+year <- sub('.*(2[[:digit:]]{3})-.*', '\\1', meta$Date, perl = TRUE)
+vers <- paste('R package version', meta$Version)
+
+bibentry(
+  bibtype = "Article",
+  title = "Taming PITCHf/x Data with {pitchRx} and {XML2R}",
+  author = personList(as.person("Carson Sievert")),
+  journal = "The R Journal",
+  year = "2014",
+  volume = "53",
+  number = "1",
+  pages = "1--27",
+  url = "http://journal.r-project.org/archive/accepted/",
+
+  textVersion =
+  paste("Carson Sievert (2014).",
+        "Taming PITCHf/x Data with {pitchRx} and {XML2R}",
+        "The R Journal, 53(1), 1-27.",
+        "URL http://journal.r-project.org/archive/accepted/.")
+)
+
+citEntry(
+  entry = 'manual',
+  title = paste('pitchRx:', meta$Title),
+  author = as.person(meta$Author),
+  year = year,
+  note = vers,
+  url = meta$URL,
+  textVersion = paste('Carson Sievert (', year, '). pitchRx: ', meta$Title, '. ', vers, '.', sep = '')
+)

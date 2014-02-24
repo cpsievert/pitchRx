@@ -16,7 +16,7 @@ makeUrls(start, end, gids = "infer")
   gameday_links can be supplied.}
 }
 \value{
-Returns a character.
+Returns a character vector.
 }
 \description{
 This is a convenience function (used by \link{scrape})

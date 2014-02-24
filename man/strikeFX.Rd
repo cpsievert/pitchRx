@@ -66,7 +66,8 @@ strikeFX(data, geom = "point", contour = FALSE, point.size = 3,
   \item{...}{extra options passed onto geom commands}
 }
 \value{
-Returns a ggplot2 object.
+Returns an object of the class used by package ggplot2 to
+represent plots.
 }
 \description{
 A suite of bivariate plots with "px" on the horizontal axis

@@ -18,7 +18,7 @@
 #' @param layer list of ggplot2 layer modifications.
 #' @param parent is the function being called from a higher-level function? (experimental)
 #' @param ... extra options passed onto geom commands
-#' @return Returns a series of ggplot2 objects.
+#' @return Returns a series of objects of the class used by package ggplot2 to represent plots.
 #' @import plyr
 #' @export
 #' @examples

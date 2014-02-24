@@ -10,6 +10,6 @@ PITCHf/x package
 Carson Sievert
 }
 \seealso{
-\url{http://cpsievert.github.com/pitchRx/demo}
+\url{http://cpsievert.github.com/pitchRx}
 }
 

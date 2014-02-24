@@ -22,7 +22,7 @@
 #' @param draw_zones logical. Should strikezones be included?
 #' @param parent is the function being called from a higher-level function? (experimental)
 #' @param ... extra options passed onto geom commands
-#' @return Returns a ggplot2 object.
+#' @return Returns an object of the class used by package ggplot2 to represent plots.
 #' @export
 #' @import mgcv
 #' @import ggplot2
