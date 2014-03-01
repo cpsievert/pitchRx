@@ -66,6 +66,8 @@ deprecated as of version 1.0
 \dontrun{
 # Collect PITCHf/x (and other data from inning_all.xml files) from
 # all games played on August 1st, 2013 (using asynchronous downloads)
+dat <- scrape(start = "2013-08-01", end = "2013-08-01")
+#As of XML2R 0.0.5, asyncronous downloads can be performed
 dat <- scrape(start = "2013-08-01", end = "2013-08-01", async = TRUE)
 
 # Scrape PITCHf/x from Minnesota Twins 2011 season

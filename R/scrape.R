@@ -31,6 +31,8 @@
 #' \dontrun{
 #' # Collect PITCHf/x (and other data from inning_all.xml files) from 
 #' # all games played on August 1st, 2013 (using asynchronous downloads)
+#' dat <- scrape(start = "2013-08-01", end = "2013-08-01")
+#' #As of XML2R 0.0.5, asyncronous downloads can be performed
 #' dat <- scrape(start = "2013-08-01", end = "2013-08-01", async = TRUE)
 #' 
 #' # Scrape PITCHf/x from Minnesota Twins 2011 season
@@ -40,7 +42,7 @@
 #' 
 #' # Create SQLite database, then collect and store data in that database
 #' library(dplyr)
-#' my_db <- src_sqlite("my_db.sqlite3", create=T)
+#' my_db <- src_sqlite("Gameday.sqlite3", create=T)
 #' scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con)
 #' 
 #' # Collect other data complementary to PITCHf/x and store in database
@@ -348,9 +350,9 @@ export <- function(connect, name, value) {
   if (length(new.fields) > 0) {
     new.mat <- matrix(rep(NA, length(new.fields)), nrow=1)
     value <- cbind(value, `colnames<-`(new.mat, new.fields))
-    #must have columns ordered same way
-    value <- value[master.fields]
   }
+  #the order of the columns in 'value' has to match the order of 'types'
+  types <- types[names(value)]
   success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, field.types=types,
                                                  append=TRUE, overwrite=FALSE, row.names=FALSE),
                                default=FALSE, quiet=TRUE)
@@ -506,11 +508,14 @@ format.table <- function(dat, name) {
          runner = nums <- c("id", "inning", "num"))
   #atbat should already be a data frame
   if (name != "atbat") dat <- data.frame(dat, stringsAsFactors=FALSE)
-  numz <- nums[nums %in% names(dat)] #error handling (just in case one of the columns doesn't exist)
+  nms <- names(dat)
+  numz <- nums[nums %in% nms] #error handling (just in case one of the columns doesn't exist)
   for (i in numz) dat[, i] <- suppressWarnings(as.numeric(dat[, i]))
   if (name == "game") {
     dat$url_scoreboard <- dat$url
     dat$url <- paste0(gsub("miniscoreboard.xml", "", dat$url), "gid_", dat$gameday_link, "/inning/inning_all.xml")
+  } else { #create a 'gameday_link' column for easier linking of tables
+    if (length(grep("^url$", names(dat)))) dat$gameday_link <- sub("/.*", "", sub(".*gid", "gid", dat$url))
   }
   return(dat)
 }
@@ -522,7 +527,7 @@ appendPitchCount <- function(dat) {
   balls <- as.numeric(dat[,"type"] == "B")
   strikes <- as.numeric(dat[,"type"] == "S")
   idx <- paste(dat[, "url"], dat[,"num"], sep="-")
-  cum.balls <- unlist(tapply(balls, INDEX=idx, function(x){ n <- length(x); cumsum(c(0, x[-n])) }))
+  cum.balls <- unlist(tapply(balls, INDEX=idx, function(x){ n <- length(x); pmin(cumsum(c(0, x[-n])), 3) }))
   cum.strikes <- unlist(tapply(strikes, INDEX=idx, function(x) { n <- length(x); pmin(cumsum(c(0, x[-n])), 2) }))
   count <- paste(cum.balls, cum.strikes, sep = "-")
   return(cbind(dat, count))

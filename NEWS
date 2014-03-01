@@ -1,4 +1,15 @@
-  	CHANGES IN pitchRx VERSION 1.0
+    CHANGES IN pitchRx VERSION 1.1
+
+MAJOR FIXES
+
+  - Some variables weren't being copied to the database correctly (when using the connect argument). For example, the "gameday_link" field in the "game" table was accidently being copied as "venue".
+  - In the switch to version 1.0, the count column started to be computed incorrectly. This is now fixed.
+  
+MINOR IMPROVEMENTS
+
+  - A 'gameday_link' was added to all tables for better linking between tables (you can now use this instead of url for a game identifier).
+
+    CHANGES IN pitchRx VERSION 1.0
 
 MAJOR CHANGES
 
