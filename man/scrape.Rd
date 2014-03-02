@@ -77,7 +77,7 @@ dat <- scrape(game.ids=twins11)
 
 # Create SQLite database, then collect and store data in that database
 library(dplyr)
-my_db <- src_sqlite("my_db.sqlite3", create=T)
+my_db <- src_sqlite("Gameday.sqlite3", create=T)
 scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con)
 
 # Collect other data complementary to PITCHf/x and store in database

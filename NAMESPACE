@@ -1,4 +1,5 @@
 export(animateFX)
+export(export)
 export(getSnapshots)
 export(interactiveFX)
 export(makeUrls)

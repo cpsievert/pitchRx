@@ -88,6 +88,10 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 #     }
   }
 
+  #upload fields so we have table templates (for exporting to database)
+  env2 <- environment()
+  data(fields, package="pitchRx", envir=env2)
+
   #scrape scoreboards first since the "game" node clashes with other files
   if (any(grepl("miniscoreboard.xml", suffix))) {
     dayDir <- unique(gsub("/gid_.*", "", gameDir))
@@ -106,7 +110,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
     if (!missing(connect)) {
       #Try to write tables to database, if that fails, write to csv. Then clear up memory
-      for (i in names(tables)) export(connect, name=i, value=tables[[i]])
+      for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
       rm(obs)
       rm(tables)
       message("Collecting garbage")
@@ -141,7 +145,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
     if (!missing(connect)) {
       #Try to write tables to database, if that fails, write to csv. Then clear up memory
-      for (i in names(tables)) export(connect, name=i, value=tables[[i]])
+      for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
       rm(obs)
       rm(tables)
       message("Collecting garbage")
@@ -163,7 +167,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
     if (!missing(connect)) {
       #Try to write tables to database, if that fails, write to csv. Then clear up memory
-      for (i in names(tables)) export(connect, name=i, value=tables[[i]])
+      for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
       rm(obs)
       rm(tables)
       message("Collecting garbage")
@@ -218,18 +222,18 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       tab.nms <- sub("^game//inning//atbat//runner$", "runner", tab.nms)
       tab.nms <- sub("^game//inning//atbat//pitch$", "pitch", tab.nms)
       tables <- setNames(tables, tab.nms)
-      
-      #Add batter name to 'atbats'
+      #Add names to atbat table for convenience
       scrape.env <- environment() #avoids bringing data objects into global environment
       data(players, package="pitchRx", envir=scrape.env)
       players$id <- as.character(players$id)
+      #Add batter name to 'atbat'
       colnames(tables[["atbat"]]) <- sub("^batter$", "id", colnames(tables[["atbat"]]))
-      tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id")
+      tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id", all.x = TRUE)
       colnames(tables[["atbat"]]) <- sub("^id$", "batter", colnames(tables[["atbat"]]))
       colnames(tables[["atbat"]]) <- sub("^full_name$", "batter_name", colnames(tables[["atbat"]]))
-      #Add pitcher name to 'atbats'
+      #Add pitcher name to 'atbat'
       colnames(tables[["atbat"]]) <- sub("^pitcher$", "id", colnames(tables[["atbat"]]))
-      tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id")
+      tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id", all.x = TRUE)
       colnames(tables[["atbat"]]) <- sub("^id$", "pitcher", colnames(tables[["atbat"]]))
       colnames(tables[["atbat"]]) <- sub("^full_name$", "pitcher_name", colnames(tables[["atbat"]]))
       colnames(tables[["atbat"]]) <- sub("^des", "atbat_des", colnames(tables[["atbat"]]))
@@ -241,7 +245,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       tables[["pitch"]] <- appendPitchCount(tables[["pitch"]])
       if (!missing(connect)) {
         #Try to write tables to database, if that fails, write to csv. Then clear up memory
-        for (i in names(tables)) export(connect, name=i, value=tables[[i]])
+        for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
         rm(tables)
         message("Collecting garbage")
         gc() 
@@ -321,41 +325,78 @@ collapse_obs2 <- function(x) {
   }
 }
 
-export <- function(connect, name, value) {
+#' Export (append) a data.frame to a remote table in a database.
+#' 
+#' This function is convenient if you plan on repeatedly appending to a table in a database.
+#' All that is required is a database connection and a data.frame you want to export to that database.
+#' If you want to initiate a table with more columns use the \code{template} argument.
+#' Note that if the table already exists, the \code{template} argument will be ignored.
+#' 
+#' @param connect database connection. 
+#' @param value local data frame.
+#' @param template a named character vector. The names of the vector should contain the names of \code{value}. The values of this vector should contain the relevant field types.
+#' @param name name of the remote table.
+#' @param ... arguments passed onto \code{DBI::dbWriteTable}
+#' @export
+#' @examples
+#' \dontrun{
+#' library(dplyr)
+#' my_db <- src_sqlite("DB.sqlite3")
+#' data(pitches, package="pitchRx")
+#' # Creates the 'pitches' table in the database
+#' export(connect=my_db$con, value=pitches, name="pitches")
+#' # Appends to the 'pitches' tables, but with the first column missing
+#' export(connect=my_db$con, value=pitches[,-1], name="pitches")
+#' tail(data.frame(collect(tbl(my_db, "pitches")))) #verify it appends correctly
+#' # Since this data frame has a new column that doesn't exist in the pitches table, a new table is created.
+#' export(connect=my_db$con, value=cbind(pitches, test="works"), name="pitches")
+#' }
+
+export <- function(connect, value, name, template, ...) {
   # '.' in table names are not good!
   names(value) <- sub("\\.", "_", names(value))
   #if url.map=FALSE, have to change 'url_key' to url
   names(value) <- sub("^url_key$", "url", names(value))
-  current.fields <- names(value)
-  #url should never be NA!
-  throw <- is.na(value$url)
-  if (any(throw)) value <- value[-throw,]
+  if ("url" %in% names(value)) { #url should never be NA -- this is specific to pitchRx implementation
+    throw <- is.na(value$url)
+    if (any(throw)) value <- value[-throw,]  
+  }
   if (dim(value)[1] == 0) return(NULL)
-  #upload fields so we have table templates
-  env2 <- environment()
-  data(fields, package="pitchRx", envir=env2)
-  #Try to find fields in an existing table
+  df.fields <- names(value)
+  #Return fields if table exists already; otherwise, return NULL
   prior.fields <- plyr::try_default(DBI::dbListFields(connect, name), default=NULL, quiet=TRUE)
-  master.fields <- names(fields[[name]])
+  #If prior.fields is non-empty, then the table already exists, and the table is used as the 'template'.
   if (!is.null(prior.fields)) {
-    idx <- !master.fields %in% prior.fields
-    if (any(idx)) warning(paste("The", name, "table in your database has fewer fields than the suggested set of fields! You might want to try adding these fields to this table:", paste(master.fields[idx], collaspe=", ")))
-    new.fields <- prior.fields[!prior.fields %in% current.fields]
-    types <- NULL
+    missing.fields <- setdiff(prior.fields, df.fields)
+    value <- fill.NAs(value, missing.fields)
+    illegal <- setdiff(df.fields, prior.fields)
+    if (length(illegal)) {
+      name <- paste0(name, "_export")
+      prior.fields <- c(prior.fields, illegal)
+      warning("The value data.frame has variables that are not in the corresponding table. Writing data.frame to a new table instead.")
+    }
+    value <- value[prior.fields]
+    success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, append=TRUE, overwrite=FALSE, row.names=FALSE),
+                                 default=FALSE, quiet=TRUE) 
   } else {
-    new.fields <- master.fields[!master.fields %in% current.fields]
-    types <- fields[[name]]
+    if (missing(template)) {
+      template <- sapply(value, function(x) DBI::dbDataType(connect, x))
+      names(template) <- df.fields
+    }
+    master.fields <- names(template)
+    missing.fields <- setdiff(master.fields, df.fields)
+    value <- fill.NAs(value, missing.fields)
+    new.fields <- setdiff(df.fields, master.fields)
+    if (length(new.fields)) { # Expand the template to reflect the new fields
+      new.types <- sapply(value[new.fields], function(x) DBI::dbDataType(connect, x))
+      names(new.types) <- new.fields
+      template <- c(template, new.types)
+    }
+    #the order of the columns in 'value' has to match the order of 'types'
+    value <- value[names(template)]
+    success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, field.types=template, row.names=FALSE),
+                                 default=FALSE, quiet=TRUE)
   }
-  #add any missing fields to value b4 trying to write to database
-  if (length(new.fields) > 0) {
-    new.mat <- matrix(rep(NA, length(new.fields)), nrow=1)
-    value <- cbind(value, `colnames<-`(new.mat, new.fields))
-  }
-  #the order of the columns in 'value' has to match the order of 'types'
-  types <- types[names(value)]
-  success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, field.types=types,
-                                                 append=TRUE, overwrite=FALSE, row.names=FALSE),
-                               default=FALSE, quiet=TRUE)
   if (success) {
     message(paste("Successfully copied", name, "table to database connection."))
   } else {
@@ -366,75 +407,11 @@ export <- function(connect, name, value) {
   return(success)
 }
 
-
-
-# #Try to create or append a table using database connection (if connection fails, write to csv) 
-# export <- function(connect, name, value) {
-# #   env2 <- environment()
-# #   data(fields, package="pitchRx", envir=env2)
-# #   master.fields <- names(fields[[name]])
-# #   master.types <- as.character(fields[[name]])
-# #   current.fields <- names(value)
-# #   TBexists <- DBI::dbExistsTable(connect, name)
-# #   if (TBexists) {
-# #     prior.fields <- DBI::dbListFields(connect, name)
-# #     idx <- !master.fields %in% prior.fields
-# #     if (any(idx)) warning(paste("The", name, "table in your database has fewer fields than the suggested set of fields! You might want to try adding these fields to this table:", paste(master.fields[idx], collaspe=", ")))
-# #     new.fields <- prior.fields[!prior.fields %in% current.fields]
-# #   } else {
-# #     #find appropriate data types for table based on df
-# #     new.fields <- master.fields[!master.fields %in% current.fields]
-# #   }
-# #   #add any missing fields to value b4 trying to write to database
-# #   if (length(new.fields) > 0) {
-# #     new.mat <- matrix(rep(NA, length(new.fields)), nrow=1)
-# #     value <- cbind(value, `colnames<-`(new.mat, new.fields))
-# #   }
-# #   #rollback connection so that sqliteWriteTable won't throw a fit.
-# #   dbCommit(connect)
-# #   if (TBexists) {
-# #     success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value,
-# #                                                    append=TRUE, overwrite=FALSE, row.names=FALSE), 
-# #                                  default=FALSE, quiet=TRUE)
-# #   } else {
-# #     success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, 
-# #                                                   append=TRUE, overwrite=FALSE, 
-# #                                                    field.types=master.types, row.names=FALSE), 
-# #                                  default=FALSE, quiet=TRUE)
-# #   }
-#   env2 <- environment()
-#   data(fields, package="pitchRx", envir=env2)
-#   #Try to find fields in an existing table
-#   prior.fields <- plyr::try_default(DBI::dbListFields(connect, name), default=NULL, quiet=TRUE)
-#   current.fields <- names(value)
-#   master.fields <- names(fields[[name]])
-#   if (!is.null(prior.fields)) {
-#     idx <- !master.fields %in% prior.fields
-#     if (any(idx)) warning(paste("The", name, "table in your database has fewer fields than the suggested set of fields! You might want to try adding these fields to this table:", paste(master.fields[idx], collaspe=", ")))
-#     new.fields <- prior.fields[!prior.fields %in% current.fields]
-#     types <- NULL
-#   } else {
-#     new.fields <- master.fields[!master.fields %in% current.fields]
-#     types <- fields[[name]]
-#   }
-#   #add any missing fields to value b4 trying to write to database
-#   if (length(new.fields) > 0) {
-#     new.mat <- matrix(rep(NA, length(new.fields)), nrow=1)
-#     value <- cbind(value, `colnames<-`(new.mat, new.fields))
-#   }
-#   browser()
-#   success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, field.types=types,
-#                                                  append=TRUE, overwrite=FALSE, row.names=FALSE),
-#                                default=FALSE, quiet=TRUE)
-#   if (success) {
-#     message(paste("Successfully wrote", name, "table to database connection."))
-#   } else {
-#     file.name <- paste0(name, "-", Sys.Date(), ".csv")
-#     message(paste("Failed to write", name, "table to database connection. Writing", file.name, "instead."))
-#     write.csv(value, file=file.name, row.names=FALSE)
-#   }
-#   return(success)
-# }
+#Function that appends columns of NAs
+fill.NAs <- function(value, fields) {
+  new.mat <- matrix(rep(NA, length(fields)), nrow=1)
+  value <- cbind(value, `colnames<-`(new.mat, fields))
+}
 
 # Update Gameday IDs.
 #
@@ -481,8 +458,8 @@ subsetGids <- function(gids, first, last) {
 }
 
 #silly function to work around stringsAsFactors=TRUE when using merge
-merged <- function(x, y, by){
-  dat <- merge(x=x, y=y, by=by, sort=FALSE)
+merged <- function(x, y, ...){
+  dat <- merge(x=x, y=y, sort=FALSE, ...)
   dat[] <- lapply(dat, function(x) as.character(x))
   return(dat)
 }
@@ -506,12 +483,12 @@ format.table <- function(dat, name) {
                            "zone", "nasty", "spin_dir", "spin_rate", "inning", "num", "on_1b", "on_2b", "on_3b"),
          po = nums <- c("inning", "num"),
          runner = nums <- c("id", "inning", "num"))
-  #atbat should already be a data frame
-  if (name != "atbat") dat <- data.frame(dat, stringsAsFactors=FALSE)
+  #For some reason, records are sometimes duplicated, remove them!
+  dat <- data.frame(dat[!duplicated(dat),], stringsAsFactors=FALSE)
   nms <- names(dat)
   numz <- nums[nums %in% nms] #error handling (just in case one of the columns doesn't exist)
   for (i in numz) dat[, i] <- suppressWarnings(as.numeric(dat[, i]))
-  if (name == "game") {
+  if ("game" %in% name) {
     dat$url_scoreboard <- dat$url
     dat$url <- paste0(gsub("miniscoreboard.xml", "", dat$url), "gid_", dat$gameday_link, "/inning/inning_all.xml")
   } else { #create a 'gameday_link' column for easier linking of tables

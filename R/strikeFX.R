@@ -75,7 +75,14 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
   if (!"b_height" %in% names(data)) {
     warning("pitchRx assumes the height of each batter is recorded as 'b_height'. Since there is no such column, we will assume each batter has a height of 6'2''")
     data$b_height <- "6-2"
+  } else {
+    no.height <- is.na(data$b_height)
+    if (any(no.height)) {
+      #warning("Some batter heights are missing (NA).")
+      data$b_height[no.height] <- "6-2"
+    }
   }
+  
   if (!color %in% names(data)) {
     #warning(paste(color, "is the variable that defines coloring but it isn't in the dataset!"))
     color <- ""
