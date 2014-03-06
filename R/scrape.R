@@ -502,9 +502,10 @@ format.table <- function(dat, name) {
 # @param dat 'pitch' matrix/df
 # @return returns the original matrix/df with the proper pitch count column appended.
 appendPitchCount <- function(dat) {
-  balls <- as.numeric(dat[,"type"] == "B")
-  strikes <- as.numeric(dat[,"type"] == "S")
-  idx <- paste(dat[, "url"], dat[,"num"], sep="-")
+  balls <- as.numeric(dat[,"type"] %in% "B")
+  strikes <- as.numeric(dat[,"type"] %in% "S")
+  pre.idx <- paste(dat[,"gameday_link"], dat[,"num"])
+  idx <- factor(pre.idx, levels=unique(pre.idx))
   cum.balls <- unlist(tapply(balls, INDEX=idx, function(x){ n <- length(x); pmin(cumsum(c(0, x[-n])), 3) }))
   cum.strikes <- unlist(tapply(strikes, INDEX=idx, function(x) { n <- length(x); pmin(cumsum(c(0, x[-n])), 2) }))
   count <- paste(cum.balls, cum.strikes, sep = "-")

@@ -1,3 +1,9 @@
+    CHANGES IN pitchRx VERSION 1.2
+
+MAJOR FIXES
+
+  - The count column is now computed correctly (seriously).
+
     CHANGES IN pitchRx VERSION 1.1
 
 MAJOR FIXES
