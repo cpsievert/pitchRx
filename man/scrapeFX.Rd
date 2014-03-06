@@ -4,7 +4,19 @@
 \usage{
 scrapeFX(start, end, tables = list())
 }
+\arguments{
+  \item{start}{date "yyyy-mm-dd" to commence scraping of
+  pitch F/X data}
+
+  \item{end}{date "yyyy-mm-dd" to terminate scraping pitch
+  F/X data}
+
+  \item{tables}{XML nodes to be parsed into a data frame}
+}
 \description{
 This function is deprecated as of version 1.0
+}
+\seealso{
+\link{scrape}
 }
 

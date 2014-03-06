@@ -348,7 +348,8 @@ collapse_obs2 <- function(x) {
 #' # Appends to the 'pitches' tables, but with the first column missing
 #' export(connect=my_db$con, value=pitches[,-1], name="pitches")
 #' tail(data.frame(collect(tbl(my_db, "pitches")))) #verify it appends correctly
-#' # Since this data frame has a new column that doesn't exist in the pitches table, a new table is created.
+#' # This data frame has a column that doesn't exist in the pitches table --
+#' # so a new table is created.
 #' export(connect=my_db$con, value=cbind(pitches, test="works"), name="pitches")
 #' }
 

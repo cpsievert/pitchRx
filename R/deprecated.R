@@ -2,6 +2,10 @@
 #'
 #' This function is deprecated as of version 1.0
 #' 
+#' @param start date "yyyy-mm-dd" to commence scraping of pitch F/X data
+#' @param end date "yyyy-mm-dd" to terminate scraping pitch F/X data
+#' @param tables XML nodes to be parsed into a data frame
+#' @seealso \link{scrape}
 #' @export
 
 
@@ -14,6 +18,10 @@ scrapeFX <- function(start, end, tables = list()) {
 #' 
 #' This function is deprecated as of version 1.0
 #' 
+#' @param urls set of urls for parsing
+#' @param tables list of character vectors with appropriate names. The list names should correspond to XML nodes of interest within the XML files.
+#' @param add.children logical parameter specifying whether to scrape the XML children of the node(s) specified in \code{tables}.
+#' @param use.values logical parameter specifying whether to extract XML attributes or values of the node(s).
 #' @export
 
 
