@@ -10,16 +10,15 @@ bibentry(
   author = personList(as.person("Carson Sievert")),
   journal = "The R Journal",
   year = "2014",
-  volume = "53",
+  volume = "6",
   number = "1",
-  pages = "1--27",
-  url = "http://journal.r-project.org/archive/accepted/",
+  url = "http://journal.r-project.org/archive/accepted/sievert.pdf",
 
   textVersion =
   paste("Carson Sievert (2014).",
         "Taming PITCHf/x Data with {pitchRx} and {XML2R}",
-        "The R Journal, 53(1), 1-27.",
-        "URL http://journal.r-project.org/archive/accepted/.")
+        "The R Journal, 6(1).",
+        "URL http://journal.r-project.org/archive/accepted/sievert.pdf.")
 )
 
 citEntry(

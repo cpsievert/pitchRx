@@ -2,8 +2,7 @@
 \alias{export}
 \title{Export (append) a data.frame to a remote table in a database.}
 \usage{
-export(connect, value, template = names(value),
-  name = deparse(substitute(value)), ...)
+export(connect, value, name, template, ...)
 }
 \arguments{
   \item{connect}{database connection.}
@@ -21,17 +20,26 @@ export(connect, value, template = names(value),
   \code{DBI::dbWriteTable}}
 }
 \description{
-This function assumes you have knowledge of a
-\code{template} of fields to be used for the table. This
-should be thought as a
+This function is convenient if you plan on repeatedly
+appending to a table in a database. All that is required is
+a database connection and a data.frame you want to export
+to that database. If you want to initiate a table with more
+columns use the \code{template} argument. Note that if the
+table already exists, the \code{template} argument will be
+ignored.
 }
 \examples{
 \dontrun{
 library(dplyr)
-my_db <- src_sqlite("pitches.sqlite3")
+my_db <- src_sqlite("DB.sqlite3")
 data(pitches, package="pitchRx")
-data(fields, package="pitchRx")
-export(connect=my_db$con, value=pitches, template = c(fields[["pitch"]], fields[["atbat"]]))
+# Creates the 'pitches' table in the database
+export(connect=my_db$con, value=pitches, name="pitches")
+# Appends to the 'pitches' tables, but with the first column missing
+export(connect=my_db$con, value=pitches[,-1], name="pitches")
+tail(data.frame(collect(tbl(my_db, "pitches")))) #verify it appends correctly
+# Since this data frame has a new column that doesn't exist in the pitches table, a new table is created.
+export(connect=my_db$con, value=cbind(pitches, test="works"), name="pitches")
 }
 }
 
