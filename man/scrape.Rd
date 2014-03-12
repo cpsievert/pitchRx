@@ -73,11 +73,11 @@ dat <- scrape(start = "2013-08-01", end = "2013-08-01", async = TRUE)
 # Scrape PITCHf/x from Minnesota Twins 2011 season
 data(gids, package="pitchRx")
 twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
-dat <- scrape(game.ids=twins11)
+dat <- scrape(game.ids=twins11[1]) #scrapes 1st game only
 
 # Create SQLite database, then collect and store data in that database
 library(dplyr)
-my_db <- src_sqlite("Gameday.sqlite3", create=T)
+my_db <- src_sqlite("Gameday.sqlite3")
 scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con)
 
 # Collect other data complementary to PITCHf/x and store in database
@@ -85,10 +85,11 @@ files <- c("inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
 scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con, suffix = files)
 
 # Simple example to demonstrate database query using dplyr
-# Note that 'num' and 'url' together make a key that allows us to join these tables
-locations <- select(tbl(my_db, "pitches"), px, pz, des, num, url)
-names <- select(tbl(my_db, "atbats"), pitcher_name, batter_name, num, url)
-que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"))
+# Note that 'num' and 'gameday_link' together make a key that allows us to join these tables
+locations <- select(tbl(my_db, "pitch"), px, pz, des, num, gameday_link)
+names <- select(tbl(my_db, "atbat"), pitcher_name, batter_name, num, gameday_link)
+que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"),
+                   by = c("num", "gameday_link"))
 que$query #refine sql query if you'd like
 pitchfx <- collect(que) #submit query and bring data into R
 }

@@ -38,11 +38,11 @@
 #' # Scrape PITCHf/x from Minnesota Twins 2011 season
 #' data(gids, package="pitchRx")
 #' twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
-#' dat <- scrape(game.ids=twins11)
+#' dat <- scrape(game.ids=twins11[1]) #scrapes 1st game only
 #' 
 #' # Create SQLite database, then collect and store data in that database
 #' library(dplyr)
-#' my_db <- src_sqlite("Gameday.sqlite3", create=T)
+#' my_db <- src_sqlite("Gameday.sqlite3")
 #' scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con)
 #' 
 #' # Collect other data complementary to PITCHf/x and store in database
@@ -50,10 +50,11 @@
 #' scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con, suffix = files)
 #' 
 #' # Simple example to demonstrate database query using dplyr
-#' # Note that 'num' and 'url' together make a key that allows us to join these tables
-#' locations <- select(tbl(my_db, "pitches"), px, pz, des, num, url)
-#' names <- select(tbl(my_db, "atbats"), pitcher_name, batter_name, num, url)
-#' que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"))
+#' # Note that 'num' and 'gameday_link' together make a key that allows us to join these tables
+#' locations <- select(tbl(my_db, "pitch"), px, pz, des, num, gameday_link)
+#' names <- select(tbl(my_db, "atbat"), pitcher_name, batter_name, num, gameday_link)
+#' que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"), 
+#'                    by = c("num", "gameday_link"))
 #' que$query #refine sql query if you'd like
 #' pitchfx <- collect(que) #submit query and bring data into R
 #' }
@@ -61,6 +62,7 @@
 
 scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...) { 
   #check for valid file inputs
+  message("If file names don't print right away, please be patient.")
   valid.suffix <- c("inning/inning_all.xml", "inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
   if (!all(suffix %in% valid.suffix)) {
     warning("Currently supported file suffix are: 'inning/inning_all.xml', 'inning/inning_hit.xml', 'miniscoreboard.xml', and 'players.xml'")
@@ -96,7 +98,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   if (any(grepl("miniscoreboard.xml", suffix))) {
     dayDir <- unique(gsub("/gid_.*", "", gameDir))
     scoreboards <- paste0(dayDir, "/miniscoreboard.xml")
-    obs <- XML2Obs(scoreboards, as.equiv=TRUE, url.map=FALSE)
+    obs <- XML2Obs(scoreboards, as.equiv=TRUE, url.map=FALSE, ...)
     nms <- names(obs)
     #simplify names
     nms <- gsub("^games//game//game_media//media$", "media", nms)
@@ -237,7 +239,6 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       colnames(tables[["atbat"]]) <- sub("^id$", "pitcher", colnames(tables[["atbat"]]))
       colnames(tables[["atbat"]]) <- sub("^full_name$", "pitcher_name", colnames(tables[["atbat"]]))
       colnames(tables[["atbat"]]) <- sub("^des", "atbat_des", colnames(tables[["atbat"]]))
-      
       #Coerce matrices to data frames; turn appropriate variables into numerics
       for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
       
@@ -502,6 +503,10 @@ format.table <- function(dat, name) {
 # @param dat 'pitch' matrix/df
 # @return returns the original matrix/df with the proper pitch count column appended.
 appendPitchCount <- function(dat) {
+  if (any(!c("type", "gameday_link", "num") %in% colnames(dat))){
+    warning("Count column couldn't be created")
+    return(dat)
+  }
   balls <- as.numeric(dat[,"type"] %in% "B")
   strikes <- as.numeric(dat[,"type"] %in% "S")
   pre.idx <- paste(dat[,"gameday_link"], dat[,"num"])
