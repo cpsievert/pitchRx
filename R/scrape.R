@@ -300,7 +300,7 @@ makeUrls <- function(start, end, gids="infer") {
       last.game <- strsplit(gids[length(gids)], split="_")[[1]]
       last.date <- as.POSIXct(paste(last.game[2], last.game[3], last.game[4], sep="-"))
       #need to rework this guy
-      #if (last.date < end) gids <- c(gids, updateGids(max(start, last.date), end))
+      if (last.date < end) gids <- c(gids, updateGids(max(start, last.date), end))
       return(gids2urls(subsetGids(gids, first=start, last=end)))
     }
   } else {
@@ -425,10 +425,9 @@ fill.NAs <- function(value, fields) {
 updateGids <- function(last.date, end) {
   message("grabbing new game IDs")
   scoreboards <- paste0(makeUrls(start=last.date, end=end, gids=""), "/miniscoreboard.xml")
-  obs <- XML2Obs(scoreboards, xpath="//game[@gameday_link]")
-  obs2 <- suppressMessages(re_name(obs, names(obs)))
-  dat <- collapse_obs(obs2)
-  gids <- dat[,"gameday_link"]
+  obs <- XML2Obs(scoreboards) #Note to future self -- using `xpath='//game[@gameday_link]'` for future games gives the RCurl error -- Recv failure: Connection reset by peer 
+  obs2 <- obs[grep("^games//game$", names(obs))]
+  gids <- collapse_obs(obs2)[,"gameday_link"]
   return(gids[!is.na(gids)])
 }
 
