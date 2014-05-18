@@ -300,7 +300,7 @@ makeUrls <- function(start, end, gids="infer") {
       last.game <- strsplit(gids[length(gids)], split="_")[[1]]
       last.date <- as.POSIXct(paste(last.game[2], last.game[3], last.game[4], sep="-"))
       #need to rework this guy
-      if (last.date < end) gids <- c(gids, updateGids(max(start, last.date), end))
+      #if (last.date < end) gids <- c(gids, updateGids(max(start, last.date), end))
       return(gids2urls(subsetGids(gids, first=start, last=end)))
     }
   } else {
