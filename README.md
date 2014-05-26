@@ -1,6 +1,8 @@
 pitchRx
 =======
 
+[![Build Status](https://travis-ci.org/cpsievert/pitchRx.png)](https://travis-ci.org/cpsievert/pitchRx)
+
 Tools for Harnessing MLBAM Gameday data and Visualizing PITCHf/x
 
 ## Documentation
