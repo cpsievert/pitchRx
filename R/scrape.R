@@ -61,6 +61,28 @@
 #' 
 
 scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...) { 
+  # Run some checks to make sure we can append to the database connection
+  # Also, try to append a 'date' column to the 'atbat' table (if it's missing)
+  if (!missing(connect)) {
+    if (!require('DBI')) warning("You will need the DBI package to write tables to a database.")
+    valid.conn <- c("MySQLConnection", "SQLiteConnection") #DBI::dbWriteTable method only works for these two classes
+    if (!class(connect) %in% valid.conn) warning("You need either a MySQLConnection or SQLiteConnection.")
+    fieldz <- plyr::try_default(dbListFields(connect, "atbat"), NULL, quiet = TRUE)
+    if (!"date" %in% fieldz && !is.null(fieldz)) {
+      msg <- "An 'atbat' table without the 'date' column was detected\n"
+      if (!require('dplyr') || packageVersion("dplyr") < 0.2) {
+        message(msg, "To automatically append 'date', please install/update the dplyr and DBI packages \n", 
+                "More details are discussed here -- \n",
+                "http://baseballwithr.wordpress.com/2014/04/13/modifying-and-querying-a-pitchfx-database-with-dplyr/")
+      } else {
+        message(msg, "A 'date' column will now be appended. Please be patient.")
+        new.col <- if ("gameday_link" %in% fieldz) "SUBSTR(gameday_link, 15, -10)" else "SUBSTR(url, 80, -10)"
+        res <- dbSendQuery(connect, paste("CREATE TABLE atbat_temp AS SELECT *,", new.col, "AS date FROM atbat"))
+        dbRemoveTable(connect, name = 'atbat')
+        dbSendQuery(connect, 'ALTER TABLE atbat_temp RENAME TO atbat')
+      }
+    }
+  }
   #check for valid file inputs
   message("If file names don't print right away, please be patient.")
   valid.suffix <- c("inning/inning_all.xml", "inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
@@ -74,11 +96,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     if (!all(grepl("gid_", game.ids))) warning("Any Game IDs supplied to the gids option should be of the form gid_YYYY_MM_DD_xxxmlb_zzzmlb_1")
     gameDir <- makeUrls(gids=game.ids)
   }
-  if (!missing(connect)) {
-    if (!require(DBI)) warning("You will need the DBI package to write tables to a database.")
-    #DBI::dbWriteTable method only works for these two classes
-    valid.conn <- c("MySQLConnection", "SQLiteConnection")
-    if (!class(connect) %in% valid.conn) warning("You need either a MySQLConnection or SQLiteConnection.")
+
 #SMART PREVENTION OF APPENDING SAME DATA MIGHT GET MESSY (HOW DO I CHECK EVERY TYPE OF FILE IN A NICE WAY???)
 #     DBTables <- dbListTables(connect)
 #     #should I try tables until this is non-empty?
@@ -88,7 +106,6 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 #     if (any(idx)) {
 #       warning("I detected urls in your database that match your query! I will not be scraping these files")
 #     }
-  }
 
   #upload fields so we have table templates (for exporting to database)
   env2 <- environment()
@@ -244,6 +261,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       
       #generate a "count" column from "b" (balls) & "s" (strikes)
       tables[["pitch"]] <- appendPitchCount(tables[["pitch"]])
+      tables[["atbat"]] <- appendDate(tables[["atbat"]])
       if (!missing(connect)) {
         #Try to write tables to database, if that fails, write to csv. Then clear up memory
         for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
@@ -514,6 +532,17 @@ appendPitchCount <- function(dat) {
   cum.strikes <- unlist(tapply(strikes, INDEX=idx, function(x) { n <- length(x); pmin(cumsum(c(0, x[-n])), 2) }))
   count <- paste(cum.balls, cum.strikes, sep = "-")
   return(cbind(dat, count))
+}
+
+# Add columns with relevant pitch count to the 'pitch' table.
+# @param dat 'pitch' matrix/df
+# @return returns the original matrix/df with the proper pitch count column appended.
+appendDate <- function(dat) {
+  if (!"gameday_link" %in% colnames(dat)){
+    warning("'date' column couldn't be created")
+    return(dat)
+  }
+  return(cbind(dat, date = substr(dat[,"gameday_link"], 5, 14)))
 }
 
 # Update \code{players} data frame
