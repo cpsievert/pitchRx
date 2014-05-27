@@ -24,6 +24,7 @@
 #' 
 
 interactiveFX <- function(data, spheres=TRUE, color="pitch_types", avg.by, interval=0.01, alpha=1, show.legend=TRUE, ...){
+  if (!require('rgl')) warning("This function requires the rgl package. Please try to install.packages('rgl') before using.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     pitch.type <- c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO")

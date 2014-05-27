@@ -23,7 +23,6 @@ Imports:
     plyr,
     MASS,
     hexbin,
-    rgl,
     mgcv,
     lubridate
 Suggests:
@@ -36,7 +35,8 @@ Suggests:
     animation,
     shiny,
     testthat,
-    ggsubplot
+    ggsubplot,
+    rgl
 Date: 2014-04-04
 LazyData: true
 URL: http://cpsievert.github.com/pitchRx

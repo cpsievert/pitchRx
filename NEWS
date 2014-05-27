@@ -1,10 +1,18 @@
     CHANGES IN pitchRx VERSION 1.4
 
+MAJOR IMPROVEMENTS
+
   - I've decided the 'atbat' table should include a 'date' column (for reasons discussed here -- http://baseballwithr.wordpress.com/2014/04/13/modifying-and-querying-a-pitchfx-database-with-dplyr/). If you already have a database and update it using scrape(), a 'date' column will be added to the 'atbat' table (if 'date' doesn't already exist). Unfortunately, when 'date' is added, any 'atbat' INDEXs you previously created will have to be recreated manually.
 
   - The update_db() function was added to help automate sequential database updates.
 
+MINOR IMPROVEMENTS
+
   - Added some simple tests to verify scrape() works as intended.
+
+MINOR CHANGES
+
+  - The rgl package was moved from IMPORTS to SUGGESTS since it was causing so many installation difficulties.
 
 If appropriate, scrape() will now automatically include 'date' column 
 
