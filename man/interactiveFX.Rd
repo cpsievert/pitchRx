@@ -10,7 +10,7 @@ interactiveFX(data, spheres = TRUE, color = "pitch_types", avg.by,
   \item{data}{data.frame with appropriately named PITCHf/x
   variables}
 
-  \item{spheres}{Use \link{spheres3d} or \link{plot3d}?}
+  \item{spheres}{Use rgl::spheres3d or rgl::plot3d?}
 
   \item{color}{variable used to control coloring scheme.}
 
@@ -23,8 +23,8 @@ interactiveFX(data, spheres = TRUE, color = "pitch_types", avg.by,
 
   \item{show.legend}{print coloring legend in R console?}
 
-  \item{...}{other param passed onto \link{spheres3d} or
-  \link{plot3d}}
+  \item{...}{other param passed onto rgl::spheres3d or
+  rgl::plot3d}
 }
 \value{
 rgl object is returned.
