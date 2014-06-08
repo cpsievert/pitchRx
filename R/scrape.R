@@ -116,6 +116,10 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     dayDir <- unique(gsub("/gid_.*", "", gameDir))
     scoreboards <- paste0(dayDir, "/miniscoreboard.xml")
     obs <- XML2Obs(scoreboards, as.equiv=TRUE, url.map=FALSE, ...)
+    # These observations typically show up *before* the game is played
+    # I'm not so sure I want to support them....
+    illegal <- paste0("games//game//", c("review","home_probable_pitcher", "away_probable_pitcher"))
+    obs <- obs[!names(obs) %in% illegal]
     nms <- names(obs)
     #simplify names
     nms <- gsub("^games//game//game_media//media$", "media", nms)
@@ -510,6 +514,8 @@ format.table <- function(dat, name) {
   if ("game" %in% name) {
     dat$url_scoreboard <- dat$url
     dat$url <- paste0(gsub("miniscoreboard.xml", "", dat$url), "gid_", dat$gameday_link, "/inning/inning_all.xml")
+    # These fields only show up for suspended games...I don't think they're worth tracking...
+    dat <- dat[, !names(dat) %in% c("runner_on_base_status", "runner_on_1b")]
   } else { #create a 'gameday_link' column for easier linking of tables
     if (length(grep("^url$", names(dat)))) dat$gameday_link <- sub("/.*", "", sub(".*gid", "gid", dat$url))
   }

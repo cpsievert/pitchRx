@@ -8,6 +8,7 @@
 #' 
 #' @param connect Either an SQLite or MySQL database connection
 #' @param end date to stop data collection. The default value of 'yesterday' is recommended to ensure the update performs properly.
+#' @param ... arguments passed onto \link{scrape}
 #' @export
 #' @examples
 #' 
@@ -19,7 +20,7 @@
 #' }
 #' 
 
-update_db <- function(connect, end = Sys.Date() - 1) {
+update_db <- function(connect, end = Sys.Date() - 1, ...) {
   if (!require('DBI')) warning("The DBI package is required to use this function.\n",
                                "Please run install.packages('DBI')")
   if(!dbExistsTable(connect, "atbat")) stop("Your database must have the atbat table in order to work")
@@ -28,13 +29,13 @@ update_db <- function(connect, end = Sys.Date() - 1) {
   res <- plyr::try_default(dbSendQuery(connect, 'CREATE INDEX gid_idx ON atbat(gameday_link)'), NULL, quiet = TRUE)
   old.gids <- dbGetQuery(connect, "SELECT DISTINCT gameday_link FROM atbat")[,1]
   data(gids, package = "pitchRx", envir = environment())
-  
+  browser()
   # new.gids are bound to obtain old games that didn't have a inning_all.xml file
   new.gids <- gids[!gids %in% old.gids]
   old.dates <- gid2date(old.gids)
   new.dates <- gid2date(new.gids)
   valid.gids <- new.gids[max(old.dates) + 1 <= new.dates & new.dates <= end]
-  
+  if (length(valid.gids) < 1) { message("Already up to date"); return(NULL) }
   # Figure out what suffices to pass along scrape
   tbls <- dbListTables(connect)
   suffices <- NULL
@@ -46,7 +47,7 @@ update_db <- function(connect, end = Sys.Date() - 1) {
   if (any(game.tbls %in% tbls)) suffices <- c(suffices, "miniscoreboard.xml")
   player.tbls <- c("player", "coach", "umpire")
   if (any(player.tbls %in% tbls)) suffices <- c(suffices, "players.xml")  
-  scrape(game.ids = valid.gids, suffix = suffices)
+  scrape(game.ids = valid.gids, suffix = suffices, connect = connect, ...)
   # count the number of records per game and rescrape game that are missing records?
   # Nice idea, but how would I update a data structre with the number of records in a reasonable way?
 }
