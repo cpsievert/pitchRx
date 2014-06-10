@@ -29,7 +29,6 @@ update_db <- function(connect, end = Sys.Date() - 1, ...) {
   res <- plyr::try_default(dbSendQuery(connect, 'CREATE INDEX gid_idx ON atbat(gameday_link)'), NULL, quiet = TRUE)
   old.gids <- dbGetQuery(connect, "SELECT DISTINCT gameday_link FROM atbat")[,1]
   data(gids, package = "pitchRx", envir = environment())
-  browser()
   # new.gids are bound to obtain old games that didn't have a inning_all.xml file
   new.gids <- gids[!gids %in% old.gids]
   old.dates <- gid2date(old.gids)
