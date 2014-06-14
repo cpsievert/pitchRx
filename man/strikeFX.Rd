@@ -13,7 +13,7 @@ strikeFX(data, geom = "point", contour = FALSE, point.size = 3,
   \item{data}{PITCHf/x data to be visualized.}
 
   \item{geom}{plotting geometry. Current choices are:
-  "point", "hex", "bin" and "tile"}
+  "point", "hex", "bin", "tile" and "raster"}
 
   \item{contour}{logical. Should contour lines be
   included?}
