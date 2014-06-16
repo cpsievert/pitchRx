@@ -50,14 +50,13 @@
 #' library(mgcv)
 #' m1 <- bam(strike ~ s(px, pz, by=factor(stand)) + 
 #'                factor(stand), data=noswing, family = binomial(link='logit'))
+#' # geom will automatically be set to 'raster'
 #' strikeFX(noswing, model=m1, layer=facet_grid(.~stand))
 #' 
-#' #If sample size is an issue, try increasing the binwidths
-#' strikeFX(noswing, model=m1, layer=facet_grid(.~stand), binwidth=c(.5,.5))
-#' m2 <- mgcv::bam(strike ~ s(px, pz, by=factor(stand)) + s(px, pz, by=factor(inning_side)) + 
+#' m2 <- bam(strike ~ s(px, pz, by=factor(stand)) + s(px, pz, by=factor(inning_side)) + 
 #'            factor(stand) + factor(inning_side), data=noswing, family = binomial(link='logit'))
-#' strikeFX(noswing, geom="bin", model=m2, density1=list(inning_side="top"), 
-#'          density2=list(inning_side="bottom"), layer=facet_grid(.~stand), binwidth=c(.5, .5))
+#' strikeFX(noswing, model=m2, density1=list(inning_side="top"), 
+#'          density2=list(inning_side="bottom"), layer=facet_grid(.~stand))
 #' }
 #' 
 
@@ -297,12 +296,14 @@ plotDensity <- function(dens, bounds, contour, geom, ...){
     }
   }
   dens.df <- suppressMessages(plyr::join(dens, bounds[[2]], type="inner")) #defaults to join "by" all common variables
-  p <- ggplot(data=dens.df)
-  if (geom %in% "hex") {
-    p <- p + stat_summary_hex(aes(x=px, y=pz, z=z), ...)
-  } else {
-    p <- p + stat_summary2d(aes(x=px, y=pz, z=z), ...) 
-  }
+  # One should use geom_raster when tiles are same size
+  p <- ggplot(data=dens.df, aes(x=px, y=pz, fill=z)) + geom_raster(...)
+  # Would anyone really want to plot a *function* of the probabilities???
+#   if (geom %in% "hex") {
+#     p <- p + stat_summary_hex(aes(x=px, y=pz, z=z), ...)
+#   } else {
+#     p <- p + stat_summary2d(aes(x=px, y=pz, z=z), ...) 
+#   }
   if (contour) p <- p + stat_contour(aes(x=px, y=pz, z=z)) #passing binwidth here throws error
   return(p)
 }

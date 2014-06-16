@@ -96,14 +96,13 @@ noswing$strike <- as.numeric(noswing$des \%in\% "Called Strike")
 library(mgcv)
 m1 <- bam(strike ~ s(px, pz, by=factor(stand)) +
                factor(stand), data=noswing, family = binomial(link='logit'))
+# geom will automatically be set to 'raster'
 strikeFX(noswing, model=m1, layer=facet_grid(.~stand))
 
-#If sample size is an issue, try increasing the binwidths
-strikeFX(noswing, model=m1, layer=facet_grid(.~stand), binwidth=c(.5,.5))
-m2 <- mgcv::bam(strike ~ s(px, pz, by=factor(stand)) + s(px, pz, by=factor(inning_side)) +
+m2 <- bam(strike ~ s(px, pz, by=factor(stand)) + s(px, pz, by=factor(inning_side)) +
            factor(stand) + factor(inning_side), data=noswing, family = binomial(link='logit'))
-strikeFX(noswing, geom="bin", model=m2, density1=list(inning_side="top"),
-         density2=list(inning_side="bottom"), layer=facet_grid(.~stand), binwidth=c(.5, .5))
+strikeFX(noswing, model=m2, density1=list(inning_side="top"),
+         density2=list(inning_side="bottom"), layer=facet_grid(.~stand))
 }
 }
 
