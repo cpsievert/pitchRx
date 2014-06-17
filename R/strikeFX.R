@@ -231,7 +231,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       if (geom %in% "bin") t <- t + geom_bin2d(...) 
       if (geom %in% "hex") t <- t + geom_hex(...)
       if (geom %in% c("tile", "raster")) 
-        t <- t + stat_density2d(geom = geom, aes(fill = ..density..), contour = FALSE)
+        t <- t + stat_density2d(geom = geom, aes(fill = ..density..), contour = FALSE, ...)
       #Contours and strikezones are drawn last
       if (contour) t <- t + geom_density2d()
       t <- t + white_zone

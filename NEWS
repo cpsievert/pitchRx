@@ -2,8 +2,7 @@
 
 NEW ADDITION
 
-  - strikeFX will now recognize geom = "raster". Raster is a special case of "tile" where all tiles are the same size.
-
+  - strikeFX will now recognize geom = "raster". Raster is a special case of "tile" where all tiles are the same size. When using the model argument, a geom_raster() is now used. This means 'binwidths' can no longer be altered.
 
     CHANGES IN pitchRx VERSION 1.5
 
