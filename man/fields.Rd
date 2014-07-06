@@ -3,13 +3,15 @@
 \name{fields}
 \alias{fields}
 \title{Master list of tables and fields returned by \code{scrape}}
+\format{A list of character vectors.}
+\usage{
+fields
+}
 \description{
-This data object is used to find to set of fields for
-tables in a database. Since it's much easier to write to a
+This data object is as a template for fields and fields
+types for each table. Since it's much easier to write to a
 table with more fields (than vice versa), this object
 contains every possible field for each table.
 }
-\author{
-Carson Sievert
-}
+\keyword{datasets}
 

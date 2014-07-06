@@ -3,7 +3,8 @@
 \alias{scrape}
 \title{Scrape Major League Baseball's Gameday Data}
 \usage{
-scrape(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...)
+scrape(start, end, game.ids, leagues = getLeagues(gids[grepl("mlb", gids)]),
+  suffix = "inning/inning_all.xml", connect, ...)
 }
 \arguments{
   \item{start}{character string specifying a date
@@ -16,6 +17,12 @@ scrape(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...)
   this option is used, \code{start} and \code{end} are
   ignored. See \code{data(gids, package="pitchRx")} for
   examples.}
+
+  \item{leagues}{character matrix with two columns. Each
+  record in the matrix defines a desired away-home matchup
+  in terms of league IDs. The first column is for the away
+  team and the second column is for the home team. The
+  default is}
 
   \item{suffix}{character vector with suffix of the XML
   files to be parsed. Currently supported options are:
@@ -93,6 +100,7 @@ que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"),
                    by = c("num", "gameday_link"))
 que$query #refine sql query if you'd like
 pitchfx <- collect(que) #submit query and bring data into R
+
 }
 }
 \seealso{
