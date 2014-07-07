@@ -26,7 +26,6 @@
 #' @return Returns a list of data frames (or nothing if writing to a database).
 #' @export
 #' @import XML2R
-#' @importFrom lubridate days
 #' @examples
 #' \dontrun{
 #' # Collect PITCHf/x (and other data from inning_all.xml files) from 
@@ -57,6 +56,7 @@
 #'                    by = c("num", "gameday_link"))
 #' que$query #refine sql query if you'd like
 #' pitchfx <- collect(que) #submit query and bring data into R
+#' 
 #' }
 #' 
 
@@ -455,22 +455,22 @@ updateGids <- function(last.date, end) {
 
 #Take a start and an end date and make vector of "year_XX/month_XX/day_XX"
 dates2urls <- function(first.day, last.day) {
-  diff <- as.numeric(last.day - first.day)
-  dates <- first.day + c(0:diff) * lubridate::days(1)
-  years <- substr(dates, 0, 4)
-  months <- substr(dates, 6, 7)
-  days <- substr(dates, 9, 10)
-  mnths <- formatC(months, width = 2, flag = "0")
-  dys <- formatC(days, width = 2, flag = "0")
-  paste0("year_", years, "/month_", mnths, "/day_", dys)
+  dates <- seq(as.Date(first.day), as.Date(last.day), by = "day")
+  paste0("year_", format(dates, "%Y"), "/month_", 
+         substr(dates, "%m"), "/day_", substr(dates, "%d"))
 }
 
-#Take a game ID and construct the appropriate url prefix
+# Take a game ID and construct url path for each specific game
 gids2urls <- function(x) {
-  elements <- strsplit(x, split="_")
-  urls <- sapply(elements, function(y) paste0("http://gd2.mlb.com/components/game/mlb/year_", y[2], 
-                                              "/month_", y[3], "/day_", y[4], "/"))
-  return(paste0(urls, x))
+  root <- "http://gd2.mlb.com/components/game/"
+  # Assume the league is 'mlb' unless we find evidence otherwise
+  league <- rep("mlb", length(x))
+  not.mlb <- !grepl("mlb", x)
+  # If 'mlb' does not appear in the gid, use the home team's league
+  if (any(not.mlb)) league[not.mlb] <- substr(x[not.mlb], 26, 28)
+  base <- paste0(root, league)
+  paste0(base, "/year_", substr(x, 5, 8), "/month_", substr(x, 10, 11), 
+         "/day_", substr(x, 13, 14), "/", x)
 }
 
 #Find the proper subset of game IDs based on start/end dates

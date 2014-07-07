@@ -93,9 +93,11 @@ getLeagues(rok.gids)
 win.gids <- scrapeGids(league = "/win/")
 getLeagues(win.gids)
 
-
+# Collect all the "non-MLB" gids!
 nonMLBgids <- unique(c(aaa.gids, aax.gids, afa.gids, afx.gids, asx.gids,
                        bbc.gids, int.gids, min.gids, nae.gids, rok.gids, win.gids))
+# Make sure there is no overlap between gids and nonMLBgids
+nonMLBgids <- nonMLBgids[!nonMLBgids %in% gids]
 save(nonMLBgids, file = "data/nonMLBgids.rda", compress = "xz")
 
 # Thanks Albert and Harry for helping w/ league abbrevations --  -- https://twitter.com/albertlyu/status/485643587011354624

@@ -23,8 +23,7 @@ Imports:
     plyr,
     MASS,
     hexbin,
-    mgcv,
-    lubridate
+    mgcv
 Suggests:
     DBI,
     dplyr,
