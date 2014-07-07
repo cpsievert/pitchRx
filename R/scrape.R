@@ -457,7 +457,7 @@ updateGids <- function(last.date, end) {
 dates2urls <- function(first.day, last.day) {
   dates <- seq(as.Date(first.day), as.Date(last.day), by = "day")
   paste0("year_", format(dates, "%Y"), "/month_", 
-         substr(dates, "%m"), "/day_", substr(dates, "%d"))
+         format(dates, "%m"), "/day_", format(dates, "%d"))
 }
 
 # Take a game ID and construct url path for each specific game
