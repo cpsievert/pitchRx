@@ -26,7 +26,7 @@
 #'
 "players"
 
-#' All Gameday IDs from 2008-2013
+#' All MLB Gameday IDs from 2008-2013
 #' 
 #' A character vector with every "gameday" attribute in the "game" element taken from scoreboard files like this one:
 #' \url{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}
@@ -35,6 +35,16 @@
 #' @format A character vector
 #'
 "gids"
+
+#' All non-MLB Gameday IDs from 2008-2013
+#' 
+#' A character vector with every "gameday" attribute in the "game" element taken from scoreboard files like this one:
+#' \url{http://gd2.mlb.com/components/game/aaa/year_2013/month_06/day_08/gid_2013_06_08_freaaa_slcaaa_1/miniscoreboard.xml}
+#' Note they are ordered from oldest game to newest game.
+#' 
+#' @format A character vector
+#'
+"nonMLBgids"
 
 #' Master list of tables and fields returned by \code{scrape}
 #' 
