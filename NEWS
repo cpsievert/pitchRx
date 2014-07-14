@@ -6,6 +6,8 @@ NEW ADDITION
 
 BUG FIXES
 
+  - When using scrape without a database connection and "inning_all.xml" in the suffix, 
+    only the first 100 games were being returned. This is now "fixed". See here for more info -- https://github.com/cpsievert/pitchRx/issues/19
   - miniscoreboard.xml files changed slightly in 2014 which caused some errors. These are now fixed.
   - update_db will now actually append to the database if connect argument is not specified.
 
