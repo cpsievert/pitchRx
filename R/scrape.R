@@ -35,14 +35,21 @@
 #' dat <- scrape(start = "2013-08-01", end = "2013-08-01", async = TRUE)
 #' 
 #' # Scrape PITCHf/x from Minnesota Twins 2011 season
-#' data(gids, package="pitchRx")
+#' data(gids, package = "pitchRx")
 #' twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
-#' dat <- scrape(game.ids=twins11[1]) #scrapes 1st game only
+#' dat <- scrape(game.ids = twins11[1]) #scrapes 1st game only
+#' 
+#' data(nonMLBgids, package = "pitchRx")
+#' # Grab IDs for triple A games on June 1st, 2011
+#' # This post explains more about obtaining game IDs with regular expressions --
+#' # http://baseballwithr.wordpress.com/2014/06/30/pitchrx-meet-openwar-4/
+#' aaa <- nonMLBgids[grepl("2011_06_01_[a-z]{3}aaa_[a-z]{3}aaa", nonMLBgids)]
+#' dat <- scrape(game.ids = aaa)
 #' 
 #' # Create SQLite database, then collect and store data in that database
 #' library(dplyr)
 #' my_db <- src_sqlite("Gameday.sqlite3")
-#' scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con)
+#' scrape(start = "2013-08-01", end = "2013-08-01", connect = my_db$con)
 #' 
 #' # Collect other data complementary to PITCHf/x and store in database
 #' files <- c("inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")

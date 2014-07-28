@@ -1,5 +1,9 @@
     CHANGES IN pitchRx VERSION 1.5
 
+NEW FEATURES
+
+  - Data from all available minor league games is now available. See ?scrape for an example.
+
 NEW ADDITION
 
   - strikeFX will now recognize geom = "raster". Raster is a special case of "tile" where all tiles are the same size. When using the model argument, a geom_raster() is now used. This means 'binwidths' can no longer be altered.
