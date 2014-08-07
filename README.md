@@ -21,8 +21,7 @@ install.packages(pitchRx)
 * You can also install directly from GitHub (newest/developmental version) using [devtools](http://cran.r-project.org/web/packages/devtools/)
 
 ```s
-library(devtools)
-install_github("pitchRx", "cpsievert")
+devtools::install_github("pitchRx", "cpsievert")
 ```
 
 ## Report an issue
