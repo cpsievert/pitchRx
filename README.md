@@ -12,8 +12,18 @@ Tools for Harnessing MLBAM Gameday data and Visualizing PITCHf/x
 
 ## Installation
 
-* To install the latest [CRAN version](http://cran.r-project.org/web/packages/pitchRx/): `install.packages(pitchRx); library(pitchRx)`
-* To install the developmental version here on github use: `library(devtools); install_github("pitchRx", "cpsievert"); library(pitchRx)`
+* To install the latest [CRAN version](http://cran.r-project.org/web/packages/pitchRx/): 
+
+```s
+install.packages(pitchRx)
+```
+
+* You can also install directly from GitHub (newest/developmental version) using [devtools](http://cran.r-project.org/web/packages/devtools/)
+
+```s
+library(devtools)
+install_github("pitchRx", "cpsievert")
+```
 
 ## Report an issue
 
