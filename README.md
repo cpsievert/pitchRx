@@ -8,7 +8,7 @@ Tools for Harnessing MLBAM Gameday data and Visualizing PITCHf/x
 ## Documentation
 
 * For a quick intro to `pitchRx`: visit the [web page](http://cpsievert.github.com/pitchRx/).
-* For a more detailed overview, see the [RJournal article](http://journal.r-project.org/archive/accepted/sievert.pdf).
+* For a more detailed overview, see the [RJournal article](http://journal.r-project.org/archive/2014-1/sievert.pdf).
 
 ## Installation
 
