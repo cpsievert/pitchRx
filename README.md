@@ -5,9 +5,7 @@ pitchRx
 
 Tools for Acquiring MLBAM Gameday data and Visualizing PITCHf/x
 
-## Getting Started
-
-#### Installation
+## Installation
 
 * To install the latest [CRAN version](http://cran.r-project.org/web/packages/pitchRx/): 
 
