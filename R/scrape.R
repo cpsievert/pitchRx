@@ -72,8 +72,6 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   # Also, try to append a 'date' column to the 'atbat' table (if it's missing)
   if (!missing(connect)) {
     if (!require('DBI')) warning("You will need the DBI package to write tables to a database.")
-    valid.conn <- c("MySQLConnection", "SQLiteConnection") #DBI::dbWriteTable method only works for these two classes
-    if (!class(connect) %in% valid.conn) warning("You need either a MySQLConnection or SQLiteConnection.")
     fieldz <- plyr::try_default(dbListFields(connect, "atbat"), NULL, quiet = TRUE)
     if (!"date" %in% fieldz && !is.null(fieldz)) {
       msg <- "An 'atbat' table without the 'date' column was detected\n"
