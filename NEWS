@@ -1,3 +1,9 @@
+    CHANGES IN pitchRx VERSION 1.6
+
+NEW FEATURES
+
+    - scrape is now smart enough to grab new gameday identifiers that don't exist in data(gids). This is particularly useful during the postseason since we don't know the identifiers in advance.
+
     CHANGES IN pitchRx VERSION 1.5
 
 NEW FEATURES
