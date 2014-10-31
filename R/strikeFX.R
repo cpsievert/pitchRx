@@ -214,13 +214,12 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
     return(p+labelz+xrange+yrange+layers+col_scale)
   }
   if (geom %in% "subplot2d") { #special handling for subplotting
-    if (!require(ggsubplot)) {
+    if (!requireNamespace('ggsubplot')) {
       message("The 'subplot2d' geom requires library(ggsubplot)!")
       return(NULL)
     }
-    require(ggsubplot)
     return(ggplot(data=FX)+labelz+xrange+yrange+
-             geom_subplot2d(aes(x=px, y=pz_adj, 
+             ggsubplot::geom_subplot2d(aes(x=px, y=pz_adj, 
                     subplot = geom_bar(aes_string(x=fill, fill = fill))), ...)+
              black_zone+layers)
   }

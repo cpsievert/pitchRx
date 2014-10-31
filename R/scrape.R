@@ -71,20 +71,20 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   # Run some checks to make sure we can append to the database connection
   # Also, try to append a 'date' column to the 'atbat' table (if it's missing)
   if (!missing(connect)) {
-    if (!require('DBI')) warning("You will need the DBI package to write tables to a database.")
-    fieldz <- plyr::try_default(dbListFields(connect, "atbat"), NULL, quiet = TRUE)
+    if (!requireNamespace('DBI')) warning("You will need the DBI package to write tables to a database.")
+    fieldz <- plyr::try_default(DBI::dbListFields(connect, "atbat"), NULL, quiet = TRUE)
     if (!"date" %in% fieldz && !is.null(fieldz)) {
       msg <- "An 'atbat' table without the 'date' column was detected\n"
-      if (!require('dplyr') || packageVersion("dplyr") < 0.2) {
+      if (!requireNamespace('dplyr') || packageVersion("dplyr") < 0.2) {
         message(msg, "To automatically append 'date', please install/update the dplyr and DBI packages \n", 
                 "More details are discussed here -- \n",
                 "http://baseballwithr.wordpress.com/2014/04/13/modifying-and-querying-a-pitchfx-database-with-dplyr/")
       } else {
         message(msg, "A 'date' column will now be appended. Please be patient.")
         new.col <- if ("gameday_link" %in% fieldz) "SUBSTR(gameday_link, 15, -10)" else "SUBSTR(url, 80, -10)"
-        res <- dbSendQuery(connect, paste("CREATE TABLE atbat_temp AS SELECT *,", new.col, "AS date FROM atbat"))
-        dbRemoveTable(connect, name = 'atbat')
-        dbSendQuery(connect, 'ALTER TABLE atbat_temp RENAME TO atbat')
+        res <- DBI::dbSendQuery(connect, paste("CREATE TABLE atbat_temp AS SELECT *,", new.col, "AS date FROM atbat"))
+        DBI::dbRemoveTable(connect, name = 'atbat')
+        DBI::dbSendQuery(connect, 'ALTER TABLE atbat_temp RENAME TO atbat')
       }
     }
   }
@@ -112,7 +112,8 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 #       warning("I detected urls in your database that match your query! I will not be scraping these files")
 #     }
 
-  #upload fields so we have table templates (for exporting to database)
+  # upload fields so we have table templates (for exporting to database)
+  fields = NULL # happy BDR?
   env2 <- environment()
   data(fields, package="pitchRx", envir=env2)
 

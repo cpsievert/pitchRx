@@ -23,7 +23,7 @@
 #' 
 
 interactiveFX <- function(data, spheres=TRUE, color="pitch_types", avg.by, interval=0.01, alpha=1, show.legend=TRUE, ...){
-  if (!require('rgl')) warning("This function requires the rgl package. Please try to install.packages('rgl') before using.")
+  if (!requireNamespace('rgl')) warning("This function requireNamespaces the rgl package. Please try to install.packages('rgl') before using.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     pitch.type <- c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO")
@@ -40,7 +40,7 @@ interactiveFX <- function(data, spheres=TRUE, color="pitch_types", avg.by, inter
   for (i in idx) complete[,i] <- as.numeric(complete[,i])
   if (!missing(avg.by)) complete <- ddply(complete, avg.by, numcolwise(mean))
   snaps <- getSnapshots(complete, interval)
-  nplots <- length(snaps[1,,1]) #Number of 'snapshots' required for EVERY pitch to reach home plate
+  nplots <- length(snaps[1,,1]) #Number of 'snapshots' requireNamespaced for EVERY pitch to reach home plate
   if (isTRUE(!color %in% names(data))) { #convert types to colors!
     warning(paste(color, "is the variable that defines coloring but it isn't in the dataset!"))
     full.pal <- rgb(0, 0, 0, alpha)
@@ -60,14 +60,14 @@ interactiveFX <- function(data, spheres=TRUE, color="pitch_types", avg.by, inter
     full.pal <- factor(types)
     levels(full.pal) <- pal
   }
-  open3d()
+  rgl::open3d()
   if (spheres){
-    spheres3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
+    rgl::spheres3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
            col=as.character(full.pal), radius=.12, alpha=alpha, ...)
-    axes3d(c('x', 'y', 'z')) 
-    title3d(xlab='Horizontal Axis', ylab='Distance from Home Plate', zlab='Height From Ground')
+    rgl::axes3d(c('x', 'y', 'z')) 
+    rgl::title3d(xlab='Horizontal Axis', ylab='Distance from Home Plate', zlab='Height From Ground')
   } else {
-    plot3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
+    rgl::plot3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
            xlab="Horizontal Axis", ylab="Distance from Home Plate", zlab="Height From Ground",
            col=as.character(full.pal), alpha=alpha, ...)
   }
