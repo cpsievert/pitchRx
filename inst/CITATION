@@ -1,6 +1,5 @@
 citHeader("To cite pitchRx in publications use:")
 
-meta <- packageDescription("pitchRx")
 year <- sub('.*(2[[:digit:]]{3})-.*', '\\1', meta$Date, perl = TRUE)
 vers <- paste('R package version', meta$Version)
 
