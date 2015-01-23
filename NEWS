@@ -1,3 +1,9 @@
+    CHANGES IN pitchRx VERSION 1.7
+
+BUG FIXES
+
+    - The break_y, break_angle, and break_length fields are now considered REAL as opposed to TEXT.
+
     CHANGES IN pitchRx VERSION 1.6
 
 NEW FEATURES
