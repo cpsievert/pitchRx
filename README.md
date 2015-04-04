@@ -22,7 +22,7 @@ devtools::install_github("pitchRx", "cpsievert")
 ## Documentation
 
 * For a quick overview, visit the [web page](http://cpsievert.github.com/pitchRx/).
-* For a more detailed overview, see the [RJournal article](http://journal.r-project.org/archive/accepted/sievert.pdf).
+* For a more detailed overview, see the [RJournal article](http://journal.r-project.org/archive/2014-1/sievert.pdf).
 * I contribute to the [Exploring Baseball Data with R](http://baseballwithr.wordpress.com) blog, so if you [search for pitchRx](http://baseballwithr.wordpress.com/?s=pitchrx&submit=Search), you will find more stuff related pitchRx.
 
 ## Report an issue

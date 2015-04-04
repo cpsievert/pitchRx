@@ -11,13 +11,13 @@ bibentry(
   year = "2014",
   volume = "6",
   number = "1",
-  url = "http://journal.r-project.org/archive/accepted/sievert.pdf",
+  url = "http://journal.r-project.org/archive/2014-1/sievert.pdf",
 
   textVersion =
   paste("Carson Sievert (2014).",
         "Taming PITCHf/x Data with {pitchRx} and {XML2R}",
         "The R Journal, 6(1).",
-        "URL http://journal.r-project.org/archive/accepted/sievert.pdf.")
+        "URL http://journal.r-project.org/archive/2014-1/sievert.pdf.")
 )
 
 citEntry(

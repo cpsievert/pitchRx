@@ -3,6 +3,7 @@
 BUG FIXES
 
     - The break_y, break_angle, and break_length fields are now considered REAL as opposed to TEXT.
+    - Double header games were not being included by default. Now they will. See https://github.com/cpsievert/pitchRx/issues/23
 
     CHANGES IN pitchRx VERSION 1.6
 
