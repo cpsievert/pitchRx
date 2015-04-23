@@ -1,0 +1,16 @@
+```{r dat, results='asis', echo=FALSE, message=FALSE, tidy=FALSE}
+library(pitchRx)
+library(animint)
+data(pitches, package = "pitchRx")
+pitches$type <- interaction(pitches$pitch_type, pitches$pitcher_name)
+counts <- ddply(pitches, c("pitch_type", "pitcher_name", "type"), 
+                summarise, count = length(px))
+viz <- list(bars = ggplot() +
+              geom_bar(aes(x = factor(pitch_type), y = count, 
+                           fill = pitcher_name, clickSelects = type),
+                      position = "dodge", stat = "identity", data = counts),
+            scatter = ggplot() +
+              geom_point(aes(start_speed, end_speed, fill = pitcher_name, showSelected = type),
+                         alpha = 0.65, data = pitches))
+gg2animint_knitr(viz)
+```

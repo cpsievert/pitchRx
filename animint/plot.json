@@ -1,0 +1,181 @@
+{
+ "geoms": {
+ "geom1_rect_bars": {
+ "geom": "rect",
+"data": "geom1_rect_bars.csv",
+"aes": {
+ "x": "factor(pitch_type)",
+"y": "count",
+"fill": "pitcher_name",
+"clickSelects": "type" 
+},
+"params": [],
+"update": {
+ "clickSelects": "type" 
+},
+"subord": [],
+"subvars": [],
+"classed": "geom1_rect_bars",
+"types": {
+ "fill": "rgb",
+"x": "numeric",
+"y": "numeric",
+"clickSelects": "factor",
+"PANEL": "integer",
+"group": "integer",
+"ymin": "numeric",
+"ymax": "numeric",
+"xmin": "numeric",
+"xmax": "numeric" 
+},
+"nextgeom": "geom2_point_scatter" 
+},
+"geom2_point_scatter": {
+ "geom": "point",
+"data": "geom2_point_scatter.csv",
+"aes": {
+ "x": "start_speed",
+"y": "end_speed",
+"fill": "pitcher_name",
+"showSelected": "type" 
+},
+"params": {
+ "na.rm": false,
+"alpha":   0.65 
+},
+"update": {
+ "showSelected": "type" 
+},
+"subord": [
+ "showSelected" 
+],
+"subvars": {
+ "showSelected": "type" 
+},
+"classed": "geom2_point_scatter",
+"types": {
+ "fill": "rgb",
+"x": "numeric",
+"y": "numeric",
+"showSelected": "factor",
+"PANEL": "integer",
+"group": "integer" 
+} 
+} 
+},
+"selectors": {
+ "type": {
+ "selected": "FC.Mariano Rivera",
+"subset": [
+ "geom1_rect_bars",
+"geom2_point_scatter" 
+] 
+} 
+},
+"plots": {
+ "bars": {
+ "geoms": [
+ "geom1_rect_bars" 
+],
+"scales": {
+ "fill": [ "#F8766D", "#00BFC4" ] 
+},
+"options": {
+ "width":    400,
+"height":    400 
+},
+"axis": {
+ "x": [ 0.27273, 0.72727 ],
+"xlab": [ "FC", "FF" ],
+"xrange": [    0.4,    2.6 ],
+"xname": "factor(pitch_type)",
+"xline": true,
+"xticks": true,
+"y": [ 0.045455, 0.27915, 0.51285, 0.74655, 0.98025 ],
+"ylab": [ "0", "100", "200", "300", "400" ],
+"yrange": [ -19.45, 408.45 ],
+"yname": "count",
+"yline": true,
+"yticks": true 
+},
+"legend": {
+ "pitcher_name": {
+ "guide": "legend",
+"geoms": "polygon",
+"title": "pitcher_name",
+"entries": [
+ {
+ "polygonfill": "#00BFC4",
+"polygonsize":    0.5,
+"polygonlinetype":      1,
+"polygonweight":      1,
+"polygonorder": 2,
+"label": [ "Phil Hughes" ] 
+},
+{
+ "polygonfill": "#F8766D",
+"polygonsize":    0.5,
+"polygonlinetype":      1,
+"polygonweight":      1,
+"polygonorder": 1,
+"label": [ "Mariano Rivera" ] 
+} 
+] 
+} 
+} 
+},
+"scatter": {
+ "geoms": [
+ "geom2_point_scatter" 
+],
+"scales": {
+ "fill": [ "#F8766D", "#00BFC4" ] 
+},
+"options": {
+ "width":    400,
+"height":    400 
+},
+"axis": {
+ "x": [ 0.12354, 0.4024, 0.68126, 0.96012 ],
+"xlab": [ "80", "85", "90", "95" ],
+"xrange": [ 77.785, 95.715 ],
+"xname": "start_speed",
+"xline": true,
+"xticks": true,
+"y": [ 0.20484,    0.5, 0.79516 ],
+"ylab": [ "75", "80", "85" ],
+"yrange": [  71.53,  88.47 ],
+"yname": "end_speed",
+"yline": true,
+"yticks": true 
+},
+"legend": {
+ "pitcher_name": {
+ "guide": "legend",
+"geoms": "point",
+"title": "pitcher_name",
+"entries": [
+ {
+ "pointfill": "#00BFC4",
+"pointshape":     16,
+"pointcolour": "#000000",
+"pointsize":      2,
+"pointalpha":   0.65,
+"pointorder": 2,
+"label": [ "Phil Hughes" ] 
+},
+{
+ "pointfill": "#F8766D",
+"pointshape":     16,
+"pointcolour": "#000000",
+"pointsize":      2,
+"pointalpha":   0.65,
+"pointorder": 1,
+"label": [ "Mariano Rivera" ] 
+} 
+] 
+} 
+} 
+} 
+} 
+}

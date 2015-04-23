@@ -1,0 +1,23 @@
+
+```{r setup, echo=FALSE, message=FALSE}
+library(pitchRx)
+knit_hooks$set(webgl = hook_webgl)
+```
+
+```{r webgl1, webgl=TRUE, echo=FALSE, fig.width=20, fig.align='left'}
+#ugly workaround since knitr won't recognize interactiveFX
+Rivera <- subset(pitches, pitcher_name=="Mariano Rivera")
+snaps <- getSnapshots(Rivera, interval = 0.01)
+types <- as.character(Rivera[,"pitch_type"])
+ncolors <- length(unique(types))
+pal <- c(rgb(0, 0, 1), rgb(1, 0, 0))
+full.pal <- factor(types)
+levels(full.pal) <- pal
+spheres3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
+           xlab="Horizontal Axis", ylab="Distance from Home Plate", zlab="Height From Ground",
+           col=as.character(full.pal), radius=.12, alpha=.25)
+axes3d(c('x', 'y', 'z')) 
+title3d(xlab='Horizontal Axis', ylab='Distance from Home Plate', zlab='Height From Ground')
+```
+
+#### Authored by <a href="http://cpsievert.github.com/home.html">Carson Sievert</a> via <a href="http://www.rstudio.com/ide/docs/authoring/using_markdown">R Markdown, knitr & RStudio</a>. Published by <a href="http://pages.github.com/">GitHub Pages</a>.

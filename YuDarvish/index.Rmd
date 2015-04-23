@@ -1,0 +1,31 @@
+```{r set-hook, echo=FALSE, warning=FALSE, message=FALSE}
+library(knitr)
+knit_hooks$set(webgl = hook_webgl)
+opts_chunk$set(echo=FALSE, cache=TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r data, results='hide'}
+library(pitchRx)
+dat <- scrape(start="2013-04-24", end="2013-04-24")
+atbats <- subset(dat$atbat, pitcher_name=="Yu Darvish" & batter_name=="Albert Pujols")
+pitches <- plyr::join(atbats, dat$pitch, by=c("num", "url"), type="inner")
+```
+
+```{r webgl1, webgl=TRUE, echo=FALSE, fig.width=20, fig.align='left'}
+#reproduction of interactiveFX output since knitr won't recognize interactiveFX (but does recognize spheres3d)
+library(rgl)
+snaps <- getSnapshots(pitches, interval = 0.01)
+types <- as.character(pitches[,"pitch_type"])
+ncolors <- length(unique(types))
+pal <- terrain.colors(ncolors)
+full.pal <- factor(types)
+levels(full.pal) <- pal
+spheres3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
+           xlab="Horizontal Axis", ylab="Distance from Home Plate", zlab="Height From Ground",
+           col=as.character(full.pal), radius=.12)
+axes3d(c('x', 'y', 'z'))
+title3d(xlab='Horizontal Axis', ylab='Distance from Home Plate', zlab='Height From Ground')
+```
+
+
+#### Authored by <a href="http://cpsievert.github.com/home.html">Carson Sievert</a> via <a href="http://www.rstudio.com/ide/docs/authoring/using_markdown">R Markdown, knitr & RStudio</a>. Published by <a href="http://pages.github.com/">GitHub Pages</a>.

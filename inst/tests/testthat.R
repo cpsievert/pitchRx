@@ -1,5 +1,0 @@
-library(pitchRx)
-library(testthat)
-library(dplyr)
-library(DBI)
-test_check("pitchRx")
