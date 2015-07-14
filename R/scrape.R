@@ -402,13 +402,12 @@ export <- function(connect, value, name, template, ...) {
   if (!is.null(prior.fields)) {
     missing.fields <- setdiff(prior.fields, df.fields)
     value <- fill.NAs(value, missing.fields)
-    illegal <- setdiff(df.fields, prior.fields)
-    if (length(illegal)) {
-      name <- paste0(name, "_export")
-      prior.fields <- c(prior.fields, illegal)
-      warning("The value data.frame has variables that are not in the corresponding table. Writing data.frame to a new table instead.")
+    new_fields <- setdiff(df.fields, prior.fields)
+    # if there are new fields, add an appropriate column to the database table
+    for (i in new_fields) {
+      type <- DBI::dbDataType(connect, value[, i])
+      DBI::dbSendQuery(connect, sprintf("ALTER TABLE %s ADD %s %s", name, i, type))
     }
-    value <- value[prior.fields]
     success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, append=TRUE, overwrite=FALSE, row.names=FALSE),
                                  default=FALSE, quiet=TRUE) 
   } else {
