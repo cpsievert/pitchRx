@@ -2,4 +2,4 @@
 .Rhistory
 .Rapp.history
 .Rproj.user
-.gitignore
+*.docx
