@@ -35,7 +35,6 @@ Suggests:
     testthat,
     ggsubplot,
     rgl
-Date: 2015-04-03
 LazyData: true
 URL: http://cpsievert.github.com/pitchRx
 BugReports: http://github.com/cpsievert/pitchRx/issues
