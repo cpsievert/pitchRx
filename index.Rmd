@@ -154,6 +154,7 @@ m <- bam(strike ~ s(px, pz, by = factor(stand)) +
 x <- list(
   facet_grid(. ~ stand),
   theme_bw(),
+  coord_equal(),
   viridis::scale_fill_viridis(name = "Probability of Called Strike")
 )
 strikeFX(noswing, model = m, layer = x)
