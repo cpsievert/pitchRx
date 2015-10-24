@@ -103,7 +103,6 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
   release <- max(as.numeric(parameters$y0))
   max.dist <- release - 1.417 #maximum distance a baseball can be from the pitcher (1.417 is start of home plate)
   swing <- NULL
-  #browser()
   for (i in 1:(N-1)) {
     if (flag & ctr > (2/5)*N) swing <- annotate("text", label = "SWING!", x = 0, y = 6, size = 2, colour = "red")
     frame <- data.frame(snapshots[,i,], other)

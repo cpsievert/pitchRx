@@ -73,7 +73,6 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   if (!missing(connect)) {
     if (!requireNamespace('DBI')) warning("You will need the DBI package to write tables to a database.")
     fieldz <- plyr::try_default(DBI::dbListFields(connect, "atbat"), NULL, quiet = TRUE)
-    browser()
     if (!"date" %in% fieldz && !is.null(fieldz)) {
       msg <- "An 'atbat' table without the 'date' column was detected\n"
       if (!requireNamespace('dplyr') || packageVersion("dplyr") < 0.2) {
