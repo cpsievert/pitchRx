@@ -412,6 +412,7 @@ export <- function(connect, value, name, template, ...) {
       type <- DBI::dbDataType(connect, value[, i])
       DBI::dbSendQuery(connect, sprintf("ALTER TABLE %s ADD %s %s", name, i, type))
     }
+    value <- value[DBI::dbListFields(connect, name)]
     success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, append=TRUE, overwrite=FALSE, row.names=FALSE),
                                  default=FALSE, quiet=TRUE)
   } else {
