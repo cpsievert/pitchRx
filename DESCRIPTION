@@ -1,6 +1,6 @@
 Package: pitchRx
 Title: Tools for Harnessing 'MLBAM' 'Gameday' Data and Visualizing 'pitchfx'
-Version: 1.8.2
+Version: 1.8.3
 Author: Carson Sievert <cpsievert1@gmail.com>
 Maintainer: Carson Sievert <cpsievert1@gmail.com>
 Description: With 'pitchRx', one can easily obtain Major League Baseball Advanced
