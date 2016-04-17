@@ -33,7 +33,6 @@ Suggests:
     animation,
     shiny,
     testthat,
-    ggsubplot,
     rgl
 LazyData: true
 URL: http://cpsievert.github.com/pitchRx
