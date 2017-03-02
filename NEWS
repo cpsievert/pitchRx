@@ -1,3 +1,44 @@
+    CHANGES IN pitchRx VERSION 1.8.4
+
+Updated gids data 
+
+    CHANGES IN pitchRx VERSION 1.8.3
+
+BUG FIXES
+
+    - Fix #39
+
+    CHANGES IN pitchRx VERSION 1.8.2
+
+BUG FIXES
+
+    - Fix #34
+
+    CHANGES IN pitchRx VERSION 1.8.1
+
+BUG FIXES
+
+   - scrape() function went to debugger when connect argument was used
+
+    CHANGES IN pitchRx VERSION 1.8
+
+BUG FIXES
+
+   - Fixed #26 and #31.
+
+    CHANGES IN pitchRx VERSION 1.7
+
+BUG FIXES
+
+    - The break_y, break_angle, and break_length fields are now considered REAL as opposed to TEXT.
+    - Double header games were not being included by default. Now they will. See https://github.com/cpsievert/pitchRx/issues/23
+
+    CHANGES IN pitchRx VERSION 1.6
+
+NEW FEATURES
+
+    - scrape is now smart enough to grab new gameday identifiers that don't exist in data(gids). This is particularly useful during the postseason since we don't know the identifiers in advance.
+
     CHANGES IN pitchRx VERSION 1.5
 
 NEW FEATURES
@@ -10,7 +51,7 @@ NEW ADDITION
 
 BUG FIXES
 
-  - When using scrape without a database connection and "inning_all.xml" in the suffix, 
+  - When using scrape without a database connection and "inning_all.xml" in the suffix,
     only the first 100 games were being returned. This is now "fixed". See here for more info -- https://github.com/cpsievert/pitchRx/issues/19
   - miniscoreboard.xml files changed slightly in 2014 which caused some errors. These are now fixed.
   - update_db will now actually append to the database if connect argument is not specified.
@@ -48,7 +89,7 @@ MAJOR FIXES
   - Not all records in the atbat table were being returned due to an improper use of merge. This is now fixed.
   - Records are sometimes duplicated when extracting from source. Duplicated records will now be removed.
   - Some variables weren't being copied to the database correctly (when using the connect argument). For example, the "gameday_link" field in the "game" table was accidently being copied as "venue".
-  
+
 MINOR IMPROVEMENTS
 
   - A 'gameday_link' was added to all tables for better linking between tables (you can now use this instead of url for a game identifier).
@@ -67,7 +108,7 @@ MAJOR IMPROVEMENTS
 
     (1) Easily write tables to a remote database using scrape()'s connect argument. This will lead to both better memory management and faster run-time.
     (2) Query particular game(s) of interest using the game.ids option.
-    (3) Much, much easier to maintain and add support for new file types. scrape() currently supports four types of files: inning/inning_all.xml, inning/inning_hit.xml, miniscoreboard.xml, and players.xml. 
+    (3) Much, much easier to maintain and add support for new file types. scrape() currently supports four types of files: inning/inning_all.xml, inning/inning_hit.xml, miniscoreboard.xml, and players.xml.
     (4) pitchRx will serve as a nice example of using the XML2R framework to build web scrapers. Another example is the bbscrapeR package -- https://github.com/cpsievert/bbscrapeR
     (5) The memory hog data(urls) is no longer included. Instead, Gameday IDs - data(gids) - will help drive the construction of urls. Also, data(fields) are now used as the "master" list of fields to when writing tables to database.
     (6) "Average" users should still find scrape() very easy to use.
@@ -91,9 +132,9 @@ MAJOR CHANGES
 
    - Markdown vignette was removed since R2SWF was removed from CRAN and there doesn't seem to be a great alternative currently. The vignette may re-appear in future versions, but you can still go to the demo page - http://cpsievert.github.io/pitchRx/demo/
 
-  - The model option of strikeFX is now restricted to "gam" objects (see ?mgcv::gamObject). One can now pass either a fitted gam object or a function call to mgcv::gam or mgcv::bam. When passing a function call, strikeFX will automatically save the model object to the working directory. It's important to note that any variables used in a ggplot2 facet layer or in the density1/density2 options MUST BE INCLUDED as factors in the model. 
+  - The model option of strikeFX is now restricted to "gam" objects (see ?mgcv::gamObject). One can now pass either a fitted gam object or a function call to mgcv::gam or mgcv::bam. When passing a function call, strikeFX will automatically save the model object to the working directory. It's important to note that any variables used in a ggplot2 facet layer or in the density1/density2 options MUST BE INCLUDED as factors in the model.
 
-  - geom="ggsubplot" is no longer a valid geometry option since the ggsubplot package was archived on CRAN. 
+  - geom="ggsubplot" is no longer a valid geometry option since the ggsubplot package was archived on CRAN.
 
 MINOR FIXES
 
@@ -140,7 +181,7 @@ DOCUMENTATION
 		CHANGES IN pitchRx VERSION 0.4
 
 NEW FEATURES
-   
+
     - HTML vignette now available.
 
     - strikeFX has a new geom="subplot2d" option.
@@ -149,7 +190,7 @@ NEW FEATURES
 		CHANGES IN pitchRx VERSION 0.3
 
 NEW FEATURES
-   
+
     - The data(urls) object is now updated to include 2013 urls.
 
    - The function updateUrls() is now exported so that users can collect urls that are not already provided in data(urls).
@@ -167,7 +208,7 @@ NEW FEATURES
 
 NEW FEATURES
 
-  - first version of pitchRx. 
+  - first version of pitchRx.
 
   - intro to data collection with pitchRx: http://cpsievert.wordpress.com/2013/01/10/easily-obtain-mlb-pitchfx-data-using-r/
 

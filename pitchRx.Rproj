@@ -12,5 +12,7 @@ Encoding: UTF-8
 RnwWeave: knitr
 LaTeX: pdfLaTeX
 
+StripTrailingWhitespace: Yes
+
 BuildType: Package
 PackageInstallArgs: --no-multiarch --with-keep.source

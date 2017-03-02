@@ -1,19 +1,19 @@
 Package: pitchRx
-Title: Tools for Harnessing MLBAM Gameday data and Visualizing PITCHf/x
-Version: 1.5
-Author: Carson Sievert <sievert@iastate.edu>
-Maintainer: Carson Sievert <sievert@iastate.edu>
-Description: With pitchRx, one can easily obtain Major League Baseball Advanced
-    Media's Gameday data (as well as store it in a remote database). The
-    Gameday website hosts a wealth of data in XML format, but perhaps most
-    interesting is PITCHf/x. Among other things, PITCHf/x data can be used to
+Title: Tools for Harnessing 'MLBAM' 'Gameday' Data and Visualizing 'pitchfx'
+Version: 1.8.4
+Author: Carson Sievert <cpsievert1@gmail.com>
+Maintainer: Carson Sievert <cpsievert1@gmail.com>
+Description: With 'pitchRx', one can easily obtain Major League Baseball Advanced
+    Media's 'Gameday' data (as well as store it in a remote database). The
+    'Gameday' website hosts a wealth of data in XML format, but perhaps most
+    interesting is 'pitchfx'. Among other things, 'pitchfx' data can be used to
     recreate a baseball's flight path from a pitcher's hand to home plate. With
-    pitchRx, one can easily create animations and interactive 3D scatterplots
-    of the baseball's flight path. PITCHf/x data is also commonly used to
+    pitchRx, one can easily create animations and interactive 3D 'scatterplots'
+    of the baseball's flight path. 'pitchfx' data is also commonly used to
     generate a static plot of baseball locations at the moment they cross home
     plate. These plots, sometimes called strike-zone plots, can also refer to a
-    plot of event probabilities over the same region. pitchRx provides an easy
-    and robust way to generate strike-zone plots using the ggplot2 package.
+    plot of event probabilities over the same region. 'pitchRx' provides an easy
+    and robust way to generate strike-zone plots using the 'ggplot2' package.
 License: MIT + file LICENSE
 Depends:
     R (>= 2.15.1),
@@ -27,17 +27,13 @@ Imports:
 Suggests:
     DBI,
     dplyr,
-    RSQLite,
-    RSQLite.extfuns,
+    RSQLite (>= 1.0.0),
     parallel,
     knitr,
     animation,
     shiny,
     testthat,
-    ggsubplot,
     rgl
-Date: 2014-07-22
 LazyData: true
 URL: http://cpsievert.github.com/pitchRx
 BugReports: http://github.com/cpsievert/pitchRx/issues
-Roxygen: list(wrap = TRUE)

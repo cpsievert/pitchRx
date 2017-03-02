@@ -1,42 +1,38 @@
 #' Update an existing PITCHf/x database
-#' 
-#' Data from games played starting the day after the most recent date in the database 
+#'
+#' Data from games played starting the day after the most recent date in the database
 #' are appended to the appropriate tables.
-#' 
+#'
 #' @details Using this function requires the DBI package
 #' @seealso \url{http://baseballwithr.wordpress.com/2014/04/13/modifying-and-querying-a-pitchfx-database-with-dplyr/}
-#' 
+#'
 #' @param connect Either an SQLite or MySQL database connection
 #' @param end date to stop data collection. The default value of 'yesterday' is recommended to ensure the update performs properly.
 #' @param ... arguments passed onto \link{scrape}
 #' @export
 #' @examples
-#' 
-#' 
+#'
+#'
 #' \dontrun{
 #'  library(dplyr)
 #'  db <- src_sqlite("pitchRx.sqlite3")
 #'  update_db(db$con)
 #' }
-#' 
+#'
 
 update_db <- function(connect, end = Sys.Date() - 1, ...) {
-  if (!require('DBI')) warning("The DBI package is required to use this function.\n",
+  if (!requireNamespace('DBI')) warning("The DBI package is required to use this function.\n",
                                "Please run install.packages('DBI')")
-  if(!dbExistsTable(connect, "atbat")) stop("Your database must have the atbat table in order to work")
+  if(!DBI::dbExistsTable(connect, "atbat")) stop("Your database must have the atbat table in order to work")
   # Create an index for faster querying
   # Note this throws an error if the INDEX already exists
-  res <- plyr::try_default(dbSendQuery(connect, 'CREATE INDEX gid_idx ON atbat(gameday_link)'), NULL, quiet = TRUE)
-  old.gids <- dbGetQuery(connect, "SELECT DISTINCT gameday_link FROM atbat")[,1]
-  data(gids, package = "pitchRx", envir = environment())
-  # new.gids are bound to obtain old games that didn't have a inning_all.xml file
-  new.gids <- gids[!gids %in% old.gids]
+  res <- plyr::try_default(DBI::dbSendQuery(connect, 'CREATE INDEX gid_idx ON atbat(gameday_link)'), NULL, quiet = TRUE)
+  old.gids <- DBI::dbGetQuery(connect, "SELECT DISTINCT gameday_link FROM atbat")[,1]
   old.dates <- gid2date(old.gids)
-  new.dates <- gid2date(new.gids)
-  valid.gids <- new.gids[max(old.dates) + 1 <= new.dates & new.dates <= end]
-  if (length(valid.gids) < 1) { message("Already up to date"); return(NULL) }
+  if (max(old.dates >= end)) { message("Already up to date"); return(NULL) }
+
   # Figure out what suffices to pass along scrape
-  tbls <- dbListTables(connect)
+  tbls <- DBI::dbListTables(connect)
   suffices <- NULL
   inning_all.tbls <- c("action", "atbat", "pitch", "po", "runner")
   if (any(inning_all.tbls %in% tbls)) suffices <- c(suffices, "inning/inning_all.xml")
@@ -45,8 +41,9 @@ update_db <- function(connect, end = Sys.Date() - 1, ...) {
   game.tbls <- c("game", "media")
   if (any(game.tbls %in% tbls)) suffices <- c(suffices, "miniscoreboard.xml")
   player.tbls <- c("player", "coach", "umpire")
-  if (any(player.tbls %in% tbls)) suffices <- c(suffices, "players.xml")  
-  scrape(game.ids = valid.gids, suffix = suffices, connect = connect, ...)
+  if (any(player.tbls %in% tbls)) suffices <- c(suffices, "players.xml")
+
+  scrape(start = max(old.dates) + 1, end = end, suffix = suffices, connect = connect, ...)
   # count the number of records per game and rescrape game that are missing records?
   # Nice idea, but how would I update a data structre with the number of records in a reasonable way?
 }

@@ -10,83 +10,85 @@
 #' of files based on either a window of dates or a set of \code{game.ids}.
 #' If collecting data in bulk, it is strongly recommended that one establishes a database connection and supplies the
 #' connection to the \code{connect} argument. See the examples section for a simple example of how to do so.
-#' 
+#'
 #' @note This function was adapted from \code{scrapeFX} which is deprecated as of version 1.0
 #' @param start character string specifying a date "yyyy-mm-dd" to commence scraping.
 #' @param end character string specifying a date "yyyy-mm-dd" to terminate scraping.
-#' @param game.ids character vector of gameday_links. If this option is used, \code{start} and \code{end} are ignored. 
+#' @param game.ids character vector of gameday_links. If this option is used, \code{start} and \code{end} are ignored.
 #' See \code{data(gids, package="pitchRx")} for examples.
-#' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are: 
+#' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are:
 #' 'players.xml', 'miniscoreboard.xml', 'inning/inning_all.xml', 'inning/inning_hit.xml'.
 #' @param connect A database connection object. The class of the object should be "MySQLConnection" or "SQLiteConnection".
 #' If a valid connection is supplied, tables will be copied to the database, which will result in better memory management.
 #' If a connection is supplied, but the connection fails for some reason, csv files will be written to the working directory.
-#' @param ... arguments passed onto \code{XML2R::XML2Obs}. Among other things, this can be used to switch on asynchronous downloads. 
+#' @param ... arguments passed onto \code{XML2R::XML2Obs}. Among other things, this can be used to switch on asynchronous downloads.
 #' @seealso If you want to add support for more file types, the \code{XML2R} package is a good place to start.
 #' @return Returns a list of data frames (or nothing if writing to a database).
 #' @export
 #' @import XML2R
 #' @examples
 #' \dontrun{
-#' # Collect PITCHf/x (and other data from inning_all.xml files) from 
+#' # Collect PITCHf/x (and other data from inning_all.xml files) from
 #' # all games played on August 1st, 2013 (using asynchronous downloads)
 #' dat <- scrape(start = "2013-08-01", end = "2013-08-01")
 #' #As of XML2R 0.0.5, asyncronous downloads can be performed
 #' dat <- scrape(start = "2013-08-01", end = "2013-08-01", async = TRUE)
-#' 
+#'
 #' # Scrape PITCHf/x from Minnesota Twins 2011 season
 #' data(gids, package = "pitchRx")
 #' twins11 <- gids[grepl("min", gids) & grepl("2011", gids)]
 #' dat <- scrape(game.ids = twins11[1]) #scrapes 1st game only
-#' 
+#'
 #' data(nonMLBgids, package = "pitchRx")
 #' # Grab IDs for triple A games on June 1st, 2011
 #' # This post explains more about obtaining game IDs with regular expressions --
 #' # http://baseballwithr.wordpress.com/2014/06/30/pitchrx-meet-openwar-4/
 #' aaa <- nonMLBgids[grepl("2011_06_01_[a-z]{3}aaa_[a-z]{3}aaa", nonMLBgids)]
 #' dat <- scrape(game.ids = aaa)
-#' 
+#'
 #' # Create SQLite database, then collect and store data in that database
 #' library(dplyr)
 #' my_db <- src_sqlite("Gameday.sqlite3")
 #' scrape(start = "2013-08-01", end = "2013-08-01", connect = my_db$con)
-#' 
+#'
 #' # Collect other data complementary to PITCHf/x and store in database
 #' files <- c("inning/inning_hit.xml", "miniscoreboard.xml", "players.xml")
 #' scrape(start = "2013-08-01", end = "2013-08-01", connect=my_db$con, suffix = files)
-#' 
+#'
 #' # Simple example to demonstrate database query using dplyr
 #' # Note that 'num' and 'gameday_link' together make a key that allows us to join these tables
 #' locations <- select(tbl(my_db, "pitch"), px, pz, des, num, gameday_link)
 #' names <- select(tbl(my_db, "atbat"), pitcher_name, batter_name, num, gameday_link)
-#' que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"), 
+#' que <- inner_join(locations, filter(names, batter_name == "Paul Goldschmidt"),
 #'                    by = c("num", "gameday_link"))
 #' que$query #refine sql query if you'd like
 #' pitchfx <- collect(que) #submit query and bring data into R
-#' 
+#'
 #' }
-#' 
+#'
 
-scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...) { 
+scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...) {
   # Run some checks to make sure we can append to the database connection
   # Also, try to append a 'date' column to the 'atbat' table (if it's missing)
   if (!missing(connect)) {
-    if (!require('DBI')) warning("You will need the DBI package to write tables to a database.")
-    valid.conn <- c("MySQLConnection", "SQLiteConnection") #DBI::dbWriteTable method only works for these two classes
-    if (!class(connect) %in% valid.conn) warning("You need either a MySQLConnection or SQLiteConnection.")
-    fieldz <- plyr::try_default(dbListFields(connect, "atbat"), NULL, quiet = TRUE)
+    if (!requireNamespace('DBI')) warning("You will need the DBI package to write tables to a database.")
+    fieldz <- plyr::try_default(DBI::dbListFields(connect, "atbat"), NULL, quiet = TRUE)
     if (!"date" %in% fieldz && !is.null(fieldz)) {
       msg <- "An 'atbat' table without the 'date' column was detected\n"
-      if (!require('dplyr') || packageVersion("dplyr") < 0.2) {
-        message(msg, "To automatically append 'date', please install/update the dplyr and DBI packages \n", 
+      if (!requireNamespace('dplyr') || packageVersion("dplyr") < 0.2) {
+        message(msg, "To automatically append 'date', please install/update the dplyr and DBI packages \n",
                 "More details are discussed here -- \n",
                 "http://baseballwithr.wordpress.com/2014/04/13/modifying-and-querying-a-pitchfx-database-with-dplyr/")
       } else {
         message(msg, "A 'date' column will now be appended. Please be patient.")
-        new.col <- if ("gameday_link" %in% fieldz) "SUBSTR(gameday_link, 15, -10)" else "SUBSTR(url, 80, -10)"
-        res <- dbSendQuery(connect, paste("CREATE TABLE atbat_temp AS SELECT *,", new.col, "AS date FROM atbat"))
-        dbRemoveTable(connect, name = 'atbat')
-        dbSendQuery(connect, 'ALTER TABLE atbat_temp RENAME TO atbat')
+        new.col <- if ("SQLiteConnection" %in% class(connect)) {
+          if ("gameday_link" %in% fieldz) "SUBSTR(gameday_link, 15, -10)" else "SUBSTR(url, 80, -10)"
+        } else {
+          if ("gameday_link" %in% fieldz) "SUBSTR(gameday_link, 5, 10)" else "SUBSTR(url, 70, 10)"
+        }
+        res <- DBI::dbSendQuery(connect, paste("CREATE TABLE atbat_temp AS SELECT *,", new.col, "AS date FROM atbat"))
+        DBI::dbRemoveTable(connect, name = 'atbat')
+        DBI::dbSendQuery(connect, 'ALTER TABLE atbat_temp RENAME TO atbat')
       }
     }
   }
@@ -107,14 +109,15 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 #SMART PREVENTION OF APPENDING SAME DATA MIGHT GET MESSY (HOW DO I CHECK EVERY TYPE OF FILE IN A NICE WAY???)
 #     DBTables <- dbListTables(connect)
 #     #should I try tables until this is non-empty?
-#     existing.urls <- gsub("/inning/inning_all.xml", "", 
+#     existing.urls <- gsub("/inning/inning_all.xml", "",
 #                           as.character(dbGetQuery(connect, "SELECT DISTINCT(urls) FROM atbats")))
 #     idx <- gameDir %in% existing.urls
 #     if (any(idx)) {
 #       warning("I detected urls in your database that match your query! I will not be scraping these files")
 #     }
 
-  #upload fields so we have table templates (for exporting to database)
+  # upload fields so we have table templates (for exporting to database)
+  fields = NULL # happy BDR?
   env2 <- environment()
   data(fields, package="pitchRx", envir=env2)
 
@@ -134,7 +137,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     obs <- setNames(obs, nms)
     #"games" observations are not informative -- no longer need them
     game.idx <- grep("^games$", nms)
-    if (length(game.idx) > 0) obs <- obs[-game.idx] 
+    if (length(game.idx) > 0) obs <- obs[-game.idx]
     tables <- collapse_obs2(obs)
     #Coerce matrices to data frames; turn appropriate variables into numerics
     for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
@@ -144,10 +147,10 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       rm(obs)
       rm(tables)
       message("Collecting garbage")
-      gc() 
+      gc()
     }
   }
-  
+
   #scrape player files next since the "game" node clashes with inning_all.xml
   if (any(grepl("players.xml", suffix))) {
     player.files <- paste0(gameDir, "/players.xml")
@@ -179,10 +182,10 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       rm(obs)
       rm(tables)
       message("Collecting garbage")
-      gc() 
+      gc()
     }
   }
-  
+
   #Now scrape the inning/inning_hit.xml files
   if (any(grepl("inning/inning_hit.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_hit.xml")
@@ -201,10 +204,10 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       rm(obs)
       rm(tables)
       message("Collecting garbage")
-      gc() 
+      gc()
     }
   }
-  
+
   #Now scrape the inning/inning_all.xml files
   if (any(grepl("inning/inning_all.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_all.xml")
@@ -221,17 +224,17 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
       inning.filez <- inning.filez[!is.na(inning.filez)]
       obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE, ...)
-      obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch", 
-                                  "game//inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE) 
-      obs <- re_name(obs, equiv=c("game//inning//top//atbat//runner", 
-                                  "game//inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)   
-      obs <- re_name(obs, equiv=c("game//inning//top//atbat//po", 
-                                  "game//inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE) 
-      obs <- re_name(obs, equiv=c("game//inning//top//atbat", 
-                                  "game//inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE) 
-      obs <- re_name(obs, equiv=c("game//inning//top//action", 
-                                  "game//inning//bottom//action"), diff.name="inning_side", quiet=TRUE) 
-      obs <- add_key(obs, parent="game//inning", recycle="num", key.name="inning", quiet=TRUE) 
+      obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch",
+                                  "game//inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
+      obs <- re_name(obs, equiv=c("game//inning//top//atbat//runner",
+                                  "game//inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
+      obs <- re_name(obs, equiv=c("game//inning//top//atbat//po",
+                                  "game//inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
+      obs <- re_name(obs, equiv=c("game//inning//top//atbat",
+                                  "game//inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
+      obs <- re_name(obs, equiv=c("game//inning//top//action",
+                                  "game//inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
+      obs <- add_key(obs, parent="game//inning", recycle="num", key.name="inning", quiet=TRUE)
       obs <- add_key(obs, parent="game//inning", recycle="next", key.name="next_", quiet=TRUE)
       #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
       names(obs) <- sub("^game//inning//action$", "game//inning//atbat//action", names(obs))
@@ -273,7 +276,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       colnames(tables[["atbat"]]) <- sub("^des", "atbat_des", colnames(tables[["atbat"]]))
       #Coerce matrices to data frames; turn appropriate variables into numerics
       for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
-      
+
       #generate a "count" column from "b" (balls) & "s" (strikes)
       tables[["pitch"]] <- appendPitchCount(tables[["pitch"]])
       tables[["atbat"]] <- appendDate(tables[["atbat"]])
@@ -282,7 +285,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
         rm(tables)
         message("Collecting garbage")
-        gc() 
+        gc()
       }
     }
   }
@@ -295,19 +298,19 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 }
 
 #' Construct Gameday urls based on some parameters.
-#' 
+#'
 #' This is a convenience function (used by \link{scrape}) which constructs urls with the common
-#' Gameday root \url{http://gd2.mlb.com/components/game/mlb/}. 
-#' 
+#' Gameday root \url{http://gd2.mlb.com/components/game/mlb/}.
+#'
 #' @param start date "yyyy-mm-dd" to commence scraping.
 #' @param end date "yyyy-mm-dd" to terminate scraping.
-#' @param gids The default value "infer" suggests gameday_links should be derived 
-#' and appended appropriately (based on values of \code{start} and \code{end}). 
+#' @param gids The default value "infer" suggests gameday_links should be derived
+#' and appended appropriately (based on values of \code{start} and \code{end}).
 #' Otherwise, a character vector with gameday_links can be supplied.
 #' @return Returns a character vector.
 #' @export
 #' @examples
-#' 
+#'
 #' # XML file names with pitch-by-pitch level data
 #' prefix <- makeUrls(start="2011-04-04", end="2011-04-04")
 #' paste0(prefix, "/inning/inning_all.xml")
@@ -318,7 +321,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 #' # Use gids option instead
 #' data(gids)
 #' identical(prefix, makeUrls(gids=gids[grep("2011_04_04", gids)]))
-#' 
+#'
 makeUrls <- function(start, end, gids="infer") {
   root <- "http://gd2.mlb.com/components/game/mlb/"
   if (all(gids %in% "infer")) {
@@ -332,8 +335,7 @@ makeUrls <- function(start, end, gids="infer") {
       data(gids, package="pitchRx", envir=env)
       last.game <- strsplit(gids[length(gids)], split="_")[[1]]
       last.date <- as.POSIXct(paste(last.game[2], last.game[3], last.game[4], sep="-"))
-      #need to rework this guy
-      #if (last.date < end) gids <- c(gids, updateGids(max(start, last.date), end))
+      if (last.date < end) gids <- c(gids, updateGids(max(start, last.date), end))
       return(gids2urls(subsetGids(gids, first=start, last=end)))
     }
   } else {
@@ -360,13 +362,13 @@ collapse_obs2 <- function(x) {
 }
 
 #' Export (append) a data.frame to a remote table in a database.
-#' 
+#'
 #' This function is convenient if you plan on repeatedly appending to a table in a database.
 #' All that is required is a database connection and a data.frame you want to export to that database.
 #' If you want to initiate a table with more columns use the \code{template} argument.
 #' Note that if the table already exists, the \code{template} argument will be ignored.
-#' 
-#' @param connect database connection. 
+#'
+#' @param connect database connection.
 #' @param value local data frame.
 #' @param template a named character vector. The names of the vector should contain the names of \code{value}. The values of this vector should contain the relevant field types.
 #' @param name name of the remote table.
@@ -394,7 +396,7 @@ export <- function(connect, value, name, template, ...) {
   names(value) <- sub("^url_key$", "url", names(value))
   if ("url" %in% names(value)) { #url should never be NA -- this is specific to pitchRx implementation
     throw <- is.na(value$url)
-    if (any(throw)) value <- value[-throw,]  
+    if (any(throw)) value <- value[-throw,]
   }
   if (dim(value)[1] == 0) return(NULL)
   df.fields <- names(value)
@@ -404,15 +406,15 @@ export <- function(connect, value, name, template, ...) {
   if (!is.null(prior.fields)) {
     missing.fields <- setdiff(prior.fields, df.fields)
     value <- fill.NAs(value, missing.fields)
-    illegal <- setdiff(df.fields, prior.fields)
-    if (length(illegal)) {
-      name <- paste0(name, "_export")
-      prior.fields <- c(prior.fields, illegal)
-      warning("The value data.frame has variables that are not in the corresponding table. Writing data.frame to a new table instead.")
+    new_fields <- setdiff(df.fields, prior.fields)
+    # if there are new fields, add an appropriate column to the database table
+    for (i in new_fields) {
+      type <- DBI::dbDataType(connect, value[, i])
+      DBI::dbSendQuery(connect, sprintf("ALTER TABLE %s ADD %s %s", name, i, type))
     }
-    value <- value[prior.fields]
+    value <- value[DBI::dbListFields(connect, name)]
     success <- plyr::try_default(DBI::dbWriteTable(conn=connect, name=name, value=value, append=TRUE, overwrite=FALSE, row.names=FALSE),
-                                 default=FALSE, quiet=TRUE) 
+                                 default=FALSE, quiet=TRUE)
   } else {
     if (missing(template)) {
       template <- sapply(value, function(x) DBI::dbDataType(connect, x))
@@ -450,7 +452,7 @@ fill.NAs <- function(value, fields) {
 
 # Update Gameday IDs.
 #
-# This function scrapes "gameday_links" from the MLB website. 
+# This function scrapes "gameday_links" from the MLB website.
 # It should only be called when the user enters an end date later than the most recent ID
 #
 # @param last.date most recent date found in existing IDs
@@ -458,16 +460,16 @@ fill.NAs <- function(value, fields) {
 updateGids <- function(last.date, end) {
   message("grabbing new game IDs")
   scoreboards <- paste0(makeUrls(start=last.date, end=end, gids=""), "/miniscoreboard.xml")
-  obs <- XML2Obs(scoreboards) #Note to future self -- using `xpath='//game[@gameday_link]'` for future games gives the RCurl error -- Recv failure: Connection reset by peer 
+  obs <- XML2Obs(scoreboards) #Note to future self -- using `xpath='//game[@gameday_link]'` for future games gives the RCurl error -- Recv failure: Connection reset by peer
   obs2 <- obs[grep("^games//game$", names(obs))]
   gids <- collapse_obs(obs2)[,"gameday_link"]
-  return(gids[!is.na(gids)])
+  paste0("gid_", gids[!is.na(gids)])
 }
 
 #Take a start and an end date and make vector of "year_XX/month_XX/day_XX"
 dates2urls <- function(first.day, last.day) {
   dates <- seq(as.Date(first.day), as.Date(last.day), by = "day")
-  paste0("year_", format(dates, "%Y"), "/month_", 
+  paste0("year_", format(dates, "%Y"), "/month_",
          format(dates, "%m"), "/day_", format(dates, "%d"))
 }
 
@@ -480,7 +482,7 @@ gids2urls <- function(x) {
   # If 'mlb' does not appear in the gid, use the home team's league
   if (any(not.mlb)) league[not.mlb] <- substr(x[not.mlb], 26, 28)
   base <- paste0(root, league)
-  paste0(base, "/year_", substr(x, 5, 8), "/month_", substr(x, 10, 11), 
+  paste0(base, "/year_", substr(x, 5, 8), "/month_", substr(x, 10, 11),
          "/day_", substr(x, 13, 14), "/", x)
 }
 
@@ -502,9 +504,9 @@ merged <- function(x, y, ...){
 format.table <- function(dat, name) {
   nums <- NULL
   switch(name,
-         game = nums <- c("venue_id", "scheduled_innings", "away_team_id", "away_league_id", "home_team_id", 
-                          "home_league_id", "away_games_back_wildcard", "away_win",  "away_loss", "home_win", 
-                          "home_loss", "inning", "outs", "away_team_runs","home_team_runs", "away_team_hits", 
+         game = nums <- c("venue_id", "scheduled_innings", "away_team_id", "away_league_id", "home_team_id",
+                          "home_league_id", "away_games_back_wildcard", "away_win",  "away_loss", "home_win",
+                          "home_loss", "inning", "outs", "away_team_runs","home_team_runs", "away_team_hits",
                           "home_team_hits", "away_team_errors", "home_team_errors"),
          player = nums <- c("id", "num", "avg", "hr", "rbi", "bat_order", "wins", "losses", "era"),
          coach = nums <- c("id", "num"),
@@ -512,8 +514,8 @@ format.table <- function(dat, name) {
          hip = nums <- c("x", "y", "batter", "pitcher", "inning"),
          action = nums <- c("b", "s", "o", "player", "pitch", "inning"),
          atbat = nums <- c("pitcher", "batter", "num", "b", "s", "o", "inning"),
-         pitch = nums <- c("id", "x", "y", "start_speed", "end_speed", "sz_top", "sz_bot", "pfx_x", "pfx_z", "px", 
-                           "pz", "x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az", "type_confidence", 
+         pitch = nums <- c("id", "x", "y", "start_speed", "end_speed", "sz_top", "sz_bot", "pfx_x", "pfx_z", "px",
+                           "pz", "x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az", "type_confidence",
                            "zone", "nasty", "spin_dir", "spin_rate", "inning", "num", "on_1b", "on_2b", "on_3b"),
          po = nums <- c("inning", "num"),
          runner = nums <- c("id", "inning", "num"))

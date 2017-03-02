@@ -1,18 +1,18 @@
 #' Animate PITCHf/x
-#' 
-#' Pitch trajectories animated on a two-dimensional plot. 
-#' 
-#' \code{animateFX} plots a series of "snapshots" that represent pitch trajectories 
-#' from the point of release until all of them reach home plate. 
-#' The graphic takes on the viewpoint of the umpire; that is, the pitches are getting closer 
-#' to the viewer with time. This is relected with the increase in size of the "balls" as the 
+#'
+#' Pitch trajectories animated on a two-dimensional plot.
+#'
+#' \code{animateFX} plots a series of "snapshots" that represent pitch trajectories
+#' from the point of release until all of them reach home plate.
+#' The graphic takes on the viewpoint of the umpire; that is, the pitches are getting closer
+#' to the viewer with time. This is relected with the increase in size of the "balls" as the
 #' animation progresses.
 #'
 #' @param data data frame with appropriately named PITCHf/x variables
 #' @param color variable used to control coloring scheme.
 #' @param avg.by variable used as an index for averaging over PITCHf/x parameters
 #' @param point.alpha ggplot2 alpha parameter
-#' @param limitz limits for horizontal and vertical axes. 
+#' @param limitz limits for horizontal and vertical axes.
 #' @param flag indicate whether or not batter has decided to swing.
 #' @param interval time (in seconds) between plotting the pitch locations.
 #' @param layer list of ggplot2 layer modifications.
@@ -24,26 +24,26 @@
 #' @examples
 #' data(pitches)
 #' #generate animation and prompt default web browser to view the sequence of plots
-#' \dontrun{ 
+#' \dontrun{
 #' animation::saveHTML({ animateFX(pitches, layer = facet_grid(pitcher_name~stand)) })
-#' animation::saveHTML({ animateFX(pitches, avg.by="pitch_types", 
-#'                          layer = facet_grid(pitcher_name~stand)) 
-#'                    }) 
+#' animation::saveHTML({ animateFX(pitches, avg.by="pitch_types",
+#'                          layer = facet_grid(pitcher_name~stand))
+#'                    })
 #' }
-#' 
+#'
 
-animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limitz=c(-3.5, 3.5, 0, 7), flag=FALSE, interval = 0.01, layer = list(), parent=FALSE, ...){ 
+animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limitz=c(-3.5, 3.5, 0, 7), flag=FALSE, interval = 0.01, layer = list(), parent=FALSE, ...){
   top=bottom=right=left=NULL #ugly hack to comply with R CMD check
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     pitch.type <- c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO")
-    pitch.types <- c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
+    pitch.types <- c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup",
                      "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
                      "Fastball", "Unknown", "Forkball")
     types <- data.frame(pitch_type=factor(pitch.type, levels=sort(pitch.type)),
                         pitch_types=factor(pitch.types, levels=sort(pitch.types)))
     data <- plyr::join(data, types, by = "pitch_type", type="inner")
-  } 
+  }
   if (!"b_height" %in% names(data)) {
     warning("pitchRx assumes the height of each batter is recorded as 'b_height'. Since there is no such column, we will assume each batter has a height of 6'2''")
     data$b_height <- "6-2"
@@ -55,7 +55,7 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
   layers <- NULL
   if (parent) { #ugly workaround for shiny implementation
     for (i in layer)
-      layers <- list(layers, eval(i)) 
+      layers <- list(layers, eval(i))
   } else {
     layers <- layer
   }
@@ -66,7 +66,7 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
   complete <- data[complete.cases(data[,idx]),] #get rid of records with any missing parameter values
   color.exists <- isTRUE(color %in% c(names(data), "pitch_types"))
   if (!missing(avg.by)) { #Average PITCHf/x parameters for every unique combination of facet and avg.by variable(s)
-    index <- c(facets, avg.by) 
+    index <- c(facets, avg.by)
     reordered <- plyr::ddply(complete, index, numcolwise(mean))
     if (color.exists) {
       if (avg.by != color) {
@@ -83,7 +83,7 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
         x[rev(order(x[, color])), ]
       })
       #reorder does funny stuff to factor levels...restore them to the original
-      if (is.factor(reordered[,color])) reordered[color] <- factor(reordered[,color], levels=levels(data[,color])) 
+      if (is.factor(reordered[,color])) reordered[color] <- factor(reordered[,color], levels=levels(data[,color]))
       aes_mapping <- aes_string(x = "x", y="z", size="scale_y", colour = color)
     } else {
       reordered <- complete
@@ -103,7 +103,6 @@ animateFX <- function(data, color = "pitch_types", avg.by, point.alpha=1/3, limi
   release <- max(as.numeric(parameters$y0))
   max.dist <- release - 1.417 #maximum distance a baseball can be from the pitcher (1.417 is start of home plate)
   swing <- NULL
-  #browser()
   for (i in 1:(N-1)) {
     if (flag & ctr > (2/5)*N) swing <- annotate("text", label = "SWING!", x = 0, y = 6, size = 2, colour = "red")
     frame <- data.frame(snapshots[,i,], other)
