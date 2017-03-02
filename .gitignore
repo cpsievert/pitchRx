@@ -3,3 +3,4 @@
 .Rapp.history
 .Rproj.user
 *.docx
+.RData

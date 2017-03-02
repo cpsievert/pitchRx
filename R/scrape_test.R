@@ -209,7 +209,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   }
 
   #Now scrape the inning/inning_all.xml files
-  if (any(grepl("inning/inning_all.xml", suffix))) {
+  if (any(grepl("inning/inning_all.xml", suffix)) & substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)!="mlb") { #Check to make sure its an major league game.
     inning.files <- paste0(gameDir, "/inning/inning_all.xml")
     n.files <- length(inning.files)
     #cap the number of files to be parsed at once (helps avoid exhausting memory)
