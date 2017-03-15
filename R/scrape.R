@@ -212,12 +212,12 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   if (any(grepl("inning/inning_all.xml", suffix))) {
 
     #If there are MLB and non-MLB gids in a set, we need to separate so each can be passed to its own method
-    MLB.gids <- game.ids[grep("mlb", game.ids)]
-    nonMLB.gids <- game.ids[-grep("mlb", game.ids)]
+    MLB.gids <- gameDir[grep("mlb", gameDir)]
+    nonMLB.gids <- gameDir[-grep("mlb", gameDir)]
 
     #Check to see if the gids are MLB
     if (all(substr(MLB.gids, nchar(MLB.gids)-4, nchar(MLB.gids)-2)=="mlb")) {
-      inning.files <- paste0(gameDir, "/inning/inning_all.xml")
+      inning.files <- paste0(MLB.gids, "/inning/inning_all.xml")
       n.files <- length(inning.files)
       #cap the number of files to be parsed at once (helps avoid exhausting memory)
       cap <- min(200, n.files)
@@ -256,14 +256,14 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     if (all(substr(nonMLB.gids, nchar(nonMLB.gids)-4, nchar(nonMLB.gids)-2)!="mlb")) {
       # Define some empty lists to be used in the loop.
       inningValz <- list(); finalValz <- list(); gamzList <- list();
-      # Read lines of each game directory from gameDir.
-      for (i in 1:length(gameDir)) {
-        gamzList[[i]] <- readLines(paste0(gameDir[i], "/inning"))
+      # Read lines of each game directory from nonMLB.gids.
+      for (i in 1:length(nonMLB.gids)) {
+        gamzList[[i]] <- readLines(paste0(nonMLB.gids[i], "/inning"))
         # We have to find the number of innings played. We'll assume 30 just to be safe.
-        # For each inning we find in the gamzList, append the correct base URL from gameDir.
+        # For each inning we find in the gamzList, append the correct base URL from nonMLB.gids.
         for(x in 1:30) {
           if (isTRUE(any(grepl(paste0("inning_", x, ".xml", sep="", collapse="|"), gamzList[[i]])))) {
-            inningValz[[x]] <- paste0(gameDir[i], "/inning/inning_", x, ".xml", collapse="|")
+            inningValz[[x]] <- paste0(nonMLB.gids[i], "/inning/inning_", x, ".xml", collapse="|")
             finalValz[[i]] <- inningValz
           }
         }
