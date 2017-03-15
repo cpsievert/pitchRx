@@ -216,7 +216,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     nonMLB.gids <- gameDir[-grep("mlb", gameDir)]
 
     #Check to see if the gids are MLB
-    if (all(substr(MLB.gids, nchar(MLB.gids)-4, nchar(MLB.gids)-2)=="mlb")) {
+    if (length(MLB.gids)!=0) {
       inning.files <- paste0(MLB.gids, "/inning/inning_all.xml")
       n.files <- length(inning.files)
       #cap the number of files to be parsed at once (helps avoid exhausting memory)
@@ -253,7 +253,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     }
 
     #Check to see if gids are non-MLB
-    if (all(substr(nonMLB.gids, nchar(nonMLB.gids)-4, nchar(nonMLB.gids)-2)!="mlb")) {
+    if (length(nonMLB.gids)!=0) {
       # Define some empty lists to be used in the loop.
       inningValz <- list(); finalValz <- list(); gamzList <- list();
       # Read lines of each game directory from nonMLB.gids.
@@ -315,7 +315,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       rm(obs)
       gc()
       #simplify table names for MLB games
-      if (all(substr(MLB.gids, nchar(MLB.gids)-4, nchar(MLB.gids)-2)=="mlb")) {
+      if (length(MLB.gids)!=0) {
         tab.nms <- names(tables)
         tab.nms <- sub("^game//inning//atbat$", "atbat", tab.nms)
         tab.nms <- sub("^game//inning//atbat//action$", "action", tab.nms)
@@ -323,7 +323,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         tab.nms <- sub("^game//inning//atbat//runner$", "runner", tab.nms)
         tab.nms <- sub("^game//inning//atbat//pitch$", "pitch", tab.nms)
       }
-      if (all(substr(nonMLB.gids, nchar(nonMLB.gids)-4, nchar(nonMLB.gids)-2)!="mlb")) {
+      if (length(nonMLB.gids)!=0) {
         #simplify table names for non MLB games
         tab.nms <- names(tables)
         tab.nms <- sub("inning//atbat$", "atbat", tab.nms)
