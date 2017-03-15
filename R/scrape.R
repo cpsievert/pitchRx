@@ -106,15 +106,15 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     gameDir <- makeUrls(gids=game.ids)
   }
 
-#SMART PREVENTION OF APPENDING SAME DATA MIGHT GET MESSY (HOW DO I CHECK EVERY TYPE OF FILE IN A NICE WAY???)
-#     DBTables <- dbListTables(connect)
-#     #should I try tables until this is non-empty?
-#     existing.urls <- gsub("/inning/inning_all.xml", "",
-#                           as.character(dbGetQuery(connect, "SELECT DISTINCT(urls) FROM atbats")))
-#     idx <- gameDir %in% existing.urls
-#     if (any(idx)) {
-#       warning("I detected urls in your database that match your query! I will not be scraping these files")
-#     }
+  #SMART PREVENTION OF APPENDING SAME DATA MIGHT GET MESSY (HOW DO I CHECK EVERY TYPE OF FILE IN A NICE WAY???)
+  #     DBTables <- dbListTables(connect)
+  #     #should I try tables until this is non-empty?
+  #     existing.urls <- gsub("/inning/inning_all.xml", "",
+  #                           as.character(dbGetQuery(connect, "SELECT DISTINCT(urls) FROM atbats")))
+  #     idx <- gameDir %in% existing.urls
+  #     if (any(idx)) {
+  #       warning("I detected urls in your database that match your query! I will not be scraping these files")
+  #     }
 
   # upload fields so we have table templates (for exporting to database)
   fields = NULL # happy BDR?
@@ -187,7 +187,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   }
 
   #Now scrape the inning/inning_hit.xml files
-  if (any(grepl("inning/inning_hit.xml", suffix))) {
+  if (any(grepl("inning/inning_hit.xml", suffix)) & all(substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)=="mlb")) {
     inning.files <- paste0(gameDir, "/inning/inning_hit.xml")
     obs <- XML2Obs(inning.files, as.equiv=TRUE, url.map=FALSE, ...)
     if (exists("tables")){
@@ -209,7 +209,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   }
 
   #Now scrape the inning/inning_all.xml files
-  if (any(grepl("inning/inning_all.xml", suffix)) & all(substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)!="mlb")) {
+  if (any(grepl("inning/inning_all.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_all.xml")
     n.files <- length(inning.files)
     #cap the number of files to be parsed at once (helps avoid exhausting memory)
@@ -289,6 +289,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       }
     }
   }
+
 
   # Check to see if any game.ids are minor league.
   if (any(grepl("inning/inning_all.xml", suffix)) & all(substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)!="mlb")) {
@@ -388,10 +389,6 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       }
     }
   }
-
-
-
-
 
 
   if (exists("tables")) {
