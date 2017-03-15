@@ -210,13 +210,16 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 
   #Now scrape the inning/inning_all.xml files
   if (any(grepl("inning/inning_all.xml", suffix))) {
-
-    #If there are MLB and non-MLB gids in a set, we need to separate so each can be passed to its own method
-    MLB.gids <- gameDir[grep("mlb", gameDir)]
-    nonMLB.gids <- gameDir[-grep("mlb", gameDir)]
-
-    #Check to see if the gids are MLB
-    if (length(MLB.gids)!=0) {
+    #Loop through gameDir and split out any nonMLB gids.
+    for (i in 1:length(gameDir)) {
+      if(substr(gameDir[i], nchar(gameDir[i])-4, nchar(gameDir[i])-2)!="mlb"){
+        nonMLB.gids <- gameDir[i]
+      } else {
+        MLB.gids <- gameDir[i]
+      }
+    }
+    #Method for MLB gids
+    if (exists("MLB.gids") & length("MLB.gids")>0) {
       inning.files <- paste0(MLB.gids, "/inning/inning_all.xml")
       n.files <- length(inning.files)
       #cap the number of files to be parsed at once (helps avoid exhausting memory)
@@ -251,9 +254,8 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         rm.idx <- c(grep("^game$", nms), grep("^game//inning$", nms))
       }
     }
-
-    #Check to see if gids are non-MLB
-    if (length(nonMLB.gids)!=0) {
+    #Method for non-MLB gids
+    if (exists("nonMLB.gids") & length("nonMLB.gids")>0) {
       # Define some empty lists to be used in the loop.
       inningValz <- list(); finalValz <- list(); gamzList <- list();
       # Read lines of each game directory from nonMLB.gids.
@@ -315,7 +317,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       rm(obs)
       gc()
       #simplify table names for MLB games
-      if (length(MLB.gids)!=0) {
+      if (exists("MLB.gids") & length("MLB.gids")>0) {
         tab.nms <- names(tables)
         tab.nms <- sub("^game//inning//atbat$", "atbat", tab.nms)
         tab.nms <- sub("^game//inning//atbat//action$", "action", tab.nms)
@@ -323,7 +325,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         tab.nms <- sub("^game//inning//atbat//runner$", "runner", tab.nms)
         tab.nms <- sub("^game//inning//atbat//pitch$", "pitch", tab.nms)
       }
-      if (length(nonMLB.gids)!=0) {
+      if (exists("nonMLB.gids") & length("nonMLB.gids")!=0) {
         #simplify table names for non MLB games
         tab.nms <- names(tables)
         tab.nms <- sub("inning//atbat$", "atbat", tab.nms)
