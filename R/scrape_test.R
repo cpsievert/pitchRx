@@ -289,6 +289,11 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       }
     }
   }
+
+
+
+
+
   if (exists("tables")) {
     return(tables)
   } else {

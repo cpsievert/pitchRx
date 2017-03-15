@@ -15,7 +15,7 @@ makeUrls(game.ids)
 
 
 # Check to see if any game.ids are minor league.
-if (any(substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)!="mlb")) {
+if (any(grepl("inning/inning_all.xml", suffix)) & all(substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)!="mlb")) {
   # Define some empty lists to be used in the loop.
   inningValz <- list(); finalValz <- list(); gamzList <- list();
   # Read lines of each game directory from gameDir.
@@ -62,6 +62,53 @@ if (any(substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)!="mlb")) {
     #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
     names(obs) <- sub("^inning//action$", "inning//atbat//action", names(obs))
     obs <- add_key(obs, parent="inning//atbat", recycle="num", quiet=TRUE)
+    #no longer need the 'game' and 'game//inning' observations
+    nms <- names(obs)
+    rm.idx <- c(grep("^game$", nms), grep("^game//inning$", nms))
+    if (length(rm.idx) > 0) obs <- obs[-rm.idx]
+    if (exists("tables")){
+      tables <- c(tables, collapse_obs2(obs))
+    } else {
+      tables <- collapse_obs2(obs)
+    }
+    #Free up some memory
+    rm(obs)
+    gc()
+    #simplify table names
+    tab.nms <- names(tables)
+    tab.nms <- sub("inning//atbat$", "atbat", tab.nms)
+    tab.nms <- sub("inning//atbat//action$", "action", tab.nms)
+    tab.nms <- sub("inning//atbat//po$", "po", tab.nms)
+    tab.nms <- sub("inning//atbat//runner$", "runner", tab.nms)
+    tab.nms <- sub("inning//atbat//pitch$", "pitch", tab.nms)
+    tables <- setNames(tables, tab.nms)
+    #Add names to atbat table for convenience
+    scrape.env <- environment() #avoids bringing data objects into global environment
+    data(players, package="pitchRx", envir=scrape.env)
+    players$id <- as.character(players$id)
+    #Add batter name to 'atbat'
+    colnames(tables[["atbat"]]) <- sub("^batter$", "id", colnames(tables[["atbat"]]))
+    tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id", all.x = TRUE)
+    colnames(tables[["atbat"]]) <- sub("^id$", "batter", colnames(tables[["atbat"]]))
+    colnames(tables[["atbat"]]) <- sub("^full_name$", "batter_name", colnames(tables[["atbat"]]))
+    #Add pitcher name to 'atbat'
+    colnames(tables[["atbat"]]) <- sub("^pitcher$", "id", colnames(tables[["atbat"]]))
+    tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id", all.x = TRUE)
+    colnames(tables[["atbat"]]) <- sub("^id$", "pitcher", colnames(tables[["atbat"]]))
+    colnames(tables[["atbat"]]) <- sub("^full_name$", "pitcher_name", colnames(tables[["atbat"]]))
+    colnames(tables[["atbat"]]) <- sub("^des", "atbat_des", colnames(tables[["atbat"]]))
+    #Coerce matrices to data frames; turn appropriate variables into numerics
+    for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
 
+    #generate a "count" column from "b" (balls) & "s" (strikes)
+    tables[["pitch"]] <- appendPitchCount(tables[["pitch"]])
+    tables[["atbat"]] <- appendDate(tables[["atbat"]])
+    if (!missing(connect)) {
+      #Try to write tables to database, if that fails, write to csv. Then clear up memory
+      for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
+      rm(tables)
+      message("Collecting garbage")
+      gc()
+    }
   }
 }
