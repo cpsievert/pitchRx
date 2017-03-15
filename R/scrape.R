@@ -187,7 +187,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   }
 
   #Now scrape the inning/inning_hit.xml files
-  if (any(grepl("inning/inning_hit.xml", suffix)) & all(substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)=="mlb")) {
+  if (any(grepl("inning/inning_hit.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_hit.xml")
     obs <- XML2Obs(inning.files, as.equiv=TRUE, url.map=FALSE, ...)
     if (exists("tables")){
@@ -210,138 +210,101 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 
   #Now scrape the inning/inning_all.xml files
   if (any(grepl("inning/inning_all.xml", suffix))) {
-    inning.files <- paste0(gameDir, "/inning/inning_all.xml")
-    n.files <- length(inning.files)
-    #cap the number of files to be parsed at once (helps avoid exhausting memory)
-    cap <- min(200, n.files)
-    if (n.files > cap && missing(connect)) {
-      warning("play-by-play data for just the first 200 games will be returned (even though you've asked for", n.files, ")",
-              "If you want/need more, please consider using the 'connect' argument.")
-    }
-    n.loops <- ceiling(n.files/cap)
-    for (i in seq_len(n.loops)) {
-      #grab subset of files to be parsed
-      inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
-      inning.filez <- inning.filez[!is.na(inning.filez)]
-      obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE, ...)
-      obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch",
-                                  "game//inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
-      obs <- re_name(obs, equiv=c("game//inning//top//atbat//runner",
-                                  "game//inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
-      obs <- re_name(obs, equiv=c("game//inning//top//atbat//po",
-                                  "game//inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
-      obs <- re_name(obs, equiv=c("game//inning//top//atbat",
-                                  "game//inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
-      obs <- re_name(obs, equiv=c("game//inning//top//action",
-                                  "game//inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
-      obs <- add_key(obs, parent="game//inning", recycle="num", key.name="inning", quiet=TRUE)
-      obs <- add_key(obs, parent="game//inning", recycle="next", key.name="next_", quiet=TRUE)
-      #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
-      names(obs) <- sub("^game//inning//action$", "game//inning//atbat//action", names(obs))
-      obs <- add_key(obs, parent="game//inning//atbat", recycle="num", quiet=TRUE)
-      #no longer need the 'game' and 'game//inning' observations
-      nms <- names(obs)
-      rm.idx <- c(grep("^game$", nms), grep("^game//inning$", nms))
-      if (length(rm.idx) > 0) obs <- obs[-rm.idx]
-      if (exists("tables")){
-        tables <- c(tables, collapse_obs2(obs))
-      } else {
-        tables <- collapse_obs2(obs)
-      }
-      #Free up some memory
-      rm(obs)
-      gc()
-      #simplify table names
-      tab.nms <- names(tables)
-      tab.nms <- sub("^game//inning//atbat$", "atbat", tab.nms)
-      tab.nms <- sub("^game//inning//atbat//action$", "action", tab.nms)
-      tab.nms <- sub("^game//inning//atbat//po$", "po", tab.nms)
-      tab.nms <- sub("^game//inning//atbat//runner$", "runner", tab.nms)
-      tab.nms <- sub("^game//inning//atbat//pitch$", "pitch", tab.nms)
-      tables <- setNames(tables, tab.nms)
-      #Add names to atbat table for convenience
-      scrape.env <- environment() #avoids bringing data objects into global environment
-      data(players, package="pitchRx", envir=scrape.env)
-      players$id <- as.character(players$id)
-      #Add batter name to 'atbat'
-      colnames(tables[["atbat"]]) <- sub("^batter$", "id", colnames(tables[["atbat"]]))
-      tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id", all.x = TRUE)
-      colnames(tables[["atbat"]]) <- sub("^id$", "batter", colnames(tables[["atbat"]]))
-      colnames(tables[["atbat"]]) <- sub("^full_name$", "batter_name", colnames(tables[["atbat"]]))
-      #Add pitcher name to 'atbat'
-      colnames(tables[["atbat"]]) <- sub("^pitcher$", "id", colnames(tables[["atbat"]]))
-      tables[["atbat"]] <- merged(x=tables[["atbat"]], y=players, by = "id", all.x = TRUE)
-      colnames(tables[["atbat"]]) <- sub("^id$", "pitcher", colnames(tables[["atbat"]]))
-      colnames(tables[["atbat"]]) <- sub("^full_name$", "pitcher_name", colnames(tables[["atbat"]]))
-      colnames(tables[["atbat"]]) <- sub("^des", "atbat_des", colnames(tables[["atbat"]]))
-      #Coerce matrices to data frames; turn appropriate variables into numerics
-      for (i in names(tables)) tables[[i]] <- format.table(tables[[i]], name=i)
 
-      #generate a "count" column from "b" (balls) & "s" (strikes)
-      tables[["pitch"]] <- appendPitchCount(tables[["pitch"]])
-      tables[["atbat"]] <- appendDate(tables[["atbat"]])
-      if (!missing(connect)) {
-        #Try to write tables to database, if that fails, write to csv. Then clear up memory
-        for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
-        rm(tables)
-        message("Collecting garbage")
-        gc()
+    #If there are MLB and non-MLB gids in a set, we need to separate so each can be passed to its own method
+    MLB.gids <- game.ids[grep("mlb", game.ids)]
+    nonMLB.gids <- game.ids[-grep("mlb", game.ids)]
+
+    #Check to see if the gids are MLB
+    if (all(substr(MLB.gids, nchar(MLB.gids)-4, nchar(MLB.gids)-2)=="mlb")) {
+      inning.files <- paste0(gameDir, "/inning/inning_all.xml")
+      n.files <- length(inning.files)
+      #cap the number of files to be parsed at once (helps avoid exhausting memory)
+      cap <- min(200, n.files)
+      if (n.files > cap && missing(connect)) {
+        warning("play-by-play data for just the first 200 games will be returned (even though you've asked for", n.files, ")",
+                "If you want/need more, please consider using the 'connect' argument.")
+      }
+      n.loops <- ceiling(n.files/cap)
+      for (i in seq_len(n.loops)) {
+        #grab subset of files to be parsed
+        inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
+        inning.filez <- inning.filez[!is.na(inning.filez)]
+        obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE, ...)
+        obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch",
+                                    "game//inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
+        obs <- re_name(obs, equiv=c("game//inning//top//atbat//runner",
+                                    "game//inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
+        obs <- re_name(obs, equiv=c("game//inning//top//atbat//po",
+                                    "game//inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
+        obs <- re_name(obs, equiv=c("game//inning//top//atbat",
+                                    "game//inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
+        obs <- re_name(obs, equiv=c("game//inning//top//action",
+                                    "game//inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
+        obs <- add_key(obs, parent="game//inning", recycle="num", key.name="inning", quiet=TRUE)
+        obs <- add_key(obs, parent="game//inning", recycle="next", key.name="next_", quiet=TRUE)
+        #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
+        names(obs) <- sub("^game//inning//action$", "game//inning//atbat//action", names(obs))
+        obs <- add_key(obs, parent="game//inning//atbat", recycle="num", quiet=TRUE)
+        #no longer need the 'game' and 'game//inning' observations
+        nms <- names(obs)
+        rm.idx <- c(grep("^game$", nms), grep("^game//inning$", nms))
       }
     }
-  }
 
-
-  # Check to see if any game.ids are minor league.
-  if (any(grepl("inning/inning_all.xml", suffix)) & all(substr(game.ids, nchar(game.ids)-4, nchar(game.ids)-2)!="mlb")) {
-    # Define some empty lists to be used in the loop.
-    inningValz <- list(); finalValz <- list(); gamzList <- list();
-    # Read lines of each game directory from gameDir.
-    for (i in 1:length(gameDir)) {
-      gamzList[[i]] <- readLines(paste0(gameDir[i], "/inning"))
-      # We have to find the number of innings played. We'll assume 100 just to be safe.
-      # For each inning we find in the gamzList, append the correct base URL from gameDir.
-      for(x in 1:100) {
-        if (isTRUE(any(grepl(paste0("inning_", x, ".xml", sep="", collapse="|"), gamzList[[i]])))) {
-          inningValz[[x]] <- paste0(gameDir[i], "/inning/inning_", x, ".xml", collapse="|")
-          finalValz[[i]] <- inningValz
+    #Check to see if gids are non-MLB
+    if (all(substr(nonMLB.gids, nchar(nonMLB.gids)-4, nchar(nonMLB.gids)-2)!="mlb")) {
+      # Define some empty lists to be used in the loop.
+      inningValz <- list(); finalValz <- list(); gamzList <- list();
+      # Read lines of each game directory from gameDir.
+      for (i in 1:length(gameDir)) {
+        gamzList[[i]] <- readLines(paste0(gameDir[i], "/inning"))
+        # We have to find the number of innings played. We'll assume 30 just to be safe.
+        # For each inning we find in the gamzList, append the correct base URL from gameDir.
+        for(x in 1:30) {
+          if (isTRUE(any(grepl(paste0("inning_", x, ".xml", sep="", collapse="|"), gamzList[[i]])))) {
+            inningValz[[x]] <- paste0(gameDir[i], "/inning/inning_", x, ".xml", collapse="|")
+            finalValz[[i]] <- inningValz
+          }
         }
       }
+      # Final list of game URLs.
+      inning.files <- unlist(finalValz)
+      # Remove uneeded lists.
+      rm(inningValz, finalValz, gamzList)
+      n.files <- length(inning.files)
+      #cap the number of files to be parsed at once (helps avoid exhausting memory)
+      cap <- min(200, n.files)
+      if (n.files > cap && missing(connect)) {
+        warning("play-by-play data for just the first 200 games will be returned (even though you've asked for", n.files, ")",
+                "If you want/need more, please consider using the 'connect' argument.")
+      }
+      n.loops <- ceiling(n.files/cap)
+      for (i in seq_len(n.loops)) {
+        #grab subset of files to be parsed
+        inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
+        inning.filez <- inning.filez[!is.na(inning.filez)]
+        obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE)
+        obs <- re_name(obs, equiv=c("inning//top//atbat//pitch",
+                                    "inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
+        obs <- re_name(obs, equiv=c("inning//top//atbat//runner",
+                                    "inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
+        obs <- re_name(obs, equiv=c("inning//top//atbat//po",
+                                    "inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
+        obs <- re_name(obs, equiv=c("inning//top//atbat",
+                                    "inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
+        obs <- re_name(obs, equiv=c("inning//top//action",
+                                    "inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
+        obs <- add_key(obs, parent="inning", recycle="num", key.name="inning", quiet=TRUE)
+        obs <- add_key(obs, parent="inning", recycle="next", key.name="next_", quiet=TRUE)
+        #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
+        names(obs) <- sub("^inning//action$", "inning//atbat//action", names(obs))
+        obs <- add_key(obs, parent="inning//atbat", recycle="num", quiet=TRUE)
+        #no longer need the 'inning' and 'game//inning' observations
+        nms <- names(obs)
+        rm.idx <- c(grep("^inning$", nms), grep("^game//inning$", nms))
+      }
     }
-    # Final list of game URLs.
-    inning.files <- unlist(finalValz)
-    # Remove uneeded lists.
-    rm(inningValz, finalValz, gamzList)
-    n.files <- length(inning.files)
-    #cap the number of files to be parsed at once (helps avoid exhausting memory)
-    cap <- min(200, n.files)
-    if (n.files > cap && missing(connect)) {
-      warning("play-by-play data for just the first 200 games will be returned (even though you've asked for", n.files, ")",
-              "If you want/need more, please consider using the 'connect' argument.")
-    }
-    n.loops <- ceiling(n.files/cap)
-    for (i in seq_len(n.loops)) {
-      #grab subset of files to be parsed
-      inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
-      inning.filez <- inning.filez[!is.na(inning.filez)]
-      obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE)
-      obs <- re_name(obs, equiv=c("inning//top//atbat//pitch",
-                                  "inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
-      obs <- re_name(obs, equiv=c("inning//top//atbat//runner",
-                                  "inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
-      obs <- re_name(obs, equiv=c("inning//top//atbat//po",
-                                  "inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
-      obs <- re_name(obs, equiv=c("inning//top//atbat",
-                                  "inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
-      obs <- re_name(obs, equiv=c("inning//top//action",
-                                  "inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
-      obs <- add_key(obs, parent="inning", recycle="num", key.name="inning", quiet=TRUE)
-      obs <- add_key(obs, parent="inning", recycle="next", key.name="next_", quiet=TRUE)
-      #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
-      names(obs) <- sub("^inning//action$", "inning//atbat//action", names(obs))
-      obs <- add_key(obs, parent="inning//atbat", recycle="num", quiet=TRUE)
-      #no longer need the 'game' and 'game//inning' observations
-      nms <- names(obs)
-      rm.idx <- c(grep("^game$", nms), grep("^game//inning$", nms))
       if (length(rm.idx) > 0) obs <- obs[-rm.idx]
       if (exists("tables")){
         tables <- c(tables, collapse_obs2(obs))
@@ -351,13 +314,24 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       #Free up some memory
       rm(obs)
       gc()
-      #simplify table names
-      tab.nms <- names(tables)
-      tab.nms <- sub("inning//atbat$", "atbat", tab.nms)
-      tab.nms <- sub("inning//atbat//action$", "action", tab.nms)
-      tab.nms <- sub("inning//atbat//po$", "po", tab.nms)
-      tab.nms <- sub("inning//atbat//runner$", "runner", tab.nms)
-      tab.nms <- sub("inning//atbat//pitch$", "pitch", tab.nms)
+      #simplify table names for MLB games
+      if (all(substr(MLB.gids, nchar(MLB.gids)-4, nchar(MLB.gids)-2)=="mlb")) {
+        tab.nms <- names(tables)
+        tab.nms <- sub("^game//inning//atbat$", "atbat", tab.nms)
+        tab.nms <- sub("^game//inning//atbat//action$", "action", tab.nms)
+        tab.nms <- sub("^game//inning//atbat//po$", "po", tab.nms)
+        tab.nms <- sub("^game//inning//atbat//runner$", "runner", tab.nms)
+        tab.nms <- sub("^game//inning//atbat//pitch$", "pitch", tab.nms)
+      }
+      if (all(substr(nonMLB.gids, nchar(nonMLB.gids)-4, nchar(nonMLB.gids)-2)!="mlb")) {
+        #simplify table names for non MLB games
+        tab.nms <- names(tables)
+        tab.nms <- sub("inning//atbat$", "atbat", tab.nms)
+        tab.nms <- sub("inning//atbat//action$", "action", tab.nms)
+        tab.nms <- sub("inning//atbat//po$", "po", tab.nms)
+        tab.nms <- sub("inning//atbat//runner$", "runner", tab.nms)
+        tab.nms <- sub("inning//atbat//pitch$", "pitch", tab.nms)
+      }
       tables <- setNames(tables, tab.nms)
       #Add names to atbat table for convenience
       scrape.env <- environment() #avoids bringing data objects into global environment
@@ -387,9 +361,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         message("Collecting garbage")
         gc()
       }
-    }
   }
-
 
   if (exists("tables")) {
     return(tables)
@@ -680,3 +652,4 @@ appendDate <- function(dat) {
 #   new.players <- cbind(new.players[,c("url_player", "id")], full_name)
 #   return(new.players)
 # }
+
