@@ -27,7 +27,7 @@
 #' @export
 #' @import XML2R
 #' @examples
-#' \dontrun{
+#'
 #' # Collect PITCHf/x (and other data from inning_all.xml files) from
 #' # all games played on August 1st, 2013 (using asynchronous downloads)
 #' dat <- scrape(start = "2013-08-01", end = "2013-08-01")
@@ -64,7 +64,7 @@
 #' que$query #refine sql query if you'd like
 #' pitchfx <- collect(que) #submit query and bring data into R
 #'
-#' }
+#'
 #'
 
 scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...) {
