@@ -655,4 +655,3 @@ appendDate <- function(dat) {
 #   new.players <- cbind(new.players[,c("url_player", "id")], full_name)
 #   return(new.players)
 # }
-gameDir <- makeUrls(gids=aaa)
