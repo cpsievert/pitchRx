@@ -211,11 +211,12 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
   #Now scrape the inning/inning_all.xml files
   if (any(grepl("inning/inning_all.xml", suffix))) {
     #Loop through gameDir and split out any nonMLB gids.
+    nonMLB.gids <- list(); MLB.gids <- list()
     for (i in 1:length(gameDir)) {
       if(substr(gameDir[i], nchar(gameDir[i])-4, nchar(gameDir[i])-2)!="mlb"){
-        nonMLB.gids <- gameDir[i]
+        nonMLB.gids[[i]] <- gameDir[i]
       } else {
-        MLB.gids <- gameDir[i]
+        MLB.gids[[i]] <- gameDir[i]
       }
     }
     #Method for MLB gids
@@ -654,4 +655,4 @@ appendDate <- function(dat) {
 #   new.players <- cbind(new.players[,c("url_player", "id")], full_name)
 #   return(new.players)
 # }
-
+gameDir <- makeUrls(gids=aaa)
