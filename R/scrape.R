@@ -252,7 +252,8 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       nonMLB.allInnings <- NULL; nonMLB.incomplete <- NULL; urlchecks=NULL
       for(i in 1:length(nonMLB.gids)){
         # Do a try on the inning_all URL. If it doesn't exist, put it in a separate list.
-        urlchecks[i] <- try(readLines(inning.files[i], n=1, warn=F))
+        #urlchecks[i] <- try(readLines(inning.files[i], n=1, warn=F))
+        urlchecks[i] <- try(suppressWarnings(url(inning.files[i], open="rb")))
         if(!isTRUE(grepl("Error in file", urlchecks[i]))) {
           nonMLB.allInnings[i] <- inning.files[i]
         }
