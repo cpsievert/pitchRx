@@ -252,8 +252,8 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       nonMLB.allInnings <- NULL; nonMLB.incomplete <- NULL; urlchecks=NULL
       for(i in 1:length(nonMLB.gids)){
         # Do a try on the inning_all URL. If it doesn't exist, put it in a separate list.
-        #urlchecks[i] <- try(readLines(inning.files[i], n=1, warn=F))
-        urlchecks[i] <- try(suppressWarnings(url(inning.files[i], open="rb")))
+        urlchecks[i] <- try(readLines(inning.files[i], n=1, warn=F))
+        #urlchecks[i] <- try(suppressWarnings(url(inning.files[i], open="rb")))
         if(!isTRUE(grepl("Error in file", urlchecks[i]))) {
           nonMLB.allInnings[i] <- inning.files[i]
         }
@@ -261,6 +261,8 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
           nonMLB.incomplete[i] <- gsub("/inning/inning_all.xml", "", inning.files[i])
         }
       }
+      # gc will close any unused connections
+      gc()
       # For gids that have an inning_all, we can use the standard method.
       if(!is.null(nonMLB.allInnings)){
         n.files <- length(nonMLB.allInnings)
