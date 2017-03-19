@@ -210,8 +210,11 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     #Loop through gameDir and split out any nonMLB gids. Non-MLB gids are directed to slightly different scrape method.
     nonMLB.gids <- NULL; MLB.gids <- NULL;
     for (i in 1:length(gameDir)) {
-      ifelse(substr(gameDir[i], nchar(gameDir[i])-4, nchar(gameDir[i])-2)!="mlb",
-             nonMLB.gids <- c(nonMLB.gids, gameDir[i]), MLB.gids <- c(MLB.gids, gameDir[i]))
+      if(substr(gameDir[i], nchar(gameDir[i])-4, nchar(gameDir[i])-2)!="mlb"){
+        nonMLB.gids <- c(nonMLB.gids, gameDir[i])
+      } else {
+        MLB.gids <- c(MLB.gids, gameDir[i])
+      }
     }
     # Use the standard method for MLB gids.
     if (!is.null(MLB.gids)) {
@@ -603,74 +606,80 @@ appendDate <- function(dat) {
 #' @export
 #'
 inningAllObs <- function(obs=obs, innings_all=TRUE){
-  ifelse(isTRUE(innings_all),{
-         obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch",
-                                     "game//inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
-         obs <- re_name(obs, equiv=c("game//inning//top//atbat//runner",
-                                     "game//inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
-         obs <- re_name(obs, equiv=c("game//inning//top//atbat//po",
-                                     "game//inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
-         obs <- re_name(obs, equiv=c("game//inning//top//atbat",
-                                     "game//inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
-         obs <- re_name(obs, equiv=c("game//inning//top//action",
-                                     "game//inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
-         obs <- add_key(obs, parent="game//inning", recycle="num", key.name="inning", quiet=TRUE)
-         obs <- add_key(obs, parent="game//inning", recycle="next", key.name="next_", quiet=TRUE)
-         #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
-         names(obs) <- sub("^game//inning//action$", "game//inning//atbat//action", names(obs))
-         obs <- add_key(obs, parent="game//inning//atbat", recycle="num", quiet=TRUE)
-         #no longer need the 'game' and 'game//inning' observations
-         nms <- names(obs)
-         rm.idx <- c(grep("^game$", nms), grep("^game//inning$", nms))
+  if(isTRUE(innings_all)){
+    obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch",
+                                "game//inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
+    obs <- re_name(obs, equiv=c("game//inning//top//atbat//runner",
+                                "game//inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
+    obs <- re_name(obs, equiv=c("game//inning//top//atbat//po",
+                                "game//inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
+    obs <- re_name(obs, equiv=c("game//inning//top//atbat",
+                                "game//inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
+    obs <- re_name(obs, equiv=c("game//inning//top//action",
+                                "game//inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
+    obs <- add_key(obs, parent="game//inning", recycle="num", key.name="inning", quiet=TRUE)
+    obs <- add_key(obs, parent="game//inning", recycle="next", key.name="next_", quiet=TRUE)
+    #trick to make add_key think 'actions' are a descendant of 'atbat' (they really are in a way) -- so that we can link the two.
+    names(obs) <- sub("^game//inning//action$", "game//inning//atbat//action", names(obs))
+    obs <- add_key(obs, parent="game//inning//atbat", recycle="num", quiet=TRUE)
+    #no longer need the 'game' and 'game//inning' observations
+    nms <- names(obs)
+    rm.idx <- c(grep("^game$", nms), grep("^game//inning$", nms))
+    if (length(rm.idx) > 0) obs <- obs[-rm.idx]
+    if (exists("tables")){
+      tables <- c(tables, collapse_obs2(obs))
+    } else {
+      tables <- collapse_obs2(obs)
+    }
+    #Free up some memory
+    rm(obs)
+    gc()
+    #simplify table names
+    tab.nms <- names(tables)
+    tab.nms <- sub("^game//inning//atbat$", "atbat", tab.nms)
+    tab.nms <- sub("^game//inning//atbat//action$", "action", tab.nms)
+    tab.nms <- sub("^game//inning//atbat//po$", "po", tab.nms)
+    tab.nms <- sub("^game//inning//atbat//runner$", "runner", tab.nms)
+    tab.nms <- sub("^game//inning//atbat//pitch$", "pitch", tab.nms)
+    tables <- setNames(tables, tab.nms)
+  }
 
-         if (length(rm.idx) > 0) obs <- obs[-rm.idx]
-         ifelse(exists("tables"), tables <- c(tables, collapse_obs2(obs)), tables <- collapse_obs2(obs))
+  if(!isTRUE(innings_all)){
+    obs <- re_name(obs, equiv=c("inning//top//atbat//pitch",
+                                "inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
+    obs <- re_name(obs, equiv=c("inning//top//atbat//runner",
+                                "inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
+    obs <- re_name(obs, equiv=c("inning//top//atbat//po",
+                                "inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
+    obs <- re_name(obs, equiv=c("inning//top//atbat",
+                                "inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
+    obs <- re_name(obs, equiv=c("inning//top//action",
+                                "inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
+    obs <- add_key(obs, parent="inning", recycle="num", key.name="inning", quiet=TRUE)
+    obs <- add_key(obs, parent="inning", recycle="next", key.name="next_", quiet=TRUE)
+    names(obs) <- sub("^inning//action$", "inning//atbat//action", names(obs))
+    obs <- add_key(obs, parent="inning//atbat", recycle="num", quiet=TRUE)
+    nms <- names(obs)
+    rm.idx <- c(grep("^inning$", nms), grep("^game//inning$", nms))
 
-         #Free up some memory
-         rm(obs)
-         gc()
-         #simplify table names
-         tab.nms <- names(tables)
-         tab.nms <- sub("^game//inning//atbat$", "atbat", tab.nms)
-         tab.nms <- sub("^game//inning//atbat//action$", "action", tab.nms)
-         tab.nms <- sub("^game//inning//atbat//po$", "po", tab.nms)
-         tab.nms <- sub("^game//inning//atbat//runner$", "runner", tab.nms)
-         tab.nms <- sub("^game//inning//atbat//pitch$", "pitch", tab.nms)
-         tables <- setNames(tables, tab.nms)}
-
-         ,{# Begin second part of big ifelse
-         obs <- re_name(obs, equiv=c("inning//top//atbat//pitch",
-                                     "inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)
-         obs <- re_name(obs, equiv=c("inning//top//atbat//runner",
-                                     "inning//bottom//atbat//runner"), diff.name="inning_side", quiet=TRUE)
-         obs <- re_name(obs, equiv=c("inning//top//atbat//po",
-                                     "inning//bottom//atbat//po"), diff.name="inning_side", quiet=TRUE)
-         obs <- re_name(obs, equiv=c("inning//top//atbat",
-                                     "inning//bottom//atbat"), diff.name="inning_side", quiet=TRUE)
-         obs <- re_name(obs, equiv=c("inning//top//action",
-                                     "inning//bottom//action"), diff.name="inning_side", quiet=TRUE)
-         obs <- add_key(obs, parent="inning", recycle="num", key.name="inning", quiet=TRUE)
-         obs <- add_key(obs, parent="inning", recycle="next", key.name="next_", quiet=TRUE)
-         names(obs) <- sub("^inning//action$", "inning//atbat//action", names(obs))
-         obs <- add_key(obs, parent="inning//atbat", recycle="num", quiet=TRUE)
-         nms <- names(obs)
-         rm.idx <- c(grep("^inning$", nms), grep("^game//inning$", nms))
-
-         if (length(rm.idx) > 0) obs <- obs[-rm.idx]
-         ifelse(exists("tables"), tables <- c(tables, collapse_obs2(obs)), tables <- collapse_obs2(obs))
-
-         #Free up some memory
-         rm(obs)
-         gc()
-         #simplify table names
-         tab.nms <- names(tables)
-         tab.nms <- sub("inning//atbat$", "atbat", tab.nms)
-         tab.nms <- sub("inning//atbat//action$", "action", tab.nms)
-         tab.nms <- sub("inning//atbat//po$", "po", tab.nms)
-         tab.nms <- sub("inning//atbat//runner$", "runner", tab.nms)
-         tab.nms <- sub("inning//atbat//pitch$", "pitch", tab.nms)
-         tables <- setNames(tables, tab.nms)
-         }) #End of big ifelse statement
+    if (length(rm.idx) > 0) obs <- obs[-rm.idx]
+    if (exists("tables")){
+      tables <- c(tables, collapse_obs2(obs))
+    } else {
+      tables <- collapse_obs2(obs)
+    }
+    #Free up some memory
+    rm(obs)
+    gc()
+    #simplify table names
+    tab.nms <- names(tables)
+    tab.nms <- sub("inning//atbat$", "atbat", tab.nms)
+    tab.nms <- sub("inning//atbat//action$", "action", tab.nms)
+    tab.nms <- sub("inning//atbat//po$", "po", tab.nms)
+    tab.nms <- sub("inning//atbat//runner$", "runner", tab.nms)
+    tab.nms <- sub("inning//atbat//pitch$", "pitch", tab.nms)
+    tables <- setNames(tables, tab.nms)
+  }
 
   #Add names to atbat table for convenience
   scrape.env <- environment() #avoids bringing data objects into global environment
