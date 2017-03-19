@@ -150,6 +150,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       gc()
     }
   }
+
   #scrape player files next since the "game" node clashes with inning_all.xml
   if (any(grepl("players.xml", suffix))) {
     player.files <- paste0(gameDir, "/players.xml")
@@ -184,6 +185,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       gc()
     }
   }
+
   #Now scrape the inning/inning_hit.xml files
   if (any(grepl("inning/inning_hit.xml", suffix))) {
     inning.files <- paste0(gameDir, "/inning/inning_hit.xml")
@@ -205,6 +207,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       gc()
     }
   }
+
   #Now scrape the inning/inning_all.xml files
   if (any(grepl("inning/inning_all.xml", suffix))) {
     #Loop through gameDir and split out any nonMLB gids. Non-MLB gids are directed to slightly different scrape method.
@@ -251,9 +254,12 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         # Do a try on the inning_all URL. If it doesn't exist, put it in a separate list.
         #urlchecks[i] <- try(readLines(inning.files[i], n=1, warn=F))
         urlchecks[i] <- try(suppressWarnings(url(inning.files[i], open="rb")))
-        ifelse(!isTRUE(grepl("Error in file", urlchecks[i])),
-               nonMLB.allInnings[i] <- inning.files[i],
-               nonMLB.incomplete[i] <- gsub("/inning/inning_all.xml", "", inning.files[i]))
+        if(!isTRUE(grepl("Error in file", urlchecks[i]))) {
+          nonMLB.allInnings[i] <- inning.files[i]
+        }
+        if(isTRUE(grepl("Error in file", urlchecks[i]))) {
+          nonMLB.incomplete[i] <- gsub("/inning/inning_all.xml", "", inning.files[i])
+        }
       }
       # For gids that have an inning_all, we can use the standard method.
       if(!is.null(nonMLB.allInnings)){
@@ -271,7 +277,10 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         #ifelse(exists("tablesMLB"), tablesMLB <- do.call("rbind", list(tablesMLB, tablesNonMLBAll)), tablesMLB <- tablesNonMLBAll)
 
         ifelse(exists("tablesMLB"), tablesMLB <- mapply(c, tablesMLB, tablesNonMLBAll, SIMPLIFY=FALSE), tablesMLB <- tablesNonMLBAll)
+
       }
+
+
       if(!is.null(nonMLB.incomplete)){
         # For gids without an inning_all, we have to loop over all the inning_[number].xml files in the directory.
         # Define some empty lists to be used in the loop.
@@ -302,8 +311,13 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
           tablesNonMLBInning <- inningAllObs(obs, innings_all=FALSE)
         }
         # Bind results to the MLB games if they exist.
+        #ifelse(exists("tablesMLB"), tablesMLB <- do.call("rbind", list(tablesMLB, tablesNonMLBInning)), tablesMLB <- tablesNonMLBInning)
+
         ifelse(exists("tablesMLB"), tablesMLB <- mapply(c, tablesMLB, tablesNonMLBInning, SIMPLIFY=FALSE), tablesMLB <- tablesNonMLBInning)
+
+
       }
+
     }
     if (!missing(connect)) {
       #Try to write tablesMLB to database, if that fails, write to csv. Then clear up memory
@@ -313,7 +327,12 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       gc()
     }
   }
-  ifelse(exists("tablesMLB"), return(tablesMLB), return(NULL))
+  if (exists("tablesMLB")) {
+    return(tablesMLB)
+  } else {
+    #Should I return the connection or something else instead?
+    return(NULL)
+  }
 }
 
 #' Construct Gameday urls based on some parameters.
