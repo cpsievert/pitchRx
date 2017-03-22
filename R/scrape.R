@@ -211,7 +211,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
   #Now scrape the inning/inning_all.xml files
   if (any(grepl("inning/inning_all.xml", suffix))) {
     # Use the standard method for MLB gids.
-    if (!is.null(gameDir)) {
+    if (!is.null(gameDir) & !isTRUE(nonMLB)) {
       inning.files <- paste0(gameDir, "/inning/inning_all.xml")
       n.files <- length(inning.files)
       #cap the number of files to be parsed at once (helps avoid exhausting memory)
@@ -226,7 +226,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
         inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
         inning.filez <- inning.filez[!is.na(inning.filez)]
         obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE, ...)
-        tablesMLB <- inningAllObs(obs, innings_all=TRUE)
+        tables <- inningAllObs(obs, innings_all=TRUE)
       }
     }
     # Method for non-MLB gids
@@ -241,18 +241,24 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
       }
       # We need to find URLs in the nonMLB.gids that don't have an innings_all.xml file.
       nonMLB.allInnings <- NULL; nonMLB.incomplete <- NULL; urlchecks=NULL
-      for(i in 1:length(nonMLB.gids)){
+      for(i in 1:length(inning.files)){
         # Do a try on the inning_all URL. If it doesn't exist, put it in a separate list.
-        #urlchecks[i] <- try(readLines(inning.files[i], n=1, warn=F))
-        urlchecks[i] <- try(suppressWarnings(url(inning.files[i], open="rb")))
-        if(!isTRUE(grepl("Error in file", urlchecks[i]))) {
-          nonMLB.allInnings[i] <- inning.files[i]
+      urlchecks <- tryCatch({
+          con <- url(inning.files[i])
+          a  <- capture.output(suppressWarnings(readLines(con)))
+          close(con)
+          TRUE;
+        },
+        error = function(err) {
+          occur <- grep("cannot open the connection", capture.output(err));
+          if(length(occur) > 0) FALSE;
         }
-        if(isTRUE(grepl("Error in file", urlchecks[i]))) {
-          nonMLB.incomplete[i] <- gsub("/inning/inning_all.xml", "", inning.files[i])
-        }
+        )
+        ifelse(isTRUE(urlchecks), nonMLB.allInnings[i] <- inning.files[i],
+              nonMLB.incomplete[i] <- gsub("/inning/inning_all.xml", "", inning.files[i]))
+          }
       }
-      # gc will close any unused connections
+      # gc to close unused connections
       gc()
       # For gids that have an inning_all, we can use the standard method.
       if(!is.null(nonMLB.allInnings)){
@@ -266,24 +272,17 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
           obs <- XML2Obs(nonMLB.allInnings, as.equiv=TRUE, url.map=FALSE)
           tablesNonMLBAll <- inningAllObs(obs, innings_all=TRUE)
         }
-        # Bind results to the MLB games if they exist.
-        #ifelse(exists("tablesMLB"), tablesMLB <- do.call("rbind", list(tablesMLB, tablesNonMLBAll)), tablesMLB <- tablesNonMLBAll)
-
-        ifelse(exists("tablesMLB"), tablesMLB <- mapply(c, tablesMLB, tablesNonMLBAll, SIMPLIFY=FALSE), tablesMLB <- tablesNonMLBAll)
       }
-
       if(!is.null(nonMLB.incomplete)){
         # For gids without an inning_all, we have to loop over all the inning_[number].xml files in the directory.
-        # Define some empty lists to be used in the loop.
         inningValz <- list(); finalValz <- list(); gamzList <- list();
         # Read lines of each game directory from nonMLB.incomplete.
         for (i in 1:length(nonMLB.incomplete)) {
           gamzList[[i]] <- readLines(paste0(nonMLB.incomplete[i], "/inning"))
-
           # We have to find the number of innings played. We'll assume 30 just to be safe.
           for(x in 1:30) {
             if (isTRUE(any(grepl(paste0("inning_", x, ".xml", sep="", collapse="|"), gamzList[[i]])))) {
-              inningValz[[x]] <- paste0(nonMLB.gids[i], "/inning/inning_", x, ".xml", collapse="|")
+              inningValz[[x]] <- paste0(nonMLB.incomplete[i], "/inning/inning_", x, ".xml", collapse="|")
               finalValz[[i]] <- inningValz
             }
           }
@@ -292,31 +291,29 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
         inning.files <- unlist(finalValz)
         # Remove uneeded lists.
         rm(inningValz, finalValz, gamzList)
-
-        #n.loops <- ceiling(inning.files/cap)
-        for (i in 1:length(inning.files)) {
-          #grab subset of files to be parsed
-          #inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
-          #inning.filez <- inning.filez[!is.na(inning.filez)]
+        n.files <- length(inning.files)
+        cap <- min(200, n.files)
+        n.loops <- ceiling(n.files/cap)
+        for (i in seq_len(n.loops)) {
+          inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
+          inning.filez <- inning.filez[!is.na(inning.filez)]
           obs <- XML2Obs(inning.files, as.equiv=TRUE, url.map=FALSE)
           tablesNonMLBInning <- inningAllObs(obs, innings_all=FALSE)
         }
-        # Bind results to the MLB games if they exist.
-        #ifelse(exists("tablesMLB"), tablesMLB <- do.call("rbind", list(tablesMLB, tablesNonMLBInning)), tablesMLB <- tablesNonMLBInning)
-
-        ifelse(exists("tablesMLB"), tablesMLB <- mapply(c, tablesMLB, tablesNonMLBInning, SIMPLIFY=FALSE), tablesMLB <- tablesNonMLBInning)
+        # Bind results to the games with an innings_all.xml if they exist.
+        ifelse(exists("tables"), tables <- mapply(c, tables, tablesNonMLBInning, SIMPLIFY=FALSE), tables <- tablesNonMLBInning)
       }
     }
     if (!missing(connect)) {
-      #Try to write tablesMLB to database, if that fails, write to csv. Then clear up memory
-      for (i in names(tablesMLB)) export(connect, name = i, value = tablesMLB[[i]], template = fields[[i]])
-      rm(tablesMLB)
+      #Try to write tables to database, if that fails, write to csv. Then clear up memory
+      for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
+      rm(tables)
       message("Collecting garbage")
       gc()
     }
   }
-  if (exists("tablesMLB")) {
-    return(tablesMLB)
+  if (exists("tables")) {
+    return(tables)
   } else {
     #Should I return the connection or something else instead?
     return(NULL)
