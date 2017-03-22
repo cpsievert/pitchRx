@@ -18,6 +18,7 @@
 #' See \code{data(gids, package="pitchRx")} for examples.
 #' @param suffix character vector with suffix of the XML files to be parsed. Currently supported options are:
 #' 'players.xml', 'miniscoreboard.xml', 'inning/inning_all.xml', 'inning/inning_hit.xml'.
+#' @param nonMLB A logical statement. Are the gids for minor league games? The default is set to TRUE.
 #' @param connect A database connection object. The class of the object should be "MySQLConnection" or "SQLiteConnection".
 #' If a valid connection is supplied, tables will be copied to the database, which will result in better memory management.
 #' If a connection is supplied, but the connection fails for some reason, csv files will be written to the working directory.
@@ -226,7 +227,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
         inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
         inning.filez <- inning.filez[!is.na(inning.filez)]
         obs <- XML2Obs(inning.filez, as.equiv=TRUE, url.map=FALSE, ...)
-        tables <- inningAllObs(obs, innings_all=TRUE)
+        tables <- parseObs(obs, innings_all=TRUE)
       }
     }
     # Method for non-MLB gids
@@ -271,7 +272,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
           inning.filez <- nonMLB.allInnings[seq(1, cap)+(i-1)*cap]
           inning.filez <- nonMLB.allInnings[!is.na(inning.filez)]
           obs <- XML2Obs(nonMLB.allInnings, as.equiv=TRUE, url.map=FALSE)
-          tablesNonMLBAll <- inningAllObs(obs, innings_all=TRUE)
+          tablesNonMLBAll <- parseObs(obs, innings_all=TRUE)
         }
       }
       if(!is.null(nonMLB.incomplete)){
@@ -299,7 +300,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
           inning.filez <- inning.files[seq(1, cap)+(i-1)*cap]
           inning.filez <- inning.filez[!is.na(inning.filez)]
           obs <- XML2Obs(inning.files, as.equiv=TRUE, url.map=FALSE)
-          tablesNonMLBInning <- inningAllObs(obs, innings_all=FALSE)
+          tablesNonMLBInning <- parseObs(obs, innings_all=FALSE)
         }
         # Bind results to the games with an innings_all.xml if they exist.
         ifelse(exists("tables"), tables <- mapply(c, tables, tablesNonMLBInning, SIMPLIFY=FALSE), tables <- tablesNonMLBInning)
@@ -604,13 +605,13 @@ appendDate <- function(dat) {
 # }
 
 
-#' @title parse_obs
-#' @param start an obs list from the scrape function to be parsed according to weather it is an \code{innings_all.xml} file or
-#' a \code{inning_number.xml} file.
+#' @title parseObs
+#' @param obs An \code{XML2R} object from the \code{scrape} function.
+#' @param innings_all A logical statement. Should an "innings_all" file be parsed, or an individual inning? The default is TRUE.
 #' @import XML2R
 #' @export
 #'
-inningAllObs <- function(obs=obs, innings_all=TRUE){
+parseObs <- function(obs=obs, innings_all=TRUE){
   if(isTRUE(innings_all)){
     obs <- re_name(obs, equiv=c("game//inning//top//atbat//pitch",
                                 "game//inning//bottom//atbat//pitch"), diff.name="inning_side", quiet=TRUE)

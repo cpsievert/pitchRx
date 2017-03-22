@@ -38,3 +38,4 @@ Suggests:
 LazyData: true
 URL: http://cpsievert.github.com/pitchRx
 BugReports: http://github.com/cpsievert/pitchRx/issues
+RoxygenNote: 6.0.1

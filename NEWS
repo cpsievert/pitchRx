@@ -2,7 +2,11 @@
 
 BUG FIXES
 
-    - Fix #25
+    - Fix #25 Scrape error for minor league teams with less than nine innings played
+
+NEW ADDITION
+
+    - Related to the fix of #25 the object parsing logic for scrape() was made external
 
     CHANGES IN pitchRx VERSION 1.8.4
 
