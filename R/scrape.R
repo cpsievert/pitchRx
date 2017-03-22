@@ -251,12 +251,13 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
         },
         error = function(err) {
           occur <- grep("cannot open the connection", capture.output(err));
-          if(length(occur) > 0) FALSE;
-        }
-        )
+          if(length(occur) > 0){
+            close(con)
+            FALSE;
+          }
+        })
         ifelse(isTRUE(urlchecks), nonMLB.allInnings[i] <- inning.files[i],
               nonMLB.incomplete[i] <- gsub("/inning/inning_all.xml", "", inning.files[i]))
-          }
       }
       # gc to close unused connections
       gc()
