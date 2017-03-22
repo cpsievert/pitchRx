@@ -45,7 +45,7 @@
 #' # This post explains more about obtaining game IDs with regular expressions --
 #' # http://baseballwithr.wordpress.com/2014/06/30/pitchrx-meet-openwar-4/
 #' aaa <- nonMLBgids[grepl("2011_06_01_[a-z]{3}aaa_[a-z]{3}aaa", nonMLBgids)]
-#' dat <- scrape(game.ids = aaa)
+#' dat <- scrape(game.ids = aaa, nonMLB = TRUE)
 #'
 #' # Create SQLite database, then collect and store data in that database
 #' library(dplyr)
