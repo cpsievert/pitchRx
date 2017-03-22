@@ -67,7 +67,7 @@
 #' }
 #'
 
-scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...) {
+scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonMLB=FALSE, connect, ...) {
   # Run some checks to make sure we can append to the database connection
   # Also, try to append a 'date' column to the 'atbat' table (if it's missing)
   if (!missing(connect)) {
@@ -210,18 +210,9 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
 
   #Now scrape the inning/inning_all.xml files
   if (any(grepl("inning/inning_all.xml", suffix))) {
-    #Loop through gameDir and split out any nonMLB gids. Non-MLB gids are directed to slightly different scrape method.
-    nonMLB.gids <- NULL; MLB.gids <- NULL;
-    for (i in 1:length(gameDir)) {
-      if(substr(gameDir[i], nchar(gameDir[i])-4, nchar(gameDir[i])-2)!="mlb"){
-        nonMLB.gids <- c(nonMLB.gids, gameDir[i])
-      } else {
-        MLB.gids <- c(MLB.gids, gameDir[i])
-      }
-    }
     # Use the standard method for MLB gids.
-    if (!is.null(MLB.gids)) {
-      inning.files <- paste0(MLB.gids, "/inning/inning_all.xml")
+    if (!is.null(gameDir)) {
+      inning.files <- paste0(gameDir, "/inning/inning_all.xml")
       n.files <- length(inning.files)
       #cap the number of files to be parsed at once (helps avoid exhausting memory)
       cap <- min(200, n.files)
@@ -239,8 +230,8 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       }
     }
     # Method for non-MLB gids
-    if (!is.null(nonMLB.gids)) {
-      inning.files <- paste0(nonMLB.gids, "/inning/inning_all.xml")
+    if (isTRUE(nonMLB)) {
+      inning.files <- paste0(gameDir, "/inning/inning_all.xml")
       n.files <- length(inning.files)
       #cap the number of files to be parsed at once (helps avoid exhausting memory)
       cap <- min(200, n.files)
@@ -279,9 +270,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         #ifelse(exists("tablesMLB"), tablesMLB <- do.call("rbind", list(tablesMLB, tablesNonMLBAll)), tablesMLB <- tablesNonMLBAll)
 
         ifelse(exists("tablesMLB"), tablesMLB <- mapply(c, tablesMLB, tablesNonMLBAll, SIMPLIFY=FALSE), tablesMLB <- tablesNonMLBAll)
-
       }
-
 
       if(!is.null(nonMLB.incomplete)){
         # For gids without an inning_all, we have to loop over all the inning_[number].xml files in the directory.
@@ -316,10 +305,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
         #ifelse(exists("tablesMLB"), tablesMLB <- do.call("rbind", list(tablesMLB, tablesNonMLBInning)), tablesMLB <- tablesNonMLBInning)
 
         ifelse(exists("tablesMLB"), tablesMLB <- mapply(c, tablesMLB, tablesNonMLBInning, SIMPLIFY=FALSE), tablesMLB <- tablesNonMLBInning)
-
-
       }
-
     }
     if (!missing(connect)) {
       #Try to write tablesMLB to database, if that fails, write to csv. Then clear up memory
