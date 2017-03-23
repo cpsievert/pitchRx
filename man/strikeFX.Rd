@@ -85,6 +85,4 @@ strikeFX(noswing, model=m2, density1=list(inning_side="top"),
          density2=list(inning_side="bottom"), layer=facet_grid(.~stand))
 }
 
-fixed' variables can have multiple 'conditioned' values (px, pz are also here since they are part of the 'view')
-given' variables have one 'conditioned' value (should be the mode for factors and closest obs. to the median for numerics)
 }

@@ -11,3 +11,6 @@ parseObs(obs = obs, innings_all = TRUE)
 
 \item{innings_all}{A logical statement. Should an "innings_all" file be parsed, or an individual inning? The default is TRUE.}
 }
+\description{
+A function to parse XML files pulled by the scrape function.
+}

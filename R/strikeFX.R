@@ -161,11 +161,11 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
         }
       }
     }
-    #'fixed' variables can have multiple 'conditioned' values (px, pz are also here since they are part of the 'view')
+    #the 'fixed' variables can have multiple 'conditioned' values (px, pz are also here since they are part of the 'view')
     fixed <- c(facets, c("px", "pz"))
     if (length(density1) > 0) fixed <- c(fixed, names(density1))
     if (length(density2) > 0) fixed <- c(fixed, names(density2))
-    #'given' variables have one 'conditioned' value (should be the mode for factors and closest obs. to the median for numerics)
+    #the 'given' variables have one 'conditioned' value (should be the mode for factors and closest obs. to the median for numerics)
     givens <- var_summary[!names(var_summary) %in% fixed]
     for (i in seq_along(givens)) {
       message(paste("Conditioning on:", names(givens[i]), " == ", givens[[i]]))

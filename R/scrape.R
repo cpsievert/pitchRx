@@ -241,7 +241,7 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", nonML
                 "If you want/need more, please consider using the 'connect' argument.")
       }
       # We need to find URLs in the nonMLB.gids that don't have an innings_all.xml file.
-      nonMLB.allInnings <- NULL; nonMLB.incomplete <- NULL; urlchecks=NULL
+      nonMLB.allInnings <- NULL; nonMLB.incomplete <- NULL; urlchecks=NULL; capture.output=NULL
       for(i in 1:length(inning.files)){
         # Do a try on the inning_all URL. If it doesn't exist, put it in a separate list.
       urlchecks <- tryCatch({
@@ -606,6 +606,7 @@ appendDate <- function(dat) {
 
 
 #' @title parseObs
+#' @description A function to parse XML files pulled by the scrape function.
 #' @param obs An \code{XML2R} object from the \code{scrape} function.
 #' @param innings_all A logical statement. Should an "innings_all" file be parsed, or an individual inning? The default is TRUE.
 #' @import XML2R
