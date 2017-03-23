@@ -1,5 +1,5 @@
 #' Use rgl to visualize PITCHf/x
-#' 
+#'
 #' Three-dimensional plot of pitch trajectories.
 #'
 #' @param data data.frame with appropriately named PITCHf/x variables
@@ -13,27 +13,26 @@
 #' @return rgl object is returned.
 #' @export
 #' @examples
-#' 
+#' \dontrun{
 #' data(pitches)
 #' Rivera <- subset(pitches, pitcher_name=="Mariano Rivera")
-#' \dontrun{
 #'  interactiveFX(Rivera, interval=.05)
 #'  interactiveFX(Rivera, avg.by="pitch_types")
 #'  }
-#' 
+#'
 
 interactiveFX <- function(data, spheres=TRUE, color="pitch_types", avg.by, interval=0.01, alpha=1, show.legend=TRUE, ...){
   if (!requireNamespace('rgl')) warning("This function requireNamespaces the rgl package. Please try to install.packages('rgl') before using.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     pitch.type <- c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO")
-    pitch.types <- c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
+    pitch.types <- c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup",
                      "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
                      "Fastball", "Unknown", "Forkball")
     types <- data.frame(pitch_type=factor(pitch.type, levels=sort(pitch.type)),
                         pitch_types=factor(pitch.types, levels=sort(pitch.types)))
     data <- join(data, types, by = "pitch_type", type="inner")
-  } 
+  }
   idx <- c("x0", "y0", "z0", "vx0", "vy0", "vz0", "ax", "ay", "az")
   if (!all(idx %in% names(data))) warning("You must have the following variables in your dataset to animate pitch locations: 'x0', 'y0', 'z0', 'vx0', 'vy0', 'vz0', 'ax', 'ay', 'az'")
   complete <- data[complete.cases(data[,idx]),] #get rid of records with any missing parameter values
@@ -64,7 +63,7 @@ interactiveFX <- function(data, spheres=TRUE, color="pitch_types", avg.by, inter
   if (spheres){
     rgl::spheres3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),
            col=as.character(full.pal), radius=.12, alpha=alpha, ...)
-    rgl::axes3d(c('x', 'y', 'z')) 
+    rgl::axes3d(c('x', 'y', 'z'))
     rgl::title3d(xlab='Horizontal Axis', ylab='Distance from Home Plate', zlab='Height From Ground')
   } else {
     rgl::plot3d(x=as.vector(snaps[,,1]), y=as.vector(snaps[,,2]), z=as.vector(snaps[,,3]),

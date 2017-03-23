@@ -1,8 +1,9 @@
 Package: pitchRx
 Title: Tools for Harnessing 'MLBAM' 'Gameday' Data and Visualizing 'pitchfx'
-Version: 1.8.4
+Version: 1.8.5
 Author: Carson Sievert <cpsievert1@gmail.com>
 Maintainer: Carson Sievert <cpsievert1@gmail.com>
+contributor: Kris Eberwein <eberwein@knights.ucf.edu>
 Description: With 'pitchRx', one can easily obtain Major League Baseball Advanced
     Media's 'Gameday' data (as well as store it in a remote database). The
     'Gameday' website hosts a wealth of data in XML format, but perhaps most
@@ -37,3 +38,4 @@ Suggests:
 LazyData: true
 URL: http://cpsievert.github.com/pitchRx
 BugReports: http://github.com/cpsievert/pitchRx/issues
+RoxygenNote: 6.0.1

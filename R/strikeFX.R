@@ -1,5 +1,5 @@
 #' Visualize PITCHf/x strikezones
-#' 
+#'
 #' A suite of bivariate plots with "px" on the horizontal axis and "pz" on the vertical axis.
 #'
 #' @param data PITCHf/x data to be visualized.
@@ -17,7 +17,7 @@
 #' @param model.save logical. Save the fitted \code{model}? If TRUE, the relevant model object is \link{assign}ed to the global environment
 #' @param density1 List of length one. The name should correspond to a variable in \code{data}. The value should correspond to an (observed) value of that variable.
 #' @param density2 Similar to \code{density1}. If \code{density1 != density2}, the relevant estimates are automatically differenced.
-#' @param limitz limits for horizontal and vertical axes. 
+#' @param limitz limits for horizontal and vertical axes.
 #' @param adjust logical. Should vertical locations be adjusted according to batter height?
 #' @param draw_zones logical. Should strikezones be included?
 #' @param parent is the function being called from a higher-level function? (experimental)
@@ -29,48 +29,48 @@
 #' @import hexbin
 #' @importFrom MASS kde2d
 #' @examples
-#' data(pitches)
-#' 
-#' strikeFX(pitches)
 #' \dontrun{
+#' data(pitches)
+#' strikeFX(pitches)
+#'
 #' strikeFX(pitches, layer=facet_grid(.~stand))
 #'  #silly example on how to modify default settings and add layers
 #'  strikeFX(pitches, color="", layer=facet_grid(s~stand))+
 #'  geom_point(aes(x=px, y=pz, shape=pitch_types))+ #you could add color here
-#'  geom_text(aes(x=px+0.5, y=pz, label=b)) 
-#'  
+#'  geom_text(aes(x=px+0.5, y=pz, label=b))
+#'
 #'  p <- strikeFX(pitches, geom="tile", layer=facet_grid(.~stand))
 #'  p+theme(aspect.ratio=1)
-#' 
-#' strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"), 
+#'
+#' strikeFX(pitches, geom="hex", density1=list(des="Called Strike"), density2=list(des="Ball"),
 #'          draw_zones=FALSE, contour=TRUE, layer=facet_grid(.~stand))
-#'          
+#'
 #' noswing <- subset(pitches, des %in% c("Ball", "Called Strike"))
 #' noswing$strike <- as.numeric(noswing$des %in% "Called Strike")
 #' library(mgcv)
-#' m1 <- bam(strike ~ s(px, pz, by=factor(stand)) + 
+#' m1 <- bam(strike ~ s(px, pz, by=factor(stand)) +
 #'                factor(stand), data=noswing, family = binomial(link='logit'))
 #' # geom will automatically be set to 'raster'
 #' strikeFX(noswing, model=m1, layer=facet_grid(.~stand))
-#' 
-#' m2 <- bam(strike ~ s(px, pz, by=factor(stand)) + s(px, pz, by=factor(inning_side)) + 
+#'
+#' m2 <- bam(strike ~ s(px, pz, by=factor(stand)) + s(px, pz, by=factor(inning_side)) +
 #'            factor(stand) + factor(inning_side), data=noswing, family = binomial(link='logit'))
-#' strikeFX(noswing, model=m2, density1=list(inning_side="top"), 
+#' strikeFX(noswing, model=m2, density1=list(inning_side="top"),
 #'          density2=list(inning_side="bottom"), layer=facet_grid(.~stand))
 #' }
-#' 
+#'
 
-strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), model, model.save=TRUE, density1=list(), density2=list(), limitz=c(-2, 2, 0.5, 4.5), adjust=FALSE, draw_zones=TRUE, parent=FALSE, ...){ 
+strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.alpha=1/3, color = "pitch_types", fill = "des", layer = list(), model, model.save=TRUE, density1=list(), density2=list(), limitz=c(-2, 2, 0.5, 4.5), adjust=FALSE, draw_zones=TRUE, parent=FALSE, ...){
   px=pz_adj=..density..=top=bottom=right=left=x=y=z=NULL #ugly hack to comply with R CMD check
   if (any(!geom %in% c("point", "bin", "hex", "raster", "tile", "subplot2d"))) warning("Current functionality is designed to support the following geometries: 'point', 'bin', 'hex', 'tile', 'subplot2d'.")
   if ("pitch_type" %in% names(data)) { #Add descriptions as pitch_types
     data$pitch_type <- factor(data$pitch_type)
     types <- data.frame(pitch_type=c("SI", "FF", "IN", "SL", "CU", "CH", "FT", "FC", "PO", "KN", "FS", "FA", NA, "FO"),
-                   pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup", 
+                   pitch_types=c("Sinker", "Fastball (four-seam)", "Intentional Walk", "Slider", "Curveball", "Changeup",
                                  "Fastball (two-seam)", "Fastball (cutter)", "Pitchout", "Knuckleball", "Fastball (split-finger)",
                                  "Fastball", "Unknown", "Forkball"))
     data <- plyr::join(data, types, by = "pitch_type", type="inner")
-  } 
+  }
   if (!"b_height" %in% names(data)) {
     warning("pitchRx assumes the height of each batter is recorded as 'b_height'. Since there is no such column, we will assume each batter has a height of 6'2''")
     data$b_height <- "6-2"
@@ -81,7 +81,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       data$b_height[no.height] <- "6-2"
     }
   }
-  
+
   if (!color %in% names(data)) {
     #warning(paste(color, "is the variable that defines coloring but it isn't in the dataset!"))
     color <- ""
@@ -92,12 +92,12 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
   if (parent) { #ugly workaround for shiny implementation
     layers <- NULL
     for (i in layer)
-      layers <- list(layers, eval(i)) 
+      layers <- list(layers, eval(i))
   } else {
     layers <- layer
   }
   facets <- getFacets(layer=layers)
-  boundaries <- getStrikezones(FX, facets, strikeFX = TRUE) 
+  boundaries <- getStrikezones(FX, facets, strikeFX = TRUE)
   if (adjust) {
     FX$pz_adj <- boundaries[[1]] #adjusted vertical locations
   } else {
@@ -132,7 +132,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
     }
     #create a 2D grid (eventually passed to the ?predict.gam method)
     x.grid <- seq(limitz[1], limitz[2], 0.05) #add option for grid granularity?
-    y.grid <- seq(limitz[3], limitz[4], 0.05) 
+    y.grid <- seq(limitz[3], limitz[4], 0.05)
     grid <- expand.grid(px=x.grid, pz=y.grid)
     #extract covariates included in gam/bam (see ?gamObject)
     vars <- names(fit$var.summary)
@@ -148,24 +148,24 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       if (length(factors) == 0){ #facets not possible!
         warning("Facet layer will be ignored since no factor variables were put into the model.")
         facets <- NULL
-        id <- sapply(lapply(layer, class), function(x) which("facet" %in% x)) 
+        id <- sapply(lapply(layer, class), function(x) which("facet" %in% x))
         layer[id > 0] <- NULL #get rid of the facet layer
       } else { #factors variables do exist
-        ind <- facets %in% factors 
+        ind <- facets %in% factors
         idx <- which(!ind) #which facet variables are not included?
         if (length(idx) > 0) {
           warning(paste0("Facet layer will be ignored since the following variables included in the model as factors: ", facets[idx]))
           facets <- NULL
-          id <- sapply(lapply(layer, class), function(x) which("facet" %in% x)) 
+          id <- sapply(lapply(layer, class), function(x) which("facet" %in% x))
           layer[id > 0] <- NULL #get rid of the facet layer
         }
       }
     }
-    #'fixed' variables can have multiple 'conditioned' values (px, pz are also here since they are part of the 'view')
+    #the 'fixed' variables can have multiple 'conditioned' values (px, pz are also here since they are part of the 'view')
     fixed <- c(facets, c("px", "pz"))
     if (length(density1) > 0) fixed <- c(fixed, names(density1))
     if (length(density2) > 0) fixed <- c(fixed, names(density2))
-    #'given' variables have one 'conditioned' value (should be the mode for factors and closest obs. to the median for numerics)
+    #the 'given' variables have one 'conditioned' value (should be the mode for factors and closest obs. to the median for numerics)
     givens <- var_summary[!names(var_summary) %in% fixed]
     for (i in seq_along(givens)) {
       message(paste("Conditioning on:", names(givens[i]), " == ", givens[[i]]))
@@ -219,7 +219,7 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
       return(NULL)
     }
     return(ggplot(data=FX)+labelz+xrange+yrange+
-             ggsubplot::geom_subplot2d(aes(x=px, y=pz_adj, 
+             ggsubplot::geom_subplot2d(aes(x=px, y=pz_adj,
                     subplot = geom_bar(aes_string(x=fill, fill = fill))), ...)+
              black_zone+layers)
   }
@@ -227,9 +227,9 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
     if (identical(density1, density2)) { #densities are not differenced
       FX1 <- subsetFX(FX, density1)
       t <- ggplot(data=FX1, aes(x=px, y=pz_adj))+labelz+xrange+yrange
-      if (geom %in% "bin") t <- t + geom_bin2d(...) 
+      if (geom %in% "bin") t <- t + geom_bin2d(...)
       if (geom %in% "hex") t <- t + geom_hex(...)
-      if (geom %in% c("tile", "raster")) 
+      if (geom %in% c("tile", "raster"))
         t <- t + stat_density2d(geom = geom, aes(fill = ..density..), contour = FALSE, ...)
       #Contours and strikezones are drawn last
       if (contour) t <- t + geom_density2d()
@@ -301,7 +301,7 @@ plotDensity <- function(dens, bounds, contour, geom, ...){
 #   if (geom %in% "hex") {
 #     p <- p + stat_summary_hex(aes(x=px, y=pz, z=z), ...)
 #   } else {
-#     p <- p + stat_summary2d(aes(x=px, y=pz, z=z), ...) 
+#     p <- p + stat_summary2d(aes(x=px, y=pz, z=z), ...)
 #   }
   if (contour) p <- p + stat_contour(aes(x=px, y=pz, z=z)) #passing binwidth here throws error
   return(p)
@@ -309,7 +309,7 @@ plotDensity <- function(dens, bounds, contour, geom, ...){
 
 
 # Special subset handling for density estimates
-# 
+#
 # @param data PITCHf/x data
 # @param density either density1 or density2 passed on from \link{strikeFX}
 
@@ -328,8 +328,8 @@ subsetFX <- function(data, density) {
 # Computes differenced 2D Kernel Density Estimates using MASS::kde2d
 #
 # Computes two densities on the same support and subtracts them according to the \code{density} expression.
-# 
-# 
+#
+#
 # @param data PITCHf/x data
 # @param density1 either density1 or density2 passed on from \link{strikeFX}.
 # @param density2 either density1 or density2 passed on from \link{strikeFX}.
