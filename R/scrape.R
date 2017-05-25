@@ -281,8 +281,10 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
       tables[["pitch"]] <- appendPitchCount(tables[["pitch"]])
       tables[["atbat"]] <- appendDate(tables[["atbat"]])
       if (!missing(connect)) {
+        table_names <- names(tables)
+        table_names <- table_names[!(table_names %in% '')]
         #Try to write tables to database, if that fails, write to csv. Then clear up memory
-        for (i in names(tables)) export(connect, name = i, value = tables[[i]], template = fields[[i]])
+        for (i in table_names) export(connect, name = i, value = tables[[i]], template = fields[[i]])
         rm(tables)
         message("Collecting garbage")
         gc()
