@@ -459,9 +459,9 @@ fill.NAs <- function(value, fields) {
 # @param end any date more recent than last.date
 updateGids <- function(last.date, end) {
   message("grabbing new game IDs")
-  scoreboards <- paste0(makeUrls(start=last.date, end=end, gids=""), "/miniscoreboard.xml")
+  scoreboards <- paste0(makeUrls(start=last.date, end=end, gids=""), "/epg.xml")
   obs <- XML2Obs(scoreboards) #Note to future self -- using `xpath='//game[@gameday_link]'` for future games gives the RCurl error -- Recv failure: Connection reset by peer
-  obs2 <- obs[grep("^games//game$", names(obs))]
+  obs2 <- obs[grep("^epg//game$", names(obs))]
   gids <- collapse_obs(obs2)[,"gameday_link"]
   paste0("gid_", gids[!is.na(gids)])
 }
