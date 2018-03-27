@@ -462,7 +462,7 @@ updateGids <- function(last.date, end) {
   scoreboards <- paste0(makeUrls(start=last.date, end=end, gids=""), "/epg.xml")
   obs <- XML2Obs(scoreboards) #Note to future self -- using `xpath='//game[@gameday_link]'` for future games gives the RCurl error -- Recv failure: Connection reset by peer
   obs2 <- obs[grep("^epg//game$", names(obs))]
-  gids <- collapse_obs(obs2)[,"gameday_link"]
+  gids <- collapse_obs(obs2)[,"gameday"]
   paste0("gid_", gids[!is.na(gids)])
 }
 
