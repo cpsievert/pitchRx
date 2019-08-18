@@ -7,7 +7,7 @@
 #' \href{http://gd2.mlb.com/components/game/mlb/year_2011/month_04/day_04/gid_2011_04_04_minmlb_nyamlb_1/miniscoreboard.xml}{miniscoreboard.xml}.
 #' It's worth noting that PITCHf/x is contained in files ending with "inning/inning_all.xml", but the other files can complement this data depending on the goal for analysis.
 #' Any collection of file names may be passed to the \code{suffix} argument, and \code{scrape} will retrieve data from a (possibly large number)
-#' of files based on either a window of dates or a set of \code{game.ids}.
+#' of files based on either a window of dates or a set of \code{}.
 #' If collecting data in bulk, it is strongly recommended that one establishes a database connection and supplies the
 #' connection to the \code{connect} argument. See the examples section for a simple example of how to do so.
 #'
@@ -483,13 +483,13 @@ gids2urls <- function(x) {
   if (any(not.mlb)) league[not.mlb] <- substr(x[not.mlb], 26, 28)
   base <- paste0(root, league)
   paste0(base, "/year_", substr(x, 5, 8), "/month_", substr(x, 10, 11),
-         "/day_", substr(x, 13, 14), "/", x)
+         "/day_", substr(x, 13, 14), x)
 }
 
 #Find the proper subset of game IDs based on start/end dates
 subsetGids <- function(gids, first, last) {
   elements <- strsplit(gids, split="_")
-  dates <- as.POSIXct(sapply(elements, function(x) paste(x[2], x[3], x[4], sep="-")))
+  dates <- as.POSIXct(sapply(elements, function(x) paste("/", x[2], x[3], x[4], sep="-")))
   return(gids[last >= dates & dates >= first])
 }
 
