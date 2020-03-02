@@ -460,8 +460,11 @@ fill.NAs <- function(value, fields) {
 updateGids <- function(last.date, end) {
   message("grabbing new game IDs")
   scoreboards <- paste0(makeUrls(start=last.date, end=end, gids=""), "/master_scoreboard.json")
-  obs <- fromJSON(scoreboards)
-  gids <- obs$data$games$game$gameday
+  obs <- lapply(scoreboards, fromJSON)
+  gids <- lapply(obs, function(day) {
+    payload <- day$data$games$game$gameday
+  })
+  gids <- unlist(gids)
   paste0("gid_", gids[!is.na(gids)])
 }
 
