@@ -462,7 +462,7 @@ updateGids <- function(last.date, end) {
   scoreboards <- paste0(makeUrls(start=last.date, end=end, gids=""), "/master_scoreboard.json")
   obs <- lapply(scoreboards, fromJSON)
   gids <- lapply(obs, function(day) {
-    payload <- day$data$games$game$gameday
+    day$data$games$game$gameday
   })
   gids <- unlist(gids)
   paste0("gid_", gids[!is.na(gids)])

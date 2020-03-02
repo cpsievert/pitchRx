@@ -10,7 +10,7 @@ scoreboards <- paste0(day_urls, "/master_scoreboard.json")
 day_list <- lapply(scoreboards, fromJSON)
 
 new_gids <- lapply(day_list, function(day) {
-  payload <- day$data$games$game$gameday
+  day$data$games$game$gameday
 })
 new_gids <- unlist(new_gids)
 new_gids <- paste0('gid_', new_gids)
