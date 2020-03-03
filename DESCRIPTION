@@ -23,7 +23,8 @@ Imports:
     plyr,
     MASS,
     hexbin,
-    mgcv
+    mgcv,
+    jsonlite
 Suggests:
     DBI,
     dplyr,
