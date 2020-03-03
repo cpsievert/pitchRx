@@ -23,7 +23,8 @@ Imports:
     plyr,
     MASS,
     hexbin,
-    mgcv
+    mgcv,
+    jsonlite
 Suggests:
     DBI,
     dplyr,
@@ -37,3 +38,5 @@ Suggests:
 LazyData: true
 URL: http://cpsievert.github.com/pitchRx
 BugReports: http://github.com/cpsievert/pitchRx/issues
+Encoding: UTF-8
+RoxygenNote: 6.1.1

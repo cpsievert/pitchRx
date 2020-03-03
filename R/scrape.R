@@ -25,7 +25,7 @@
 #' @seealso If you want to add support for more file types, the \code{XML2R} package is a good place to start.
 #' @return Returns a list of data frames (or nothing if writing to a database).
 #' @export
-#' @import XML2R
+#' @import XML2R jsonlite
 #' @examples
 #' \dontrun{
 #' # Collect PITCHf/x (and other data from inning_all.xml files) from
