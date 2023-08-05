@@ -75,8 +75,8 @@ scrape <- function(start, end, game.ids, suffix = "inning/inning_all.xml", conne
     fieldz <- plyr::try_default(DBI::dbListFields(connect, "atbat"), NULL, quiet = TRUE)
     if (!"date" %in% fieldz && !is.null(fieldz)) {
       msg <- "An 'atbat' table without the 'date' column was detected\n"
-      if (!requireNamespace('dplyr') || packageVersion("dplyr") < 0.2) {
-        message(msg, "To automatically append 'date', please install/update the dplyr and DBI packages \n",
+      if (!requireNamespace('dplyr')) {
+        message(msg, "To automatically append 'date', please install the dplyr package \n",
                 "More details are discussed here -- \n",
                 "http://baseballwithr.wordpress.com/2014/04/13/modifying-and-querying-a-pitchfx-database-with-dplyr/")
       } else {

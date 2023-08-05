@@ -1,3 +1,7 @@
+    CHANGES IN pitchRx VERSION 1.8.5
+
+Avoid comparison of packageVersion() to a numeric value.
+    
     CHANGES IN pitchRx VERSION 1.8.4
 
 Updated gids data 
