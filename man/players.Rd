@@ -4,7 +4,9 @@
 \name{players}
 \alias{players}
 \title{All MLB and MiLB players from 2008 to date}
-\format{A data frame with 2 variables: \code{ID} and \code{full_name}}
+\format{
+A data frame with 2 variables: \code{ID} and \code{full_name}
+}
 \usage{
 players
 }

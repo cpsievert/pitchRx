@@ -4,7 +4,9 @@
 \name{nonMLBgids}
 \alias{nonMLBgids}
 \title{All non-MLB Gameday IDs from 2008-2013}
-\format{A character vector}
+\format{
+A character vector
+}
 \usage{
 nonMLBgids
 }

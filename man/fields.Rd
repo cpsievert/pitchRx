@@ -4,7 +4,9 @@
 \name{fields}
 \alias{fields}
 \title{Master list of tables and fields returned by \code{scrape}}
-\format{A list of character vectors.}
+\format{
+A list of character vectors.
+}
 \usage{
 fields
 }

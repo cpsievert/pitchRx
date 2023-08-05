@@ -161,11 +161,11 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
         }
       }
     }
-    #'fixed' variables can have multiple 'conditioned' values (px, pz are also here since they are part of the 'view')
+    # fixed variables can have multiple 'conditioned' values (px, pz are also here since they are part of the 'view')
     fixed <- c(facets, c("px", "pz"))
     if (length(density1) > 0) fixed <- c(fixed, names(density1))
     if (length(density2) > 0) fixed <- c(fixed, names(density2))
-    #'given' variables have one 'conditioned' value (should be the mode for factors and closest obs. to the median for numerics)
+    # given variables have one 'conditioned' value (should be the mode for factors and closest obs. to the median for numerics)
     givens <- var_summary[!names(var_summary) %in% fixed]
     for (i in seq_along(givens)) {
       message(paste("Conditioning on:", names(givens[i]), " == ", givens[[i]]))
@@ -214,12 +214,13 @@ strikeFX <- function(data, geom = "point", contour=FALSE, point.size=3, point.al
     return(p+labelz+xrange+yrange+layers+col_scale)
   }
   if (geom %in% "subplot2d") { #special handling for subplotting
-    if (!requireNamespace('ggsubplot')) {
-      message("The 'subplot2d' geom requires library(ggsubplot)!")
+    if (system.file(package = 'ggsubplot') == "") {
+      message("The 'subplot2d' geom requires the ggsubplot package. Install it with 'remotes::install_github('garrettgman/ggsubplot')'.")
       return(NULL)
     }
+    geom_subplot2d <- utils::getFromNamespace('geom_subplot2d', 'ggsubplot')
     return(ggplot(data=FX)+labelz+xrange+yrange+
-             ggsubplot::geom_subplot2d(aes(x=px, y=pz_adj, 
+             geom_subplot2d(aes(x=px, y=pz_adj, 
                     subplot = geom_bar(aes_string(x=fill, fill = fill))), ...)+
              black_zone+layers)
   }

@@ -4,7 +4,9 @@
 \name{pitches}
 \alias{pitches}
 \title{Sample PITCHf/x Data Set}
-\format{A data frame with variables from the 'atbat' and 'pitch' tables.}
+\format{
+A data frame with variables from the 'atbat' and 'pitch' tables.
+}
 \usage{
 pitches
 }

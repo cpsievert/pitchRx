@@ -4,11 +4,25 @@
 \alias{strikeFX}
 \title{Visualize PITCHf/x strikezones}
 \usage{
-strikeFX(data, geom = "point", contour = FALSE, point.size = 3,
-  point.alpha = 1/3, color = "pitch_types", fill = "des",
-  layer = list(), model, model.save = TRUE, density1 = list(),
-  density2 = list(), limitz = c(-2, 2, 0.5, 4.5), adjust = FALSE,
-  draw_zones = TRUE, parent = FALSE, ...)
+strikeFX(
+  data,
+  geom = "point",
+  contour = FALSE,
+  point.size = 3,
+  point.alpha = 1/3,
+  color = "pitch_types",
+  fill = "des",
+  layer = list(),
+  model,
+  model.save = TRUE,
+  density1 = list(),
+  density2 = list(),
+  limitz = c(-2, 2, 0.5, 4.5),
+  adjust = FALSE,
+  draw_zones = TRUE,
+  parent = FALSE,
+  ...
+)
 }
 \arguments{
 \item{data}{PITCHf/x data to be visualized.}
@@ -85,6 +99,4 @@ strikeFX(noswing, model=m2, density1=list(inning_side="top"),
          density2=list(inning_side="bottom"), layer=facet_grid(.~stand))
 }
 
-fixed' variables can have multiple 'conditioned' values (px, pz are also here since they are part of the 'view')
-given' variables have one 'conditioned' value (should be the mode for factors and closest obs. to the median for numerics)
 }

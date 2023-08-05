@@ -4,8 +4,16 @@
 \alias{interactiveFX}
 \title{Use rgl to visualize PITCHf/x}
 \usage{
-interactiveFX(data, spheres = TRUE, color = "pitch_types", avg.by,
-  interval = 0.01, alpha = 1, show.legend = TRUE, ...)
+interactiveFX(
+  data,
+  spheres = TRUE,
+  color = "pitch_types",
+  avg.by,
+  interval = 0.01,
+  alpha = 1,
+  show.legend = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{data.frame with appropriately named PITCHf/x variables}

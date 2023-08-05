@@ -4,8 +4,12 @@
 \alias{urlsToDataFrame}
 \title{Parse XML files into data frame(s)}
 \usage{
-urlsToDataFrame(urls, tables = list(), add.children = FALSE,
-  use.values = FALSE)
+urlsToDataFrame(
+  urls,
+  tables = list(),
+  add.children = FALSE,
+  use.values = FALSE
+)
 }
 \arguments{
 \item{urls}{set of urls for parsing}

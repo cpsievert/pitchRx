@@ -4,8 +4,7 @@
 \alias{scrape}
 \title{Scrape Major League Baseball's Gameday Data}
 \usage{
-scrape(start, end, game.ids, suffix = "inning/inning_all.xml", connect,
-  ...)
+scrape(start, end, game.ids, suffix = "inning/inning_all.xml", connect, ...)
 }
 \arguments{
 \item{start}{character string specifying a date "yyyy-mm-dd" to commence scraping.}

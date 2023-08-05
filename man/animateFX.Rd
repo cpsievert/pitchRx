@@ -4,9 +4,18 @@
 \alias{animateFX}
 \title{Animate PITCHf/x}
 \usage{
-animateFX(data, color = "pitch_types", avg.by, point.alpha = 1/3,
-  limitz = c(-3.5, 3.5, 0, 7), flag = FALSE, interval = 0.01,
-  layer = list(), parent = FALSE, ...)
+animateFX(
+  data,
+  color = "pitch_types",
+  avg.by,
+  point.alpha = 1/3,
+  limitz = c(-3.5, 3.5, 0, 7),
+  flag = FALSE,
+  interval = 0.01,
+  layer = list(),
+  parent = FALSE,
+  ...
+)
 }
 \arguments{
 \item{data}{data frame with appropriately named PITCHf/x variables}
